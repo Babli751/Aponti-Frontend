@@ -1,11 +1,11 @@
 // Professional Color Theme - Modern & Clean
 export const colors = {
-  // Primary Brand Colors - Gray Professional
+  // Primary Brand Colors - Dark Gray Professional
   primary: {
-    main: '#6b7280',      // Medium gray - main brand color
-    light: '#9ca3af',     // Light gray
-    dark: '#4b5563',      // Dark gray
-    gradient: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)'
+    main: '#374151',      // Dark gray - main brand color
+    light: '#6b7280',     // Medium gray
+    dark: '#1f2937',      // Very dark gray
+    gradient: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)'
   },
 
   // Secondary Accent - Subtle & Elegant
