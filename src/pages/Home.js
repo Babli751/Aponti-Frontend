@@ -495,7 +495,7 @@ const Home = () => {
       features: [
         language === 'en' ? 'Master Barbers' : language === 'tr' ? 'Usta Berberler' : 'Мастер-парикмахеры',
         language === 'en' ? 'Classic Cuts' : language === 'tr' ? 'Klasik Kesimler' : 'Классичес��ие стрижки',
-        language === 'en' ? 'Hot Towel Service' : language === 'tr' ? 'Sıcak Havlu Hizmeti' : 'Горячее полотенце'
+        language === 'en' ? 'Hot Towel Service' : language === 'tr' ? 'S��cak Havlu Hizmeti' : 'Горячее полотенце'
       ]
     },
     {
@@ -553,7 +553,7 @@ const Home = () => {
         position="sticky"
         elevation={0}
         style={{
-          backgroundColor: '#6b7280',
+          backgroundColor: '#374151',
           borderBottom: '1px solid rgba(255,255,255,0.1)',
           color: 'white'
         }}
@@ -620,7 +620,7 @@ const Home = () => {
                     '& .MuiSvgIcon-root': { color: 'white' }
                   }}
                 >
-                  <MenuItem value="en">🇬🇧 {isMobile ? 'EN' : isTablet ? 'EN' : 'English'}</MenuItem>
+                  <MenuItem value="en">🇬�� {isMobile ? 'EN' : isTablet ? 'EN' : 'English'}</MenuItem>
                   <MenuItem value="tr">🇹🇷 {isMobile ? 'TR' : isTablet ? 'TR' : 'Türkçe'}</MenuItem>
                   <MenuItem value="ru">🇷🇺 {isMobile ? 'RU' : isTablet ? 'RU' : 'Русский'}</MenuItem>
                 </Select>
@@ -1269,7 +1269,7 @@ const Home = () => {
               allowFullScreen=""
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title={language === 'en' ? 'Map of businesses' : language === 'tr' ? 'İşletmeler haritası' : 'Карта предприятий'}
+              title={language === 'en' ? 'Map of businesses' : language === 'tr' ? 'İşletmeler haritası' : 'Карта ��редприятий'}
             />
           </Box>
 
@@ -1326,7 +1326,7 @@ const Home = () => {
           ) : featuredBusinesses.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <Typography variant="body1" sx={{ color: '#6b7280' }}>
-                {language === 'en' ? 'No businesses found' : language === 'tr' ? 'İşletme bulunamadı' : 'Предприятия не найдены'}
+                {language === 'en' ? 'No businesses found' : language === 'tr' ? 'İşletme bulunamadı' : 'Предприяти�� не найдены'}
               </Typography>
             </Box>
           ) : (
@@ -1750,7 +1750,7 @@ const Home = () => {
                       ? '"The best booking platform I\'ve used! Clean interface, reliable notifications, and all my favorite beauty spots in one place."'
                       : language === 'tr'
                       ? '"Kullandığım en iyi rezervasyon platformu! Temiz arayüz, güvenilir bildirimler ve en sevdiğim güzellik mekanları tek yerde."'
-                      : '"Лучшая платформа для бронирования! Чистый интерфейс, надёжные уведомления!"'
+                      : '"Лучшая платформа для брони��ования! Чистый интерфейс, надёжные уведомления!"'
                     }
                   </Typography>
                 </CardContent>
