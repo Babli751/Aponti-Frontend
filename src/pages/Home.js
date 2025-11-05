@@ -392,7 +392,7 @@ const Home = () => {
       ? 'To find businesses near you, we need access to your location. Click OK to allow location access in the next prompt.'
       : language === 'tr'
       ? 'Size yakın işletmeleri bulmak için konumunuza erişmemiz gerekiyor. Sonraki uyarıda konum erişimine izin vermek için Tamam\'a tıklayın.'
-      : 'Чтобы найти предприятия рядом с вами, нам нужен доступ к вашему местоположению. Нажмите OK, чтобы разрешить доступ к местоположению.';
+      : 'Чтобы найти предприятия ря��ом с вами, нам нужен доступ к вашему местоположению. Нажмите OK, чтобы разрешить доступ к местоположению.';
 
     const userConfirmed = window.confirm(confirmMessage);
 
@@ -620,7 +620,7 @@ const Home = () => {
                     '& .MuiSvgIcon-root': { color: 'white' }
                   }}
                 >
-                  <MenuItem value="en">🇬�� {isMobile ? 'EN' : isTablet ? 'EN' : 'English'}</MenuItem>
+                  <MenuItem value="en">🇬🇧 {isMobile ? 'EN' : isTablet ? 'EN' : 'English'}</MenuItem>
                   <MenuItem value="tr">🇹🇷 {isMobile ? 'TR' : isTablet ? 'TR' : 'Türkçe'}</MenuItem>
                   <MenuItem value="ru">🇷🇺 {isMobile ? 'RU' : isTablet ? 'RU' : 'Русский'}</MenuItem>
                 </Select>
@@ -1320,7 +1320,7 @@ const Home = () => {
           {loadingBusinesses ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <Typography variant="body1" sx={{ color: '#6b7280' }}>
-                {language === 'en' ? 'Loading businesses...' : language === 'tr' ? 'İşletmeler yükleniyor...' : 'Загрузка предприятий...'}
+                {language === 'en' ? 'Loading businesses...' : language === 'tr' ? 'İşletmeler yükleniyor...' : 'Загрузка ��редприятий...'}
               </Typography>
             </Box>
           ) : featuredBusinesses.length === 0 ? (
@@ -1338,7 +1338,7 @@ const Home = () => {
                   if (cat.includes('barber') || cat.includes('berber')) {
                     return { icon: '💈', color: '#ef4444', bgColor: 'rgba(239, 68, 68, 0.1)', name: language === 'en' ? 'Barber' : language === 'tr' ? 'Berber' : 'Парикмахер' };
                   } else if (cat.includes('beauty') || cat.includes('güzellik') || cat.includes('красота')) {
-                    return { icon: '💅', color: '#ec4899', bgColor: 'rgba(236, 72, 153, 0.1)', name: language === 'en' ? 'Beauty & Wellness' : language === 'tr' ? 'Güzellik & Sağlık' : 'Красота' };
+                    return { icon: '💅', color: '#ec4899', bgColor: 'rgba(236, 72, 153, 0.1)', name: language === 'en' ? 'Beauty & Wellness' : language === 'tr' ? 'Güzellik & Sağl��k' : 'Красота' };
                   } else if (cat.includes('automotive') || cat.includes('otomotiv') || cat.includes('авто')) {
                     return { icon: '🚗', color: '#3b82f6', bgColor: 'rgba(59, 130, 246, 0.1)', name: language === 'en' ? 'Automotive' : language === 'tr' ? 'Otomotiv' : 'Авто' };
                   } else if (cat.includes('pet') || cat.includes('hayvan') || cat.includes('питомц')) {
@@ -1868,7 +1868,7 @@ const Home = () => {
                   ? 'The leading platform for booking professional barber services across Europe. Find and book the best barbers in your city.'
                   : language === 'tr'
                   ? 'Avrupa\'da profesyonel berber hizmetleri rezervasyonu için önde gelen platform. Şehrinizdeki en iyi berberleri bulun ve rezervasyon yapın.'
-                  : 'Ведущая платфор��а для бронирования профессиональных парикмахерских услуг по всей Европе. Найдите и забронируйте лучших парикмахеров в своем городе.'
+                  : 'Ведущая платфор��а для бронирования профессиональных парикмахерских услуг по всей Европе. Найдите и заброн��руйте лучших парикмахеров в своем городе.'
                 }
               </Typography>
               <Stack direction="row" spacing={1}>
