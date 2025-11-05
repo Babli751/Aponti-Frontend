@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Barber Login Test</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+</head>
+<body>
+    <h1>🐛 Debug Barber Login Test</h1>
+    <p>This test provides detailed debugging information for the barber login.</p>
+
+    <div style="background: #e8f4f8; padding: 10px; margin: 10px 0; border-left: 4px solid #2196F3;">
+        <h3>🔍 Environment Information:</h3>
+        <p><strong>User Agent:</strong> <span id="userAgent"></span></p>
+        <p><strong>Current URL:</strong> <span id="currentUrl"></span></p>
+        <p><strong>API URL:</strong> <span id="apiUrl"></span></p>
+        <p><strong>Timestamp:</strong> <span id="timestamp"></span></p>
+        <p><strong>Online Status:</strong> <span id="onlineStatus"></span></p>
+    </div>
+
+    <button onclick="runAllTests()" style="padding: 15px 30px; font-size: 18px; background: #4CAF50; color: white; border: none; border-radius: 5px;">
+        🧪 Run All Tests
+    </button>
+
+    <div id="testResults" style="margin-top: 20px;">
+        <h3>📊 Test Results:</h3>
+        <div id="resultsContainer">Click "Run All Tests" to start...</div>
+    </div>
+
+    <script>
+        // Fill environment info
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('apiUrl').textContent = 'http://206.189.57.55:8001';
+        document.getElementById('timestamp').textContent = new Date().toISOString();
+        document.getElementById('onlineStatus').textContent = navigator.onLine ? 'Online' : 'Offline';
+
+        async function runAllTests() {
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.innerHTML = '<p>🔄 Running tests...</p>';
+
+            const tests = [
+                { name: 'CORS Preflight Test', fn: testCORS },
+                { name: 'Basic Connectivity Test', fn: testConnectivity },
+                { name: 'Login API Test', fn: testLoginAPI },
+                { name: 'Token Validation Test', fn: testTokenValidation },
+                { name: 'Full Login Flow Test', fn: testFullLoginFlow }
+            ];
+
+            let results = [];
+
+            for (const test of tests) {
+                console.log(`🧪 Running ${test.name}...`);
+                try {
+                    const result = await test.fn();
+                    results.push({ name: test.name, ...result });
+                    console.log(`✅ ${test.name}:`, result);
+                } catch (error) {
+                    results.push({ name: test.name, success: false, error: error.message });
+                    console.error(`❌ ${test.name}:`, error);
+                }
+            }
+
+            displayResults(results);
+        }
+
+        async function testCORS() {
+            return new Promise((resolve) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('OPTIONS', 'http://206.189.57.55:8001/api/v1/auth/login', true);
+                xhr.setRequestHeader('Origin', window.location.origin);
+                xhr.setRequestHeader('Access-Control-Request-Method', 'POST');
+                xhr.setRequestHeader('Access-Control-Request-Headers', 'Content-Type');
+
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        resolve({
+                            success: xhr.status === 200,
+                            status: xhr.status,
+                            headers: xhr.getAllResponseHeaders(),
+                            response: xhr.responseText
+                        });
+                    }
+                };
+
+                xhr.send();
+            });
+        }
+
+        async function testConnectivity() {
+            try {
+                const response = await fetch('http://206.189.57.55:8001/api/v1/auth/login', {
+                    method: 'HEAD'
+                });
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    headers: Object.fromEntries(response.headers.entries())
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        async function testLoginAPI() {
+            try {
+                const formData = new URLSearchParams();
+                formData.append('username', 'testbarber@test.com');
+                formData.append('password', 'test123');
+
+                const response = await fetch('http://206.189.57.55:8001/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                return {
+                    success: response.ok && !!result.access_token,
+                    status: response.status,
+                    hasToken: !!result.access_token,
+                    tokenType: result.token_type,
+                    error: result.detail
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        async function testTokenValidation() {
+            // First get a token
+            try {
+                const formData = new URLSearchParams();
+                formData.append('username', 'testbarber@test.com');
+                formData.append('password', 'test123');
+
+                const loginResponse = await fetch('http://206.189.57.55:8001/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                const loginResult = await loginResponse.json();
+
+                if (!loginResult.access_token) {
+                    return {
+                        success: false,
+                        error: 'No token received from login'
+                    };
+                }
+
+                // Test the token
+                const testResponse = await fetch('http://206.189.57.55:8001/api/v1/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${loginResult.access_token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const userData = await testResponse.json();
+
+                return {
+                    success: testResponse.ok,
+                    status: testResponse.status,
+                    userData: userData,
+                    isBarber: userData.is_barber
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        async function testFullLoginFlow() {
+            try {
+                // Simulate the full login flow
+                const formData = new URLSearchParams();
+                formData.append('username', 'testbarber@test.com');
+                formData.append('password', 'test123');
+
+                const response = await fetch('http://206.189.57.55:8001/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (!result.access_token) {
+                    return {
+                        success: false,
+                        error: 'No token received'
+                    };
+                }
+
+                // Store token
+                localStorage.setItem('access_token', result.access_token);
+
+                // Test token
+                const testResponse = await fetch('http://206.189.57.55:8001/api/v1/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${result.access_token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const userData = await testResponse.json();
+
+                return {
+                    success: testResponse.ok && userData.is_barber === true,
+                    tokenStored: true,
+                    userData: userData,
+                    isBarber: userData.is_barber
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById('resultsContainer');
+
+            let html = '<div style="display: grid; gap: 10px;">';
+
+            results.forEach((result, index) => {
+                const color = result.success ? 'green' : 'red';
+                html += `
+                    <div style="border: 2px solid ${color}; padding: 10px; border-radius: 5px;">
+                        <h4 style="margin: 0; color: ${color};">${result.success ? '✅' : '❌'} ${result.name}</h4>
+                        <table style="width: 100%; border-collapse: collapse;">
+                `;
+
+                Object.entries(result).forEach(([key, value]) => {
+                    if (key !== 'name' && key !== 'success') {
+                        html += `<tr><td><strong>${key}:</strong></td><td>${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</td></tr>`;
+                    }
+                });
+
+                html += '</table></div>';
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

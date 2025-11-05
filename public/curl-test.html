@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Curl-Style Barber Login Test</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+</head>
+<body>
+    <h1>🔧 Curl-Style Barber Login Test</h1>
+    <p>This test mimics curl commands to test the login API.</p>
+
+    <div style="background: #f0f0f0; padding: 10px; margin: 10px 0;">
+        <h3>📋 Test Commands:</h3>
+        <pre style="background: #000; color: #0f0; padding: 10px;">
+curl -X POST "http://206.189.57.55:8001/api/v1/auth/login" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=testbarber@test.com&password=test123"
+        </pre>
+    </div>
+
+    <button onclick="runCurlTest()" style="padding: 15px 30px; font-size: 18px; background: #ff6b35; color: white; border: none; border-radius: 5px;">
+        🚀 Run Curl Test
+    </button>
+
+    <div id="curlResult" style="margin-top: 20px; padding: 20px; border: 2px solid #ccc; background: #f9f9f9;">
+        <h3>📊 Test Results:</h3>
+        <div id="resultContent">Click the button to run the test...</div>
+    </div>
+
+    <script>
+        async function runCurlTest() {
+            const resultDiv = document.getElementById('resultContent');
+            resultDiv.innerHTML = '🔄 Running curl test...';
+
+            const startTime = Date.now();
+
+            try {
+                // Create FormData exactly like curl would
+                const formData = new FormData();
+                formData.append('username', 'testbarber@test.com');
+                formData.append('password', 'test123');
+
+                console.log('📡 Starting curl-style request...');
+                console.log('📡 URL: http://206.189.57.55:8001/api/v1/auth/login');
+                console.log('📡 Method: POST');
+                console.log('📡 Content-Type: application/x-www-form-urlencoded');
+                console.log('📡 Form Data:', {
+                    username: 'testbarber@test.com',
+                    password: 'test123'
+                });
+
+                const response = await fetch('http://206.189.57.55:8001/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        username: 'testbarber@test.com',
+                        password: 'test123'
+                    })
+                });
+
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+
+                console.log('📡 Response received in', duration, 'ms');
+                console.log('📡 Status:', response.status);
+                console.log('📡 Status Text:', response.statusText);
+                console.log('📡 Headers:', Object.fromEntries(response.headers.entries()));
+
+                const responseText = await response.text();
+                console.log('📡 Raw Response:', responseText);
+
+                let responseData;
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch (e) {
+                    resultDiv.innerHTML = `
+                        <h3 style="color: red;">❌ JSON Parse Error</h3>
+                        <p>Raw response: ${responseText}</p>
+                        <p>Error: ${e.message}</p>
+                    `;
+                    return;
+                }
+
+                if (response.ok && responseData.access_token) {
+                    resultDiv.innerHTML = `
+                        <h2 style="color: green;">✅ CURL TEST SUCCESSFUL!</h2>
+                        <table border="1" style="border-collapse: collapse; width: 100%;">
+                            <tr><td><strong>Status</strong></td><td>${response.status} ${response.statusText}</td></tr>
+                            <tr><td><strong>Duration</strong></td><td>${duration}ms</td></tr>
+                            <tr><td><strong>Access Token</strong></td><td>${responseData.access_token.substring(0, 30)}...</td></tr>
+                            <tr><td><strong>Token Type</strong></td><td>${responseData.token_type}</td></tr>
+                            <tr><td><strong>Full Response</strong></td><td><pre>${JSON.stringify(responseData, null, 2)}</pre></td></tr>
+                        </table>
+                        <button onclick="testToken('${responseData.access_token}')" style="margin-top: 10px;">🧪 Test Token</button>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <h2 style="color: red;">❌ CURL TEST FAILED</h2>
+                        <table border="1" style="border-collapse: collapse; width: 100%;">
+                            <tr><td><strong>Status</strong></td><td>${response.status} ${response.statusText}</td></tr>
+                            <tr><td><strong>Duration</strong></td><td>${duration}ms</td></tr>
+                            <tr><td><strong>Error</strong></td><td>${responseData.detail || 'Unknown error'}</td></tr>
+                            <tr><td><strong>Full Response</strong></td><td><pre>${JSON.stringify(responseData, null, 2)}</pre></td></tr>
+                        </table>
+                    `;
+                }
+
+            } catch (error) {
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+
+                resultDiv.innerHTML = `
+                    <h2 style="color: red;">❌ NETWORK ERROR</h2>
+                    <table border="1" style="border-collapse: collapse; width: 100%;">
+                        <tr><td><strong>Error Type</strong></td><td>${error.name}</td></tr>
+                        <tr><td><strong>Error Message</strong></td><td>${error.message}</td></tr>
+                        <tr><td><strong>Duration</strong></td><td>${duration}ms</td></tr>
+                        <tr><td><strong>Stack Trace</strong></td><td><pre>${error.stack}</pre></td></tr>
+                    </table>
+                `;
+                console.error('💥 Network error:', error);
+            }
+        }
+
+        async function testToken(token) {
+            const resultDiv = document.getElementById('resultContent');
+
+            try {
+                console.log('🧪 Testing token:', token.substring(0, 20) + '...');
+
+                const response = await fetch('http://206.189.57.55:8001/api/v1/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const userData = await response.json();
+                console.log('👤 User data received:', userData);
+
+                if (response.ok) {
+                    resultDiv.innerHTML += `
+                        <h3 style="color: green;">✅ TOKEN VALIDATION SUCCESSFUL!</h3>
+                        <table border="1" style="border-collapse: collapse; width: 100%;">
+                            <tr><td><strong>User ID</strong></td><td>${userData.id}</td></tr>
+                            <tr><td><strong>Email</strong></td><td>${userData.email}</td></tr>
+                            <tr><td><strong>Name</strong></td><td>${userData.first_name} ${userData.last_name}</td></tr>
+                            <tr><td><strong>Is Barber</strong></td><td>${userData.is_barber}</td></tr>
+                            <tr><td><strong>Is Active</strong></td><td>${userData.is_active}</td></tr>
+                        </table>
+                    `;
+                } else {
+                    resultDiv.innerHTML += `
+                        <h3 style="color: red;">❌ TOKEN VALIDATION FAILED</h3>
+                        <p>Status: ${response.status}</p>
+                        <p>Response: ${JSON.stringify(userData, null, 2)}</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `
+                    <h3 style="color: red;">❌ TOKEN TEST ERROR</h3>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

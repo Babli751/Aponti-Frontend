@@ -1,0 +1,121 @@
+/* Global Aponti Theme - Single Color Professional Style */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #ffffff;
+  color: #1f2937;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Override all primary colors to match Aponti brand */
+.MuiButton-containedPrimary {
+  background: linear-gradient(135deg, #00a693 0%, #00d4bd 100%) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(0,166,147,0.3) !important;
+}
+
+.MuiButton-containedPrimary:hover {
+  background: linear-gradient(135deg, #008577 0%, #00a693 100%) !important;
+}
+
+.MuiButton-outlinedPrimary {
+  border-color: #00a693 !important;
+  color: #00a693 !important;
+}
+
+.MuiButton-outlinedPrimary:hover {
+  background-color: rgba(0,166,147,0.05) !important;
+}
+
+.MuiChip-colorPrimary {
+  background-color: #e0f2f1 !important;
+  color: #00a693 !important;
+}
+
+/* Try Business Button - Red accent */
+.try-business-btn,
+.MuiButton-root.try-business-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(239,68,68,0.3) !important;
+  border: none !important;
+}
+
+.try-business-btn:hover,
+.MuiButton-root.try-business-btn:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+}
+
+/* Card shadows - clean and minimal */
+.MuiCard-root {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+  border-radius: 12px !important;
+}
+
+.MuiCard-root:hover {
+  box-shadow: 0 4px 12px rgba(0,166,147,0.15) !important;
+}
+
+/* AppBar - uniform across all pages */
+.MuiAppBar-root {
+  background: linear-gradient(135deg, #00a693 0%, #00d4bd 100%) !important;
+  box-shadow: none !important;
+  border-bottom: 1px solid #008577 !important;
+}
+
+/* Links and accent colors */
+a {
+  color: #00a693;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #008577;
+  text-decoration: underline;
+}
+
+/* Form inputs */
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #00a693 !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #00a693 !important;
+}
+
+.MuiInputLabel-root.Mui-focused {
+  color: #00a693 !important;
+}
+
+/* Scrollbar styling for clean look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00a693;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #008577;
+}

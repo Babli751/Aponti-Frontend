@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>XHR Barber Login Test</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+</head>
+<body>
+    <h1>🌐 XMLHttpRequest Barber Login Test</h1>
+    <p>This test uses XMLHttpRequest (old-school AJAX) to test the login.</p>
+
+    <button onclick="testXHR()" style="padding: 15px 30px; font-size: 18px; background: #2196F3; color: white; border: none; border-radius: 5px;">
+        📡 Test with XMLHttpRequest
+    </button>
+
+    <div id="xhrResult" style="margin-top: 20px; padding: 20px; border: 2px solid #ccc; background: #f9f9f9;">
+        <h3>📊 XHR Test Results:</h3>
+        <div id="xhrContent">Click the button to run the test...</div>
+    </div>
+
+    <script>
+        function testXHR() {
+            const resultDiv = document.getElementById('xhrContent');
+            resultDiv.innerHTML = '🔄 Testing with XMLHttpRequest...';
+
+            const startTime = Date.now();
+
+            // Create XMLHttpRequest
+            const xhr = new XMLHttpRequest();
+
+            // Set up event handlers
+            xhr.onreadystatechange = function() {
+                console.log('📡 XHR readyState:', xhr.readyState, 'status:', xhr.status);
+
+                if (xhr.readyState === 4) { // DONE
+                    const endTime = Date.now();
+                    const duration = endTime - startTime;
+
+                    console.log('📡 XHR completed in', duration, 'ms');
+                    console.log('📡 Status:', xhr.status);
+                    console.log('📡 Response Text:', xhr.responseText);
+
+                    try {
+                        const responseData = JSON.parse(xhr.responseText);
+
+                        if (xhr.status === 200 && responseData.access_token) {
+                            resultDiv.innerHTML = `
+                                <h2 style="color: green;">✅ XHR TEST SUCCESSFUL!</h2>
+                                <table border="1" style="border-collapse: collapse; width: 100%;">
+                                    <tr><td><strong>Status</strong></td><td>${xhr.status} ${xhr.statusText}</td></tr>
+                                    <tr><td><strong>Duration</strong></td><td>${duration}ms</td></tr>
+                                    <tr><td><strong>Access Token</strong></td><td>${responseData.access_token.substring(0, 30)}...</td></tr>
+                                    <tr><td><strong>Token Type</strong></td><td>${responseData.token_type}</td></tr>
+                                    <tr><td><strong>Response Headers</strong></td><td>${xhr.getAllResponseHeaders()}</td></tr>
+                                </table>
+                                <button onclick="testXHRToken('${responseData.access_token}')" style="margin-top: 10px;">🧪 Test Token</button>
+                            `;
+                        } else {
+                            resultDiv.innerHTML = `
+                                <h2 style="color: red;">❌ XHR TEST FAILED</h2>
+                                <table border="1" style="border-collapse: collapse; width: 100%;">
+                                    <tr><td><strong>Status</strong></td><td>${xhr.status} ${xhr.statusText}</td></tr>
+                                    <tr><td><strong>Duration</strong></td><td>${duration}ms</td></tr>
+                                    <tr><td><strong>Error</strong></td><td>${responseData.detail || 'Unknown error'}</td></tr>
+                                    <tr><td><strong>Response</strong></td><td><pre>${xhr.responseText}</pre></td></tr>
+                                </table>
+                            `;
+                        }
+                    } catch (e) {
+                        resultDiv.innerHTML = `
+                            <h2 style="color: red;">❌ JSON PARSE ERROR</h2>
+                            <p><strong>Raw Response:</strong> ${xhr.responseText}</p>
+                            <p><strong>Error:</strong> ${e.message}</p>
+                        `;
+                    }
+                }
+            };
+
+            // Prepare the request
+            const formData = 'username=testbarber@test.com&password=test123';
+
+            console.log('📡 Opening XHR request...');
+            xhr.open('POST', 'http://206.189.57.55:8001/api/v1/auth/login', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+            console.log('📡 Sending request with data:', formData);
+            xhr.send(formData);
+        }
+
+        function testXHRToken(token) {
+            const resultDiv = document.getElementById('xhrContent');
+
+            const xhr = new XMLHttpRequest();
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    console.log('🧪 Token test response:', xhr.status, xhr.responseText);
+
+                    try {
+                        const userData = JSON.parse(xhr.responseText);
+
+                        if (xhr.status === 200) {
+                            resultDiv.innerHTML += `
+                                <h3 style="color: green;">✅ TOKEN VALIDATION SUCCESSFUL!</h3>
+                                <table border="1" style="border-collapse: collapse; width: 100%;">
+                                    <tr><td><strong>User ID</strong></td><td>${userData.id}</td></tr>
+                                    <tr><td><strong>Email</strong></td><td>${userData.email}</td></tr>
+                                    <tr><td><strong>Name</strong></td><td>${userData.first_name} ${userData.last_name}</td></tr>
+                                    <tr><td><strong>Is Barber</strong></td><td>${userData.is_barber}</td></tr>
+                                    <tr><td><strong>Phone</strong></td><td>${userData.phone_number}</td></tr>
+                                </table>
+                            `;
+                        } else {
+                            resultDiv.innerHTML += `
+                                <h3 style="color: red;">❌ TOKEN VALIDATION FAILED</h3>
+                                <p>Status: ${xhr.status}</p>
+                                <p>Response: ${xhr.responseText}</p>
+                            `;
+                        }
+                    } catch (e) {
+                        resultDiv.innerHTML += `
+                            <h3 style="color: red;">❌ TOKEN TEST ERROR</h3>
+                            <p>Error: ${e.message}</p>
+                            <p>Response: ${xhr.responseText}</p>
+                        `;
+                    }
+                }
+            };
+
+            xhr.open('GET', 'http://206.189.57.55:8001/api/v1/auth/me', true);
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send();
+        }
+
+        // Auto-run test after page loads
+        window.addEventListener('load', function() {
+            console.log('🚀 XHR test page loaded');
+            // Uncomment the next line to auto-run the test
+            // setTimeout(testXHR, 1000);
+        });
+    </script>
+</body>
+</html>

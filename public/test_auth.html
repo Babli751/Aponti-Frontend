@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .form-group { margin: 20px 0; }
+        label { display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .result { margin: 20px 0; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; }
+        .error { border-color: #dc3545; background: #f8d7da; }
+        .success { border-color: #28a745; background: #d4edda; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Booksy Authentication Test</h1>
+        
+        <div class="form-group">
+            <h3>Test Barber Login</h3>
+            <label>Email:</label>
+            <input type="email" id="barberEmail" value="barber@test.com">
+            <label>Password:</label>
+            <input type="password" id="barberPassword" value="password123">
+            <button onclick="testBarberLogin()">Test Barber Login</button>
+        </div>
+
+        <div class="form-group">
+            <h3>Test Business Login</h3>
+            <label>Email:</label>
+            <input type="email" id="businessEmail" value="business@test.com">
+            <label>Password:</label>
+            <input type="password" id="businessPassword" value="test123">
+            <button onclick="testBusinessLogin()">Test Business Login</button>
+        </div>
+
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://206.189.57.55/api/v1';
+
+        function showResult(message, isError = false) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = message;
+            resultDiv.className = isError ? 'result error' : 'result success';
+            resultDiv.style.display = 'block';
+        }
+
+        async function testBarberLogin() {
+            const email = document.getElementById('barberEmail').value;
+            const password = document.getElementById('barberPassword').value;
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('username', email);
+                formData.append('password', password);
+
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult(`✅ Barber Login Successful!<br>Token: ${data.access_token.substring(0, 50)}...`);
+                    
+                    // Test getting user profile
+                    const profileResponse = await fetch(`${API_BASE_URL}/users/me`, {
+                        headers: {
+                            'Authorization': `Bearer ${data.access_token}`
+                        }
+                    });
+                    
+                    if (profileResponse.ok) {
+                        const profile = await profileResponse.json();
+                        showResult(`✅ Barber Login & Profile Fetch Successful!<br>Email: ${profile.email}<br>Is Barber: ${profile.is_barber}<br>Token: ${data.access_token.substring(0, 50)}...`);
+                    }
+                } else {
+                    showResult(`❌ Barber Login Failed: ${data.detail || 'Unknown error'}`, true);
+                }
+            } catch (error) {
+                showResult(`❌ Barber Login Error: ${error.message}`, true);
+            }
+        }
+
+        async function testBusinessLogin() {
+            const email = document.getElementById('businessEmail').value;
+            const password = document.getElementById('businessPassword').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/business/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult(`✅ Business Login Successful!<br>Business: ${data.business_name}<br>Token: ${data.access_token.substring(0, 50)}...`);
+                } else {
+                    showResult(`❌ Business Login Failed: ${data.detail || 'Unknown error'}`, true);
+                }
+            } catch (error) {
+                showResult(`❌ Business Login Error: ${error.message}`, true);
+            }
+        }
+
+        // Test API connectivity on page load
+        window.onload = async function() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/business/`);
+                if (response.ok) {
+                    const businesses = await response.json();
+                    console.log('API is accessible. Found businesses:', businesses);
+                    showResult(`🔗 API Connection Successful! Found ${businesses.length} business(es) in database.`);
+                } else {
+                    showResult('⚠️ API accessible but returned error', true);
+                }
+            } catch (error) {
+                showResult(`❌ Cannot connect to API: ${error.message}`, true);
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+
+> booksy-frontend@0.1.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled with warnings.
+
+[eslint] 
+src/App.js
+  Line 25:7:  'FavoritesRedirect' is assigned a value but never used  no-unused-vars
+
+src/data/servicesCatalog.js
+  Line 1:15:  'Build' is defined but never used  no-unused-vars
+
+src/pages/About.js
+  Line 1:17:  'useState' is defined but never used           no-unused-vars
+  Line 16:3:  'IconButton' is defined but never used         no-unused-vars
+  Line 20:3:  'Stack' is defined but never used              no-unused-vars
+  Line 27:3:  'ArrowBack' is defined but never used          no-unused-vars
+  Line 28:3:  'Language' is defined but never used           no-unused-vars
+  Line 35:3:  'EuroSymbol' is defined but never used         no-unused-vars
+  Line 41:9:  'isMobile' is assigned a value but never used  no-unused-vars
+  Line 42:9:  'isTablet' is assigned a value but never used  no-unused-vars
+
+src/pages/AppointmentNew.js
+  Line 9:11:    'InputLabel' is defined but never used                                                                                      no-unused-vars
+  Line 9:55:    'AppBar' is defined but never used                                                                                          no-unused-vars
+  Line 9:63:    'Toolbar' is defined but never used                                                                                         no-unused-vars
+  Line 13:3:    'ArrowBack' is defined but never used                                                                                       no-unused-vars
+  Line 13:14:   'Business' is defined but never used                                                                                        no-unused-vars
+  Line 13:24:   'LocationOn' is defined but never used                                                                                      no-unused-vars
+  Line 13:36:   'ContentCut' is defined but never used                                                                                      no-unused-vars
+  Line 13:48:   'Person' is defined but never used                                                                                          no-unused-vars
+  Line 14:3:    'AccessTime' is defined but never used                                                                                      no-unused-vars
+  Line 15:35:   'LanguageIcon' is defined but never used                                                                                    no-unused-vars
+  Line 115:6:   React Hook useEffect has a missing dependency: 'getCurrentDateFormatted'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 142:17:  'businessData' is assigned a value but never used                                                                           no-unused-vars
+
+src/pages/BarberDashboard.js
+  Line 4:8:    'Logo' is defined but never used                                                                                                                             no-unused-vars
+  Line 44:3:   'Edit' is defined but never used                                                                                                                             no-unused-vars
+  Line 339:6:  React Hook useEffect has missing dependencies: 'fetchAppointments', 'fetchProfile', and 'fetchServices'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/BusinessDashboard.js
+  Line 8:34:    'formatDateTime' is defined but never used                  no-unused-vars
+  Line 43:3:    'Badge' is defined but never used                           no-unused-vars
+  Line 57:3:    'Notifications' is defined but never used                   no-unused-vars
+  Line 66:3:    'ExpandMore' is defined but never used                      no-unused-vars
+  Line 71:21:   'changeLanguage' is assigned a value but never used         no-unused-vars
+  Line 72:9:    'API_BASE' is assigned a value but never used               no-unused-vars
+  Line 105:10:  'barbers' is assigned a value but never used                no-unused-vars
+  Line 106:10:  'availableBarbers' is assigned a value but never used       no-unused-vars
+  Line 108:10:  'selectedBarberId' is assigned a value but never used       no-unused-vars
+  Line 108:28:  'setSelectedBarberId' is assigned a value but never used    no-unused-vars
+  Line 283:9:   'unreadCount' is assigned a value but never used            no-unused-vars
+  Line 285:9:   'handleProfileMenuOpen' is assigned a value but never used  no-unused-vars
+  Line 374:9:   'handleNotifOpen' is assigned a value but never used        no-unused-vars
+  Line 427:13:  'response' is assigned a value but never used               no-unused-vars
+
+src/pages/BusinessDetail.js
+  Line 19:3:   'Divider' is defined but never used                      no-unused-vars
+  Line 54:11:  'isAuthenticated' is assigned a value but never used     no-unused-vars
+  Line 64:27:  'setSelectedService' is assigned a value but never used  no-unused-vars
+
+src/pages/BusinessSignup.js
+  Line 9:3:     'Stepper' is defined but never used                                                                                      no-unused-vars
+  Line 9:12:    'Step' is defined but never used                                                                                         no-unused-vars
+  Line 9:18:    'StepLabel' is defined but never used                                                                                    no-unused-vars
+  Line 10:21:   'List' is defined but never used                                                                                         no-unused-vars
+  Line 10:27:   'Paper' is defined but never used                                                                                        no-unused-vars
+  Line 11:21:   'Alert' is defined but never used                                                                                        no-unused-vars
+  Line 14:53:   'ContentCut' is defined but never used                                                                                   no-unused-vars
+  Line 14:65:   'Euro' is defined but never used                                                                                         no-unused-vars
+  Line 15:3:    'AccessTime' is defined but never used                                                                                   no-unused-vars
+  Line 15:15:   'CheckCircle' is defined but never used                                                                                  no-unused-vars
+  Line 15:28:   'TrendingUp' is defined but never used                                                                                   no-unused-vars
+  Line 15:40:   'Schedule' is defined but never used                                                                                     no-unused-vars
+  Line 15:50:   'Star' is defined but never used                                                                                         no-unused-vars
+  Line 15:56:   'ArrowBack' is defined but never used                                                                                    no-unused-vars
+  Line 15:67:   'Add' is defined but never used                                                                                          no-unused-vars
+  Line 15:72:   'Delete' is defined but never used                                                                                       no-unused-vars
+  Line 24:10:   'activeStep' is assigned a value but never used                                                                          no-unused-vars
+  Line 74:9:    'handleAddService' is assigned a value but never used                                                                    no-unused-vars
+  Line 84:9:    'handleRemoveService' is assigned a value but never used                                                                 no-unused-vars
+  Line 91:9:    'handleNext' is assigned a value but never used                                                                          no-unused-vars
+  Line 92:9:    'handleBack' is assigned a value but never used                                                                          no-unused-vars
+  Line 98:9:    'handleUserLogin' is assigned a value but never used                                                                     no-unused-vars
+  Line 137:13:  'result' is assigned a value but never used                                                                              no-unused-vars
+  Line 157:9:   'steps' is assigned a value but never used                                                                               no-unused-vars
+  Line 187:6:   React Hook useEffect has a missing dependency: 'handleGoogleCallback'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/Company.js
+  Line 1:17:   'useState' is defined but never used                 no-unused-vars
+  Line 15:3:   'IconButton' is defined but never used               no-unused-vars
+  Line 16:3:   'FormControl' is defined but never used              no-unused-vars
+  Line 17:3:   'Select' is defined but never used                   no-unused-vars
+  Line 18:3:   'MenuItem' is defined but never used                 no-unused-vars
+  Line 29:3:   'ArrowBack' is defined but never used                no-unused-vars
+  Line 30:3:   'Language' is defined but never used                 no-unused-vars
+  Line 44:9:   'isMobile' is assigned a value but never used        no-unused-vars
+  Line 45:21:  'changeLanguage' is assigned a value but never used  no-unused-vars
+  Line 48:9:   'content' is assigned a value but never used         no-unused-vars
+  Line 202:9:  'offices' is assigned a value but never used         no-unused-vars
+
+src/pages/Dashboard.js
+  Line 6:10:   'getServicesCatalog' is defined but never used                                                               no-unused-vars
+  Line 7:8:    'api' is defined but never used                                                                              no-unused-vars
+  Line 7:15:   'dashboardAPI' is defined but never used                                                                     no-unused-vars
+  Line 7:29:   'servicesAPI' is defined but never used                                                                      no-unused-vars
+  Line 8:34:   'formatDateTime' is defined but never used                                                                   no-unused-vars
+  Line 28:3:   'FormControl' is defined but never used                                                                      no-unused-vars
+  Line 29:3:   'Select' is defined but never used                                                                           no-unused-vars
+  Line 30:3:   'MenuItem' is defined but never used                                                                         no-unused-vars
+  Line 36:3:   'Paper' is defined but never used                                                                            no-unused-vars
+  Line 44:4:   'ArrowBack' is defined but never used                                                                        no-unused-vars
+  Line 49:4:   'LocationOn' is defined but never used                                                                       no-unused-vars
+  Line 51:4:   'EuroSymbol' is defined but never used                                                                       no-unused-vars
+  Line 65:21:  'changeLanguage' is assigned a value but never used                                                          no-unused-vars
+  Line 85:10:  'favoriteBarbers' is assigned a value but never used                                                         no-unused-vars
+  Line 85:27:  'setFavoriteBarbers' is assigned a value but never used                                                      no-unused-vars
+  Line 86:10:  'loading' is assigned a value but never used                                                                 no-unused-vars
+  Line 87:10:  'error' is assigned a value but never used                                                                   no-unused-vars
+  Line 89:23:  'setProfileInfo' is assigned a value but never used                                                          no-unused-vars
+  Line 90:10:  'searchCity' is assigned a value but never used                                                              no-unused-vars
+  Line 90:22:  'setSearchCity' is assigned a value but never used                                                           no-unused-vars
+  Line 91:10:  'availableServices' is assigned a value but never used                                                       no-unused-vars
+  Line 91:29:  'setAvailableServices' is assigned a value but never used                                                    no-unused-vars
+  Line 231:6:  React Hook useEffect has a missing dependency: 'language'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/Home.js
+  Line 9:3:    'TextField' is defined but never used                   no-unused-vars
+  Line 10:3:   'InputAdornment' is defined but never used              no-unused-vars
+  Line 49:3:   'LocalOffer' is defined but never used                  no-unused-vars
+  Line 65:3:   'Work' is defined but never used                        no-unused-vars
+  Line 77:10:  'searchLocation' is assigned a value but never used     no-unused-vars
+  Line 77:26:  'setSearchLocation' is assigned a value but never used  no-unused-vars
+  Line 78:10:  'searchService' is assigned a value but never used      no-unused-vars
+  Line 78:25:  'setSearchService' is assigned a value but never used   no-unused-vars
+
+src/pages/Settings.js
+  Line 4:8:    'Logo' is defined but never used                     no-unused-vars
+  Line 24:3:   'List' is defined but never used                     no-unused-vars
+  Line 25:3:   'ListItem' is defined but never used                 no-unused-vars
+  Line 26:3:   'ListItemIcon' is defined but never used             no-unused-vars
+  Line 27:3:   'ListItemText' is defined but never used             no-unused-vars
+  Line 28:3:   'ListItemSecondaryAction' is defined but never used  no-unused-vars
+  Line 39:3:   'Avatar' is defined but never used                   no-unused-vars
+  Line 50:3:   'Visibility' is defined but never used               no-unused-vars
+  Line 51:3:   'DataUsage' is defined but never used                no-unused-vars
+  Line 59:3:   'Lock' is defined but never used                     no-unused-vars
+  Line 69:3:   'PersonAdd' is defined but never used                no-unused-vars
+  Line 75:9:   'isMobile' is assigned a value but never used        no-unused-vars
+  Line 76:11:  'user' is assigned a value but never used            no-unused-vars
+
+src/pages/SignIn.js
+  Line 28:3:  'ArrowBack' is defined but never used  no-unused-vars
+
+src/pages/SignUp.js
+  Line 29:3:  'ArrowBack' is defined but never used  no-unused-vars
+
+src/pages/Support.js
+  Line 15:3:   'IconButton' is defined but never used               no-unused-vars
+  Line 16:3:   'FormControl' is defined but never used              no-unused-vars
+  Line 17:3:   'Select' is defined but never used                   no-unused-vars
+  Line 18:3:   'MenuItem' is defined but never used                 no-unused-vars
+  Line 22:3:   'Paper' is defined but never used                    no-unused-vars
+  Line 30:3:   'ArrowBack' is defined but never used                no-unused-vars
+  Line 31:3:   'Language' is defined but never used                 no-unused-vars
+  Line 41:3:   'QuestionAnswer' is defined but never used           no-unused-vars
+  Line 47:9:   'navigate' is assigned a value but never used        no-unused-vars
+  Line 49:9:   'isMobile' is assigned a value but never used        no-unused-vars
+  Line 50:21:  'changeLanguage' is assigned a value but never used  no-unused-vars
+  Line 54:9:   'content' is assigned a value but never used         no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+File sizes after gzip:
+
+  281.82 kB  build/static/js/main.e358ec73.js
+  1.72 kB    build/static/js/206.243fb4a9.chunk.js
+  711 B      build/static/css/main.77754d40.css
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+

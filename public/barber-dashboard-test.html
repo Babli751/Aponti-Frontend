@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barber Dashboard API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8fffe; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn { background: #00a693; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #007562; }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+        .result { background: #f5f5f5; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; white-space: pre-wrap; }
+        .success { color: #00a693; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Barber Dashboard API Test</h1>
+
+        <div class="card">
+            <h3>Configuration</h3>
+            <p><strong>API Base URL:</strong> <span id="apiBaseUrl">Loading...</span></p>
+            <p><strong>Access Token:</strong> <span id="tokenStatus">Loading...</span></p>
+            <p><strong>Current URL:</strong> <span id="currentUrl"></span></p>
+        </div>
+
+        <div class="card">
+            <h3>Test Authentication</h3>
+            <button class="btn" onclick="testAuth()">Test Auth API</button>
+            <div id="authResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="card">
+            <h3>Test Barber Endpoints</h3>
+            <p>Enter Barber ID: <input type="number" id="barberId" placeholder="Enter barber ID" value="2"></p>
+            <button class="btn" onclick="testBarberProfile()">Test Barber Profile</button>
+            <button class="btn" onclick="testBarberServices()">Test Barber Services</button>
+            <button class="btn" onclick="testBarberBookings()">Test Barber Bookings</button>
+            <button class="btn" onclick="testAllEndpoints()">Test All Endpoints</button>
+            <button class="btn btn-danger" onclick="clearResults()">Clear Results</button>
+
+            <div id="profileResult" class="result" style="display: none;"></div>
+            <div id="servicesResult" class="result" style="display: none;"></div>
+            <div id="bookingsResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="card">
+            <h3>Instructions</h3>
+            <ol>
+                <li>Make sure you're logged in as a barber (barber2@test.com / 123456)</li>
+                <li>Check that the API Base URL and token status look correct</li>
+                <li>Test the authentication first</li>
+                <li>Then test individual endpoints or all at once</li>
+                <li>Check the browser console (F12) for detailed logs</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Load configuration
+        window.onload = function() {
+            document.getElementById('currentUrl').textContent = window.location.href;
+            document.getElementById('apiBaseUrl').textContent = window.API_BASE_URL || 'Not loaded';
+
+            const token = localStorage.getItem('access_token');
+            document.getElementById('tokenStatus').textContent = token ? 'Present (' + token.substring(0, 20) + '...)' : 'Missing';
+
+            // Load config if not already loaded
+            if (!window.API_BASE_URL) {
+                const script = document.createElement('script');
+                script.src = '/config.js';
+                script.onload = function() {
+                    document.getElementById('apiBaseUrl').textContent = window.API_BASE_URL;
+                };
+                document.head.appendChild(script);
+            }
+        };
+
+        async function makeRequest(url, method = 'GET', headers = {}) {
+            const defaultHeaders = {
+                'Content-Type': 'application/json'
+            };
+
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                defaultHeaders['Authorization'] = `Bearer ${token}`;
+            }
+
+            const response = await fetch(url, {
+                method,
+                headers: { ...defaultHeaders, ...headers }
+            });
+
+            const result = {
+                url,
+                status: response.status,
+                statusText: response.statusText,
+                headers: Object.fromEntries(response.headers.entries()),
+                data: null,
+                error: null
+            };
+
+            try {
+                result.data = await response.json();
+            } catch (e) {
+                try {
+                    result.error = await response.text();
+                } catch (e2) {
+                    result.error = 'Could not parse response';
+                }
+            }
+
+            return result;
+        }
+
+        function displayResult(elementId, result, title) {
+            const element = document.getElementById(elementId);
+            const div = document.createElement('div');
+            div.innerHTML = `<strong>${title} (${new Date().toLocaleTimeString()}):</strong>\n` +
+                `URL: ${result.url}\n` +
+                `Status: ${result.status} ${result.statusText}\n` +
+                (result.data ? `Response: ${JSON.stringify(result.data, null, 2)}` : `Error: ${result.error}`);
+            div.className = result.status >= 200 && result.status < 300 ? 'success' : 'error';
+            element.appendChild(div);
+            element.style.display = 'block';
+            element.scrollTop = element.scrollHeight;
+        }
+
+        async function testAuth() {
+            console.log('🔍 Testing authentication...');
+            const apiBase = window.API_BASE_URL || 'http://localhost:8000';
+            const result = await makeRequest(`${apiBase}/api/v1/auth/me`);
+
+            displayResult('authResult', result, 'Authentication Test');
+            console.log('Auth test result:', result);
+        }
+
+        async function testBarberProfile() {
+            const barberId = document.getElementById('barberId').value;
+            if (!barberId) {
+                alert('Please enter a barber ID');
+                return;
+            }
+
+            console.log('🔍 Testing barber profile for ID:', barberId);
+            const apiBase = window.API_BASE_URL || 'http://localhost:8000';
+            const result = await makeRequest(`${apiBase}/api/v1/barbers/${barberId}`);
+
+            displayResult('profileResult', result, `Barber Profile Test (ID: ${barberId})`);
+            console.log('Profile test result:', result);
+        }
+
+        async function testBarberServices() {
+            const barberId = document.getElementById('barberId').value;
+            if (!barberId) {
+                alert('Please enter a barber ID');
+                return;
+            }
+
+            console.log('🔍 Testing barber services for ID:', barberId);
+            const apiBase = window.API_BASE_URL || 'http://localhost:8000';
+            const result = await makeRequest(`${apiBase}/api/v1/barbers/${barberId}/services`);
+
+            displayResult('servicesResult', result, `Barber Services Test (ID: ${barberId})`);
+            console.log('Services test result:', result);
+        }
+
+        async function testBarberBookings() {
+            const barberId = document.getElementById('barberId').value;
+            if (!barberId) {
+                alert('Please enter a barber ID');
+                return;
+            }
+
+            console.log('🔍 Testing barber bookings for ID:', barberId);
+            const apiBase = window.API_BASE_URL || 'http://localhost:8000';
+            const result = await makeRequest(`${apiBase}/api/v1/bookings/barber/${barberId}`);
+
+            displayResult('bookingsResult', result, `Barber Bookings Test (ID: ${barberId})`);
+            console.log('Bookings test result:', result);
+        }
+
+        async function testAllEndpoints() {
+            const barberId = document.getElementById('barberId').value;
+            if (!barberId) {
+                alert('Please enter a barber ID');
+                return;
+            }
+
+            console.log('🔍 Testing all endpoints for barber ID:', barberId);
+
+            // Clear previous results
+            document.getElementById('profileResult').innerHTML = '';
+            document.getElementById('servicesResult').innerHTML = '';
+            document.getElementById('bookingsResult').innerHTML = '';
+
+            // Test all endpoints
+            await testBarberProfile();
+            await testBarberServices();
+            await testBarberBookings();
+        }
+
+        function clearResults() {
+            document.getElementById('authResult').innerHTML = '';
+            document.getElementById('profileResult').innerHTML = '';
+            document.getElementById('servicesResult').innerHTML = '';
+            document.getElementById('bookingsResult').innerHTML = '';
+
+            document.getElementById('authResult').style.display = 'none';
+            document.getElementById('profileResult').style.display = 'none';
+            document.getElementById('servicesResult').style.display = 'none';
+            document.getElementById('bookingsResult').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
+import { servicesAPI } from '../services/api';
+import {
+  Box,
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  CardMedia,
+  Button,
+  Grid,
+  AppBar,
+  Toolbar,
+  IconButton,
+  FormControl,
+  Select,
+  MenuItem,
+  Stack,
+  Chip,
+  useTheme,
+  useMediaQuery,
+  CircularProgress,
+  Alert
+} from '@mui/material';
+import {
+  ArrowBack,
+  AccessTime,
+  EuroSymbol,
+  Spa
+} from '@mui/icons-material';
+
+const Services = () => {
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
+  const { language, changeLanguage, t: translations } = useLanguage();
+
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Use specific translations for this page
+  const t = {
+    ...translations,
+    services: translations.ourServices,
+    subtitle: translations.servicesSubtitle
+  };
+
+  // Fetch services from backend
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true);
+        const data = await servicesAPI.getServices();
+        setServices(data || []);
+        setError('');
+      } catch (err) {
+        console.error('Error fetching services:', err);
+        setError('Failed to load services');
+        setServices([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  // Group services by category (for now, show all services in one category)
+  const serviceCategories = [
+    {
+      id: 'all-services',
+      name: t.services,
+      icon: React.cloneElement(<Spa />, { sx: { fontSize: 28 } }),
+      services: services.map(service => ({
+        id: service.id,
+        name: service.name,
+        description: service.description || 'Professional service',
+        duration: service.duration,
+        price: service.price,
+        popular: service.price > 30, // Simple logic for popular services
+        premium: service.price > 50  // Simple logic for premium services
+      }))
+    }
+  ];
+
+  return (
+    <Box sx={{ bgcolor: '#f8fffe', minHeight: '100vh' }}>
+      {/* Header */}
+      <AppBar position="static" elevation={0} sx={{ bgcolor: 'white', color: '#1f2937' }}>
+        <Toolbar sx={{ px: { xs: 1, md: 2 } }}>
+          <IconButton
+            edge="start"
+            onClick={() => navigate('/')}
+            sx={{ mr: 2 }}
+          >
+            <ArrowBack />
+          </IconButton>
+          <Typography variant="h6" component="div" sx={{
+            flexGrow: 1,
+            fontWeight: 'bold',
+            background: 'linear-gradient(135deg, #00a693 0%, #4fd5c7 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            color: 'transparent',
+            fontSize: { xs: '1.1rem', md: '1.25rem' }
+          }}>
+            {t.brand}
+          </Typography>
+
+          {/* Language Selector */}
+          <FormControl size="small" sx={{ minWidth: { xs: 70, md: 100 } }}>
+            <Select
+              value={language}
+              onChange={(e) => changeLanguage(e.target.value)}
+              sx={{
+                '& .MuiOutlinedInput-notchedOutline': { border: 'none' }
+              }}
+            >
+              <MenuItem value="en">🇬🇧 {isMobile ? 'EN' : 'EN'}</MenuItem>
+              <MenuItem value="tr">🇹🇷 {isMobile ? 'TR' : 'TR'}</MenuItem>
+              <MenuItem value="ru">🇷🇺 {isMobile ? 'RU' : 'RU'}</MenuItem>
+            </Select>
+          </FormControl>
+        </Toolbar>
+      </AppBar>
+
+      {/* Hero Section */}
+      <Box sx={{
+        background: 'linear-gradient(135deg, rgba(0, 166, 147, 0.95) 0%, rgba(79, 213, 199, 0.9) 100%)',
+        color: 'white',
+        py: { xs: 3, sm: 4, md: 6 },
+        textAlign: 'center'
+      }}>
+        <Container>
+          <Typography variant="h2" component="h1" sx={{
+            fontWeight: 'bold',
+            mb: { xs: 1.5, md: 2 },
+            fontSize: { xs: '1.75rem', sm: '2rem', md: '3rem' }
+          }}>
+            {t.services}
+          </Typography>
+          <Typography variant="h6" sx={{
+            opacity: 0.9,
+            fontSize: { xs: '0.95rem', sm: '1rem', md: '1.25rem' }
+          }}>
+            {t.subtitle}
+          </Typography>
+        </Container>
+      </Box>
+
+      {/* Services Grid */}
+      <Container sx={{ py: { xs: 2, sm: 3, md: 6 }, px: { xs: 1, sm: 2, md: 3 } }}>
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress sx={{ color: '#00a693' }} />
+          </Box>
+        )}
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        {!loading && !error && services.length === 0 && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            {language === 'en' ? 'No services available yet.' : language === 'tr' ? 'Henüz hizmet yok.' : 'Услуг пока нет.'}
+          </Alert>
+        )}
+
+        <Grid container spacing={{ xs: 2, md: 4 }}>
+          {(serviceCategories || []).filter(category => category.services && category.services.length > 0).map((category) => (
+            <Grid item xs={12} key={category.id}>
+              <Card sx={{
+                mb: 4,
+                borderRadius: 3,
+                overflow: 'hidden',
+                boxShadow: '0 8px 32px rgba(0, 166, 147, 0.1)'
+              }}>
+                <Grid container>
+                  <Grid item xs={12} md={4}>
+                    <CardMedia
+                      component="img"
+                      height={isMobile ? "180" : isTablet ? "220" : "300"}
+                      image={category.image}
+                      alt={category.name}
+                      sx={{ objectFit: 'cover' }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={8}>
+                    <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 4 }, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <Box sx={{ display: 'flex', alignItems: { xs: 'flex-start', md: 'center' }, mb: { xs: 1.5, md: 2 }, flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 1, sm: 0 } }}>
+                        <Box sx={{
+                          bgcolor: '#e6f7f5',
+                          borderRadius: '50%',
+                          p: { xs: 1.2, md: 1.5 },
+                          mr: { xs: 0, sm: 2 },
+                          mb: { xs: 1, sm: 0 },
+                          color: '#00a693',
+                          alignSelf: { xs: 'center', sm: 'flex-start' }
+                        }}>
+                          {React.cloneElement(category.icon, { sx: { fontSize: { xs: 24, md: 28 } } })}
+                        </Box>
+                        <Box sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
+                          <Typography variant="h4" sx={{
+                            fontWeight: 'bold',
+                            color: '#1f2937',
+                            fontSize: { xs: '1.3rem', sm: '1.5rem', md: '2rem' },
+                            lineHeight: 1.2,
+                            mb: 0.5
+                          }}>
+                            {category.name}
+                          </Typography>
+                          <Typography variant="body1" color="text.secondary" sx={{ fontSize: { xs: '0.9rem', md: '1rem' }, lineHeight: 1.4 }}>
+                            {category.description}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      <Grid container spacing={{ xs: 1.5, md: 2 }}>
+                        {(category.services || []).map((service, index) => (
+                          <Grid item xs={12} sm={6} md={6} key={index}>
+                            <Card sx={{
+                              p: { xs: 1.5, md: 2 },
+                              bgcolor: '#f8fffe',
+                              border: '1px solid #e6f7f5',
+                              height: '100%',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              '&:hover': {
+                                borderColor: '#00a693',
+                                boxShadow: '0 4px 12px rgba(0, 166, 147, 0.1)'
+                              }
+                            }}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1, flexWrap: 'wrap', gap: 1 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 'bold', flex: 1, fontSize: { xs: '1rem', md: '1.25rem' }, lineHeight: 1.2, minWidth: 'fit-content' }}>
+                                  {service.name}
+                                </Typography>
+                                <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                                  {service.popular && (
+                                    <Chip
+                                      label={t.popular}
+                                      size="small"
+                                      sx={{ bgcolor: '#00a693', color: 'white', fontWeight: 'bold' }}
+                                    />
+                                  )}
+                                  {service.premium && (
+                                    <Chip
+                                      label={t.premium}
+                                      size="small"
+                                      sx={{ bgcolor: '#ff6b35', color: 'white', fontWeight: 'bold' }}
+                                    />
+                                  )}
+                                  {service.traditional && (
+                                    <Chip
+                                      label={t.traditional}
+                                      size="small"
+                                      sx={{ bgcolor: '#8b5cf6', color: 'white', fontWeight: 'bold' }}
+                                    />
+                                  )}
+                                </Stack>
+                              </Box>
+
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontSize: { xs: '0.85rem', md: '0.875rem' }, lineHeight: 1.4, flex: 1 }}>
+                                {service.description}
+                              </Typography>
+
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: { xs: 'wrap', sm: 'nowrap' }, gap: 1 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <AccessTime sx={{ fontSize: 16, color: '#00a693' }} />
+                                  <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', md: '0.875rem' } }}>
+                                    {service.duration} {t.minutes}
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                  <EuroSymbol sx={{ fontSize: 16, color: '#00a693' }} />
+                                  <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#00a693', fontSize: { xs: '1rem', md: '1.25rem' } }}>
+                                    {service.price}
+                                  </Typography>
+                                </Box>
+                              </Box>
+
+                              <Button
+                                fullWidth
+                                variant="contained"
+                                sx={{
+                                  bgcolor: '#00a693',
+                                  fontWeight: 'bold',
+                                  '&:hover': { bgcolor: '#007562' }
+                                }}
+                                onClick={() => navigate('/')}
+                              >
+                                {t.bookNow}
+                              </Button>
+                            </Card>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </CardContent>
+                  </Grid>
+                </Grid>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* Call to Action */}
+        <Box sx={{
+          textAlign: 'center',
+          mt: { xs: 3, md: 6 },
+          p: { xs: 2.5, sm: 3, md: 4 },
+          bgcolor: '#e6f7f5',
+          borderRadius: 3
+        }}>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: { xs: 1.5, md: 2 }, color: '#1f2937', fontSize: { xs: '1.4rem', sm: '1.7rem', md: '2rem' } }}>
+            {language === 'en'
+              ? 'Ready to book your appointment?'
+              : language === 'tr'
+              ? 'Randevunuzu almaya hazır mısınız?'
+              : 'Готовы записаться на прием?'
+            }
+          </Typography>
+          <Typography variant="body1" sx={{ mb: { xs: 2, md: 3 }, color: 'text.secondary', fontSize: { xs: '0.9rem', md: '1rem' } }}>
+            {language === 'en'
+              ? 'Find the perfect business near you and book instantly'
+              : language === 'tr'
+              ? 'Yakınınızdaki mükemmel işletmeyi bulun ve hemen rezervasyon yapın'
+              : 'Найдите идеальный бизнес рядом с вами и забронируйте мгновенно'
+            }
+          </Typography>
+          <Button
+            variant="contained"
+            size="large"
+            sx={{
+              bgcolor: '#00a693',
+              fontWeight: 'bold',
+              px: { xs: 3, md: 4 },
+              py: { xs: 1.2, md: 1.5 },
+              fontSize: { xs: '0.9rem', md: '1rem' },
+              '&:hover': { bgcolor: '#007562' }
+            }}
+            onClick={() => navigate('/')}
+          >
+            {language === 'en'
+              ? 'Find Businesses'
+              : language === 'tr'
+              ? 'İşletme Bul'
+              : 'Найти бизнес'
+            }
+          </Button>
+        </Box>
+      </Container>
+    </Box>
+  );
+};
+
+export default Services;

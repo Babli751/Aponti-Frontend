@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Network Connectivity Test</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+</head>
+<body>
+    <h1>🌐 Network Connectivity Test</h1>
+    <p>This test checks basic network connectivity to the API server.</p>
+
+    <div style="background: #fff3cd; padding: 10px; margin: 10px 0; border-left: 4px solid #ffc107;">
+        <h3>⚠️ Network Tests:</h3>
+        <p>These tests check if you can reach the API server at all.</p>
+    </div>
+
+    <button onclick="testBasicConnectivity()" style="padding: 10px 20px; background: #007bff; color: white; border: none; margin: 5px;">
+        🔌 Test Basic Connectivity
+    </button>
+
+    <button onclick="testImageLoad()" style="padding: 10px 20px; background: #28a745; color: white; border: none; margin: 5px;">
+        🖼️ Test Image Loading
+    </button>
+
+    <button onclick="testCORSConnectivity()" style="padding: 10px 20px; background: #dc3545; color: white; border: none; margin: 5px;">
+        🌐 Test CORS Connectivity
+    </button>
+
+    <button onclick="runAllNetworkTests()" style="padding: 10px 20px; background: #6f42c1; color: white; border: none; margin: 5px;">
+        🚀 Run All Network Tests
+    </button>
+
+    <div id="networkResults" style="margin-top: 20px; padding: 20px; border: 2px solid #ccc; background: #f8f9fa;">
+        <h3>📊 Network Test Results:</h3>
+        <div id="networkContent">Click any button to run tests...</div>
+    </div>
+
+    <script>
+        function updateResults(content) {
+            document.getElementById('networkContent').innerHTML = content;
+        }
+
+        function testBasicConnectivity() {
+            updateResults('<p>🔌 Testing basic connectivity...</p>');
+
+            const img = new Image();
+            img.onload = function() {
+                updateResults(`
+                    <h3 style="color: green;">✅ BASIC CONNECTIVITY SUCCESSFUL</h3>
+                    <p>✓ Can load images from the server</p>
+                    <p>✓ Network connection is working</p>
+                    <p>✓ No firewall blocking the server</p>
+                `);
+            };
+            img.onerror = function() {
+                updateResults(`
+                    <h3 style="color: red;">❌ BASIC CONNECTIVITY FAILED</h3>
+                    <p>✗ Cannot load images from the server</p>
+                    <p>✗ Possible network/firewall issue</p>
+                    <p>✗ Server may be unreachable</p>
+                `);
+            };
+            img.src = 'http://206.189.57.55:8001/favicon.ico?' + Date.now();
+        }
+
+        function testImageLoad() {
+            updateResults('<p>🖼️ Testing image loading...</p>');
+
+            const img = new Image();
+            img.onload = function() {
+                updateResults(`
+                    <h3 style="color: green;">✅ IMAGE LOADING SUCCESSFUL</h3>
+                    <p>✓ Images load correctly</p>
+                    <p>✓ Server responds to requests</p>
+                    <p>✓ No CORS issues for images</p>
+                    <img src="http://206.189.57.55:8001/favicon.ico" style="border: 1px solid #ccc;" />
+                `);
+            };
+            img.onerror = function() {
+                updateResults(`
+                    <h3 style="color: red;">❌ IMAGE LOADING FAILED</h3>
+                    <p>✗ Images cannot be loaded</p>
+                    <p>✗ Server may not be responding</p>
+                    <p>✗ Possible network connectivity issue</p>
+                `);
+            };
+            img.src = 'http://206.189.57.55:8001/favicon.ico?' + Date.now();
+        }
+
+        function testCORSConnectivity() {
+            updateResults('<p>🌐 Testing CORS connectivity...</p>');
+
+            // Test CORS preflight
+            const xhr = new XMLHttpRequest();
+            xhr.open('OPTIONS', 'http://206.189.57.55:8001/api/v1/auth/login', true);
+            xhr.setRequestHeader('Origin', window.location.origin);
+            xhr.setRequestHeader('Access-Control-Request-Method', 'POST');
+            xhr.setRequestHeader('Access-Control-Request-Headers', 'Content-Type');
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        updateResults(`
+                            <h3 style="color: green;">✅ CORS CONNECTIVITY SUCCESSFUL</h3>
+                            <p>✓ CORS preflight request successful</p>
+                            <p>✓ Server allows cross-origin requests</p>
+                            <p>✓ Status: ${xhr.status}</p>
+                            <p>✓ Allowed Methods: ${xhr.getResponseHeader('Access-Control-Allow-Methods')}</p>
+                            <p>✓ Allowed Headers: ${xhr.getResponseHeader('Access-Control-Allow-Headers')}</p>
+                        `);
+                    } else {
+                        updateResults(`
+                            <h3 style="color: red;">❌ CORS CONNECTIVITY FAILED</h3>
+                            <p>✗ CORS preflight request failed</p>
+                            <p>✗ Status: ${xhr.status}</p>
+                            <p>✗ Response: ${xhr.responseText}</p>
+                            <p>✗ This may indicate CORS issues</p>
+                        `);
+                    }
+                }
+            };
+
+            xhr.send();
+        }
+
+        async function runAllNetworkTests() {
+            updateResults('<p>🚀 Running all network tests...</p>');
+
+            const tests = [
+                { name: 'Basic Connectivity', fn: testBasicConnectivity },
+                { name: 'Image Loading', fn: testImageLoad },
+                { name: 'CORS Connectivity', fn: testCORSConnectivity }
+            ];
+
+            let results = [];
+
+            for (const test of tests) {
+                console.log(`Testing ${test.name}...`);
+                try {
+                    await new Promise(resolve => {
+                        // Store original function
+                        const originalUpdate = updateResults;
+                        updateResults = function(content) {
+                            results.push({ name: test.name, content: content });
+                            originalUpdate('<p>✅ All tests completed. Check results above.</p>');
+                        };
+                        test.fn();
+                        setTimeout(resolve, 2000); // Wait for test to complete
+                    });
+                } catch (error) {
+                    results.push({ name: test.name, error: error.message });
+                }
+            }
+
+            // Display final summary
+            let summary = '<h3>📋 Network Test Summary:</h3>';
+            results.forEach(result => {
+                summary += `<p><strong>${result.name}:</strong> ${result.content || result.error}</p>`;
+            });
+            updateResults(summary);
+        }
+
+        // Test connectivity on page load
+        window.addEventListener('load', function() {
+            console.log('🌐 Network test page loaded');
+            console.log('🔗 Testing server connectivity...');
+
+            // Test if we can reach the server at all
+            fetch('http://206.189.57.55:8001/favicon.ico', { method: 'HEAD' })
+                .then(response => {
+                    console.log('✅ Server is reachable');
+                    updateResults('<p>✅ Server is reachable. Click buttons to run specific tests.</p>');
+                })
+                .catch(error => {
+                    console.error('❌ Server not reachable:', error);
+                    updateResults(`
+                        <h3 style="color: red;">❌ SERVER NOT REACHABLE</h3>
+                        <p>The server at 206.189.57.55:8001 is not reachable from your browser.</p>
+                        <p>This could indicate:</p>
+                        <ul>
+                            <li>Network connectivity issues</li>
+                            <li>Firewall blocking the connection</li>
+                            <li>VPN/proxy interference</li>
+                            <li>Server is down</li>
+                        </ul>
+                    `);
+                });
+        });
+    </script>
+</body>
+</html>

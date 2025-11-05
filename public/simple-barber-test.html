@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Barber Login Test</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <script>
+        // Force no cache
+        window.API_BASE_URL = 'http://206.189.57.55:8001';
+
+        async function testBarberLogin() {
+            const email = 'barber2@test.com';
+            const password = '123456';
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.innerHTML = '<p>🔄 Testing login...</p>';
+
+            try {
+                console.log('🌐 API_BASE_URL:', window.API_BASE_URL);
+                console.log('📧 Email:', email);
+                console.log('🔑 Password:', password);
+
+                const formData = new URLSearchParams();
+                formData.append('username', email);
+                formData.append('password', password);
+
+                console.log('📡 Making request to:', `${window.API_BASE_URL}/api/v1/auth/login`);
+
+                const response = await fetch(`${window.API_BASE_URL}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+
+                const result = await response.text();
+                console.log('📡 Raw response:', result);
+
+                let jsonResult;
+                try {
+                    jsonResult = JSON.parse(result);
+                } catch (e) {
+                    resultDiv.innerHTML = `<p style="color: red;">❌ Invalid JSON response: ${result}</p>`;
+                    return;
+                }
+
+                if (response.ok && jsonResult.access_token) {
+                    resultDiv.innerHTML = `
+                        <h2 style="color: green;">✅ LOGIN SUCCESSFUL!</h2>
+                        <p><strong>Token:</strong> ${jsonResult.access_token.substring(0, 30)}...</p>
+                        <p><strong>Token Type:</strong> ${jsonResult.token_type}</p>
+                        <button onclick="testToken('${jsonResult.access_token}')">Test Token</button>
+                        <button onclick="window.location.href='/barber-dashboard'">Go to Dashboard</button>
+                    `;
+
+                    // Store token for testing
+                    localStorage.setItem('access_token', jsonResult.access_token);
+                    console.log('✅ Token stored successfully');
+                } else {
+                    resultDiv.innerHTML = `
+                        <h2 style="color: red;">❌ LOGIN FAILED</h2>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Error:</strong> ${jsonResult.detail || 'Unknown error'}</p>
+                        <p><strong>Full Response:</strong> ${JSON.stringify(jsonResult, null, 2)}</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h2 style="color: red;">❌ NETWORK ERROR</h2>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Stack:</strong> ${error.stack}</p>
+                `;
+                console.error('💥 Network error:', error);
+            }
+        }
+
+        async function testToken(token) {
+            const resultDiv = document.getElementById('result');
+
+            try {
+                console.log('🧪 Testing token:', token.substring(0, 20) + '...');
+
+                const response = await fetch(`${window.API_BASE_URL}/api/v1/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const userData = await response.json();
+                console.log('👤 User data:', userData);
+
+                if (response.ok) {
+                    resultDiv.innerHTML += `
+                        <h3 style="color: green;">✅ TOKEN VALID!</h3>
+                        <p><strong>User:</strong> ${userData.first_name} ${userData.last_name}</p>
+                        <p><strong>Email:</strong> ${userData.email}</p>
+                        <p><strong>Is Barber:</strong> ${userData.is_barber}</p>
+                        <p><strong>User ID:</strong> ${userData.id}</p>
+                    `;
+                } else {
+                    resultDiv.innerHTML += `
+                        <h3 style="color: red;">❌ TOKEN INVALID</h3>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Response:</strong> ${JSON.stringify(userData, null, 2)}</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `
+                    <h3 style="color: red;">❌ TOKEN TEST ERROR</h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            }
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', function() {
+            console.log('🚀 Page loaded, starting auto-test...');
+            setTimeout(testBarberLogin, 1000);
+        });
+    </script>
+</head>
+<body>
+    <h1>🧪 Simple Barber Login Test</h1>
+    <p>This page tests the barber login API directly without any React dependencies.</p>
+
+    <div style="background: #f0f0f0; padding: 10px; margin: 10px 0;">
+        <strong>Test Credentials:</strong><br>
+        Email: barber2@test.com<br>
+        Password: 123456
+    </div>
+
+    <button onclick="testBarberLogin()" style="padding: 10px 20px; font-size: 16px;">
+        🔄 Test Login Now
+    </button>
+
+    <div id="result" style="margin-top: 20px; padding: 20px; border: 2px solid #ccc; min-height: 100px;">
+        <p>Results will appear here...</p>
+    </div>
+
+    <div style="margin-top: 30px; padding: 10px; background: #e8f4f8; border-left: 4px solid #2196F3;">
+        <h3>🔍 Debug Information:</h3>
+        <p><strong>API URL:</strong> <span id="api-url"></span></p>
+        <p><strong>Current Time:</strong> <span id="current-time"></span></p>
+        <p><strong>User Agent:</strong> <span id="user-agent"></span></p>
+    </div>
+
+    <script>
+        // Fill debug info
+        document.getElementById('api-url').textContent = window.API_BASE_URL;
+        document.getElementById('current-time').textContent = new Date().toISOString();
+        document.getElementById('user-agent').textContent = navigator.userAgent;
+    </script>
+</body>
+</html>
