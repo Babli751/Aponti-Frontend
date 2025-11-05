@@ -1,4 +1,4 @@
-# Build aşaması
+# Build stage
 FROM node:18-alpine AS build
 WORKDIR /app
 COPY package*.json ./
@@ -8,9 +8,14 @@ ARG REACT_APP_API_URL
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
 RUN npm run build
 
-# Servis aşaması
+# Production stage
 FROM node:18-alpine
 WORKDIR /app
 COPY --from=build /app/build ./build
-RUN npm install -g serve
-CMD ["serve", "-s", "build", "-l", "3000"]
+COPY package*.json ./
+COPY server.js .
+RUN npm install --only=production
+ENV NODE_ENV=production
+ENV PORT=3000
+EXPOSE 3000
+CMD ["node", "server.js"]
