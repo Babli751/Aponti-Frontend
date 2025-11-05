@@ -70,7 +70,7 @@ const Appointment = () => {
       try {
         console.log('Fetching businesses...');
         // Use direct fetch to avoid axios interceptors
-        const API_BASE_URL = window.API_BASE_URL || 'http://206.189.57.55:8001/api/v1';
+        const API_BASE_URL = window.API_BASE_URL || '/api/v1';
         const response = await fetch(`${API_BASE_URL}/business/list`, {
           method: 'GET',
           headers: {
@@ -262,7 +262,7 @@ const Appointment = () => {
                   <Grow in timeout={300}>
                     <Box>
                       <Typography variant="subtitle2" sx={{ mb: 1, color: '#6b7280' }}>
-                        {language === 'en' ? 'Select Workers' : language === 'tr' ? 'Çalışan Seçin' : 'Выберите работников'}
+                        {language === 'en' ? 'Select Workers' : language === 'tr' ? 'Çalışan Seçin' : 'Выберите рабо��ников'}
                       </Typography>
                       <FormControl fullWidth>
                         <Select
