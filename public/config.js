@@ -1,9 +1,23 @@
-// Runtime configuration for API URL - PRODUCTION v13
-console.log('🔄 Loading API config v13...');
+// Runtime configuration for API URL - PRODUCTION v14
+console.log('🔄 Loading API config v14...');
+
+// Try to get API URL from meta tag (injected at build/deploy time)
+const getMetaTagValue = (name) => {
+  const meta = document.querySelector(`meta[name="${name}"]`);
+  return meta ? meta.getAttribute('content') : null;
+};
+
 window.API_BASE_URL = (() => {
   const host = window.location.hostname;
   const isLocal = host === 'localhost' || host === '127.0.0.1';
   const protocol = window.location.protocol;
+
+  // Check for meta tag first (injected at deploy time)
+  const metaApiUrl = getMetaTagValue('api-base-url');
+  if (metaApiUrl) {
+    console.log('✅ API_BASE_URL from meta tag:', metaApiUrl);
+    return metaApiUrl;
+  }
 
   if (isLocal) {
     // Local development: Use production backend for testing
