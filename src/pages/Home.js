@@ -392,7 +392,7 @@ const Home = () => {
       ? 'To find businesses near you, we need access to your location. Click OK to allow location access in the next prompt.'
       : language === 'tr'
       ? 'Size yakın işletmeleri bulmak için konumunuza erişmemiz gerekiyor. Sonraki uyarıda konum erişimine izin vermek için Tamam\'a tıklayın.'
-      : 'Чтобы найти предприятия рядом с вами, нам нужен доступ к вашему местоположению. Нажмите OK, чтобы разрешить доступ к местоположению.';
+      : 'Чтобы найти предприятия ря��ом с вами, нам нужен доступ к вашему местоположению. Нажмите OK, чтобы разрешить доступ к местоположению.';
 
     const userConfirmed = window.confirm(confirmMessage);
 
@@ -495,7 +495,7 @@ const Home = () => {
       features: [
         language === 'en' ? 'Master Barbers' : language === 'tr' ? 'Usta Berberler' : 'Мастер-парикмахеры',
         language === 'en' ? 'Classic Cuts' : language === 'tr' ? 'Klasik Kesimler' : 'Классичес��ие стрижки',
-        language === 'en' ? 'Hot Towel Service' : language === 'tr' ? 'Sıcak Havlu Hizmeti' : 'Горячее полотенце'
+        language === 'en' ? 'Hot Towel Service' : language === 'tr' ? 'S��cak Havlu Hizmeti' : 'Горячее полотенце'
       ]
     },
     {
@@ -553,7 +553,7 @@ const Home = () => {
         position="sticky"
         elevation={0}
         style={{
-          backgroundColor: '#6b7280',
+          backgroundColor: '#374151',
           borderBottom: '1px solid rgba(255,255,255,0.1)',
           color: 'white'
         }}
@@ -1269,7 +1269,7 @@ const Home = () => {
               allowFullScreen=""
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title={language === 'en' ? 'Map of businesses' : language === 'tr' ? 'İşletmeler haritası' : 'Карта предприятий'}
+              title={language === 'en' ? 'Map of businesses' : language === 'tr' ? 'İşletmeler haritası' : 'Карта ��редприятий'}
             />
           </Box>
 
@@ -1320,13 +1320,13 @@ const Home = () => {
           {loadingBusinesses ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <Typography variant="body1" sx={{ color: '#6b7280' }}>
-                {language === 'en' ? 'Loading businesses...' : language === 'tr' ? 'İşletmeler yükleniyor...' : 'Загрузка предприятий...'}
+                {language === 'en' ? 'Loading businesses...' : language === 'tr' ? 'İşletmeler yükleniyor...' : 'Загрузка ��редприятий...'}
               </Typography>
             </Box>
           ) : featuredBusinesses.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <Typography variant="body1" sx={{ color: '#6b7280' }}>
-                {language === 'en' ? 'No businesses found' : language === 'tr' ? 'İşletme bulunamadı' : 'Предприятия не найдены'}
+                {language === 'en' ? 'No businesses found' : language === 'tr' ? 'İşletme bulunamadı' : 'Предприяти�� не найдены'}
               </Typography>
             </Box>
           ) : (
@@ -1338,7 +1338,7 @@ const Home = () => {
                   if (cat.includes('barber') || cat.includes('berber')) {
                     return { icon: '💈', color: '#ef4444', bgColor: 'rgba(239, 68, 68, 0.1)', name: language === 'en' ? 'Barber' : language === 'tr' ? 'Berber' : 'Парикмахер' };
                   } else if (cat.includes('beauty') || cat.includes('güzellik') || cat.includes('красота')) {
-                    return { icon: '💅', color: '#ec4899', bgColor: 'rgba(236, 72, 153, 0.1)', name: language === 'en' ? 'Beauty & Wellness' : language === 'tr' ? 'Güzellik & Sağlık' : 'Красота' };
+                    return { icon: '💅', color: '#ec4899', bgColor: 'rgba(236, 72, 153, 0.1)', name: language === 'en' ? 'Beauty & Wellness' : language === 'tr' ? 'Güzellik & Sağl��k' : 'Красота' };
                   } else if (cat.includes('automotive') || cat.includes('otomotiv') || cat.includes('авто')) {
                     return { icon: '🚗', color: '#3b82f6', bgColor: 'rgba(59, 130, 246, 0.1)', name: language === 'en' ? 'Automotive' : language === 'tr' ? 'Otomotiv' : 'Авто' };
                   } else if (cat.includes('pet') || cat.includes('hayvan') || cat.includes('питомц')) {
@@ -1750,7 +1750,7 @@ const Home = () => {
                       ? '"The best booking platform I\'ve used! Clean interface, reliable notifications, and all my favorite beauty spots in one place."'
                       : language === 'tr'
                       ? '"Kullandığım en iyi rezervasyon platformu! Temiz arayüz, güvenilir bildirimler ve en sevdiğim güzellik mekanları tek yerde."'
-                      : '"Лучшая платформа для бронирования! Чистый интерфейс, надёжные уведомления!"'
+                      : '"Лучшая платформа для брони��ования! Чистый интерфейс, надёжные уведомления!"'
                     }
                   </Typography>
                 </CardContent>
@@ -1868,7 +1868,7 @@ const Home = () => {
                   ? 'The leading platform for booking professional barber services across Europe. Find and book the best barbers in your city.'
                   : language === 'tr'
                   ? 'Avrupa\'da profesyonel berber hizmetleri rezervasyonu için önde gelen platform. Şehrinizdeki en iyi berberleri bulun ve rezervasyon yapın.'
-                  : 'Ведущая платфор��а для бронирования профессиональных парикмахерских услуг по всей Европе. Найдите и забронируйте лучших парикмахеров в своем городе.'
+                  : 'Ведущая платфор��а для бронирования профессиональных парикмахерских услуг по всей Европе. Найдите и заброн��руйте лучших парикмахеров в своем городе.'
                 }
               </Typography>
               <Stack direction="row" spacing={1}>

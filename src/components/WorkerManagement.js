@@ -43,7 +43,7 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 
-const API_BASE_URL = window.API_BASE_URL || process.env.REACT_APP_API_URL || 'http://206.189.57.55:8001/api/v1';
+const API_BASE_URL = window.API_BASE_URL || process.env.REACT_APP_API_URL || '/api/v1';
 
 const WorkerManagement = () => {
   const [workers, setWorkers] = useState([]);

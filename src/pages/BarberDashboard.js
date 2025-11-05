@@ -45,31 +45,8 @@ import {
   Notifications as NotificationsIcon
 } from '@mui/icons-material';
 
-// Use the same API base URL as the rest of the app - FORCE correct URL
-const API_BASE_URL = (() => {
-  // Wait for config to load
-  if (typeof window !== 'undefined' && window.API_BASE_URL) {
-    console.log('✅ Using window.API_BASE_URL:', window.API_BASE_URL);
-    return window.API_BASE_URL;
-  }
-
-  // Fallback logic
-  const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-  const isLocal = host === 'localhost' || host === '127.0.0.1';
-
-  if (isLocal) {
-    console.log('🔗 Localhost detected, using production server');
-    return 'http://206.189.57.55';
-  }
-
-  if (host === '206.189.57.55') {
-    console.log('🔗 Production server detected, using port 8001');
-    return 'http://localhost:8001';
-  }
-
-  console.log('🔗 Default fallback:', `http://${host}`);
-  return `http://${host}`;
-})();
+// Use the same API base URL as the rest of the app
+const API_BASE_URL = window.API_BASE_URL || process.env.REACT_APP_API_URL || '/api/v1';
 
 function formatDate(d) {
   const pad = (n) => String(n).padStart(2, '0');
@@ -272,7 +249,7 @@ const BarberDashboard = () => {
 
       console.log('🔍 Fetching services for barber ID:', barberId);
       const data = await barberAPI.getBarberServices(barberId);
-      console.log('✅ Services data received:', data);
+      console.log('��� Services data received:', data);
       setServices(data);
 
     } catch (err) {

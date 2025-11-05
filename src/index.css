@@ -72,9 +72,9 @@ code {
 
 /* AppBar - uniform across all pages */
 .MuiAppBar-root {
-  background: linear-gradient(135deg, #00a693 0%, #00d4bd 100%) !important;
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%) !important;
   box-shadow: none !important;
-  border-bottom: 1px solid #008577 !important;
+  border-bottom: 1px solid #1f2937 !important;
 }
 
 /* Links and accent colors */
