@@ -74,12 +74,12 @@ export const businessApi = {
   // Get business profile data
  getBusinessProfile: async () => {
    try {
-     console.log("Fetching business profile...");   // DEBUG LOG
-     const response = await apiRequest('/api/v1/business/profile');
-     console.log("Business profile response:", response);  // DEBUG LOG
+     console.log("Fetching business profile...");
+     const response = await apiRequest('/business/profile');
+     console.log("Business profile response:", response);
      return response;
    } catch (error) {
-     console.error("Error fetching business profile:", error);  // DEBUG LOG
+     console.error("Error fetching business profile:", error);
      throw error;
    }
  },
@@ -101,7 +101,7 @@ export const businessApi = {
 
   // Update business profile
    updateBusinessProfile: async (profileData) => {
-     return apiRequest('/api/v1/business/profile', {
+     return apiRequest('/business/profile', {
        method: 'PUT',
        body: JSON.stringify(profileData),
      });
