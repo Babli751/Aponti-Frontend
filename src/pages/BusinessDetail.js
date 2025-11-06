@@ -15,9 +15,7 @@ import {
   CardContent,
   Grid,
   Button,
-  IconButton,
   Chip,
-  Divider,
   CircularProgress,
   TextField,
   MenuItem,
@@ -603,7 +601,7 @@ const BusinessDetail = () => {
                                 }}
                                 onClick={() => handleBooking({ ...firstService, workers: serviceWorkers, allServices: serviceGroup })}
                               >
-                                {language === 'en' ? 'Book' : language === 'tr' ? 'Rezervasyon' : 'Забронировать'}
+                                {language === 'en' ? 'Book' : language === 'tr' ? 'Rezervasyon' : 'Заброни��овать'}
                               </Button>
                             </Stack>
                           </Box>
