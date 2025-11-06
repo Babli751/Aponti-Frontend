@@ -58,11 +58,7 @@ const BusinessDetail = () => {
   // Booking dialog state
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
-  const [selectedWorker, setSelectedWorker] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState(false);
-  const [bookingError, setBookingError] = useState('');
 
   // Review dialog state
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
@@ -601,7 +597,7 @@ const BusinessDetail = () => {
                                 }}
                                 onClick={() => handleBooking({ ...firstService, workers: serviceWorkers, allServices: serviceGroup })}
                               >
-                                {language === 'en' ? 'Book' : language === 'tr' ? 'Rezervasyon' : 'Заброни��овать'}
+                                {language === 'en' ? 'Book' : language === 'tr' ? 'Rezervasyon' : 'Забронировать'}
                               </Button>
                             </Stack>
                           </Box>
@@ -637,7 +633,7 @@ const BusinessDetail = () => {
                 {[
                   { name: 'John Doe', rating: 5, date: '2 days ago', text: language === 'en' ? 'Excellent service! The barber was very professional and the atmosphere was great.' : language === 'tr' ? 'Mükemmel hizmet! Berber çok profesyoneldi ve atmosfer harikaydı.' : 'Отличный сервис!' },
                   { name: 'Jane Smith', rating: 5, date: '1 week ago', text: language === 'en' ? 'Best haircut I\'ve had in years. Highly recommend!' : language === 'tr' ? 'Yıllardır aldığım en iyi saç kesimi. Kesinlikle tavsiye ederim!' : 'Лучшая стрижка!' },
-                  { name: 'Mike Johnson', rating: 4, date: '2 weeks ago', text: language === 'en' ? 'Good service, friendly staff. Will come back again.' : language === 'tr' ? 'İyi hizmet, güler yüzlü personel. Tekrar geleceğim.' : 'Хороший сервис!' }
+                  { name: 'Mike Johnson', rating: 4, date: '2 weeks ago', text: language === 'en' ? 'Good service, friendly staff. Will come back again.' : language === 'tr' ? 'İyi hizmet, güler yüzlü personel. Tekrar geleceğim.' : 'Хороший сер��ис!' }
                 ].map((review, index) => (
                   <Card key={index}>
                     <CardContent>
@@ -923,7 +919,7 @@ const BusinessDetail = () => {
                 ? 'Share your experience with this business...'
                 : language === 'tr'
                 ? 'Bu işletme hakkındaki deneyiminizi paylaşın...'
-                : 'Поделитесь своим опытом...'}
+                : 'Поделитес�� своим опытом...'}
             />
           </Box>
         </DialogContent>
