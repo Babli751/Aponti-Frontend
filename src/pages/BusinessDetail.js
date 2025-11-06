@@ -385,7 +385,7 @@ const BusinessDetail = () => {
             <Card sx={{ mb: 2 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                  {language === 'en' ? 'Contact' : language === 'tr' ? 'İletişim' : 'Контакт��'}
+                  {language === 'en' ? 'Contact' : language === 'tr' ? 'İletişim' : 'Контакты'}
                 </Typography>
 
                 <Stack spacing={2}>
@@ -425,7 +425,7 @@ const BusinessDetail = () => {
             </Card>
 
             {/* Business Hours */}
-            <Card>
+            <Card sx={{ mb: 2 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
                   {language === 'en' ? 'Contact & Business Hours' : language === 'tr' ? 'İletişim & Çalışma Saatleri' : 'Контакты и часы работы'}
@@ -452,6 +452,26 @@ const BusinessDetail = () => {
                 </Stack>
               </CardContent>
             </Card>
+
+            {/* Payment & Cancellation Policy */}
+            <Card>
+              <CardContent>
+                <Button
+                  fullWidth
+                  variant="text"
+                  sx={{
+                    justifyContent: 'space-between',
+                    py: 1,
+                    color: '#2d3748',
+                    fontWeight: 600,
+                    '&:hover': { bgcolor: '#f9fafb' }
+                  }}
+                >
+                  {language === 'en' ? 'Payment & Cancellation Policy' : language === 'tr' ? 'Ödeme & İptal Politikası' : 'Политика оплаты и отмены'}
+                  <Box sx={{ fontSize: '1.2rem' }}>›</Box>
+                </Button>
+              </CardContent>
+            </Card>
           </Grid>
         </Grid>
 
@@ -463,7 +483,7 @@ const BusinessDetail = () => {
           <Card>
             <CardContent>
               <Typography variant="body1" sx={{ lineHeight: 1.8, color: '#4b5563' }}>
-                {business.description || (language === 'en' ? 'Welcome to our business! We are dedicated to providing the highest quality services to our valued customers. With years of experience in the industry, our team of professionals is committed to ensuring your satisfaction.' : language === 'tr' ? 'İşletmemize hoş geldiniz! Değerli müşterilerimize en yüksek kalitede hizmet sunmaya dediktir. Sektördeki yılların tecrübesiyle, profesyonel ekibimiz memnuniyetinizi sağlamaya kararlıdır.' : 'Добро пожаловать в наш бизнес! Мы привержены предоставлению высочайшего качества услуг нашим ценным клиентам. С многолетним опытом работы в отрасли, наша команда профессионалов стремится обеспечить вашу удовлетворенность.')}
+                {business.description || (language === 'en' ? 'Welcome to our business! We are dedicated to providing the highest quality services to our valued customers. With years of experience in the industry, our team of professionals is committed to ensuring your satisfaction.' : language === 'tr' ? 'İşletmemize hoş geldiniz! Değerli müşterilerimize en yüksek kalitede hizmet sunmaya dediktir. Sektördeki yılların tecrübesiyle, profesyonel ekibimiz memnuniyetinizi sağlamaya kararlıdır.' : 'Добро пожаловать в наш бизнес! Мы привержены предоставлению высочайшего качества услуг нашим цен��ым клиентам. С многолетним опытом работы в отрасли, наша команда профессионалов стремится обеспечить вашу удовлетворенность.')}
               </Typography>
             </CardContent>
           </Card>
