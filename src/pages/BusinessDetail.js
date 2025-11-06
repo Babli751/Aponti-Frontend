@@ -168,8 +168,6 @@ const BusinessDetail = () => {
     setSelectedService(service);
     setBookingDialogOpen(true);
     setBookingSuccess(false);
-    setBookingError('');
-    setSelectedWorker('');
     setSelectedDayOfWeek(null);
     setSelectedTimeSlot(null);
     setTimeOfDay('Morning');
@@ -487,7 +485,7 @@ const BusinessDetail = () => {
               <Card>
                 <CardContent>
                   <Typography color="text.secondary" textAlign="center">
-                    {language === 'en' ? 'No services available' : language === 'tr' ? 'Henüz hizmet yok' : 'Услуги недоступны'}
+                    {language === 'en' ? 'No services available' : language === 'tr' ? 'Henüz hizmet yok' : 'Услуги недос��упны'}
                   </Typography>
                 </CardContent>
               </Card>
