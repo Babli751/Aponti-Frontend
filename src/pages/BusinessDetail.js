@@ -311,16 +311,17 @@ const BusinessDetail = () => {
               alt="Business main"
               sx={{
                 width: '100%',
-                height: { xs: 250, md: 400 },
+                height: { xs: 300, sm: 350, md: 420 },
                 objectFit: 'cover',
                 borderRadius: 2,
-                mb: 1
+                mb: 2,
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
               }}
             />
 
             {/* Smaller thumbnail photos below */}
-            <Box sx={{ display: 'flex', gap: 1, overflow: 'auto', mt: 1 }}>
-              {galleryPhotos.slice(1).map((photo, index) => (
+            <Box sx={{ display: 'flex', gap: 1.5, overflow: 'auto', scrollBehavior: 'smooth', pb: 1 }}>
+              {galleryPhotos.map((photo, index) => (
                 <Box
                   key={index}
                   component="img"
@@ -328,17 +329,18 @@ const BusinessDetail = () => {
                   alt={`Business photo ${index + 1}`}
                   onClick={() => setMainPhoto(photo)}
                   sx={{
-                    width: 100,
-                    height: 80,
+                    width: 110,
+                    height: 85,
                     objectFit: 'cover',
-                    borderRadius: 1,
+                    borderRadius: 1.5,
                     cursor: 'pointer',
-                    border: mainPhoto === photo ? '2px solid #2d3748' : '2px solid transparent',
-                    transition: 'all 0.3s',
+                    border: mainPhoto === photo ? '3px solid #2d3748' : '2px solid #e5e7eb',
+                    transition: 'all 0.3s ease-in-out',
                     flexShrink: 0,
                     '&:hover': {
-                      opacity: 0.8,
-                      transform: 'scale(1.05)'
+                      opacity: 0.85,
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)'
                     }
                   }}
                 />
@@ -383,7 +385,7 @@ const BusinessDetail = () => {
             <Card sx={{ mb: 2 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                  {language === 'en' ? 'Contact' : language === 'tr' ? 'İletişim' : 'Контакты'}
+                  {language === 'en' ? 'Contact' : language === 'tr' ? 'İletişim' : 'Контакт��'}
                 </Typography>
 
                 <Stack spacing={2}>
