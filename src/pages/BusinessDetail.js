@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useAuth } from '../contexts/AuthContext';
 import Logo from '../components/Logo';
 import Footer from '../components/Footer';
 import MapView from '../components/MapView';
@@ -15,9 +14,7 @@ import {
   CardContent,
   Grid,
   Button,
-  IconButton,
   Chip,
-  Divider,
   CircularProgress,
   TextField,
   MenuItem,
@@ -34,11 +31,8 @@ import {
 } from '@mui/material';
 import {
   ArrowBack,
-  Facebook,
-  Instagram,
   LocationOn,
   Phone,
-  Email,
   Schedule,
   Person,
   CheckCircle,
@@ -52,7 +46,6 @@ const BusinessDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { language, changeLanguage } = useLanguage();
-  const { isAuthenticated } = useAuth();
 
   const [business, setBusiness] = useState(null);
   const [workers, setWorkers] = useState([]);
@@ -63,9 +56,6 @@ const BusinessDetail = () => {
   // Booking dialog state
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
-  const [selectedWorker, setSelectedWorker] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingError, setBookingError] = useState('');
 
@@ -179,8 +169,6 @@ const BusinessDetail = () => {
     setSelectedService(service);
     setBookingDialogOpen(true);
     setBookingSuccess(false);
-    setBookingError('');
-    setSelectedWorker('');
     setSelectedDayOfWeek(null);
     setSelectedTimeSlot(null);
     setTimeOfDay('Morning');
@@ -311,16 +299,17 @@ const BusinessDetail = () => {
               alt="Business main"
               sx={{
                 width: '100%',
-                height: { xs: 250, md: 400 },
+                height: { xs: 300, sm: 350, md: 420 },
                 objectFit: 'cover',
                 borderRadius: 2,
-                mb: 1
+                mb: 2,
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
               }}
             />
 
             {/* Smaller thumbnail photos below */}
-            <Box sx={{ display: 'flex', gap: 1, overflow: 'auto', mt: 1 }}>
-              {galleryPhotos.slice(1).map((photo, index) => (
+            <Box sx={{ display: 'flex', gap: 1.5, overflow: 'auto', scrollBehavior: 'smooth', pb: 1 }}>
+              {galleryPhotos.map((photo, index) => (
                 <Box
                   key={index}
                   component="img"
@@ -328,17 +317,18 @@ const BusinessDetail = () => {
                   alt={`Business photo ${index + 1}`}
                   onClick={() => setMainPhoto(photo)}
                   sx={{
-                    width: 100,
-                    height: 80,
+                    width: 110,
+                    height: 85,
                     objectFit: 'cover',
-                    borderRadius: 1,
+                    borderRadius: 1.5,
                     cursor: 'pointer',
-                    border: mainPhoto === photo ? '2px solid #2d3748' : '2px solid transparent',
-                    transition: 'all 0.3s',
+                    border: mainPhoto === photo ? '3px solid #2d3748' : '2px solid #e5e7eb',
+                    transition: 'all 0.3s ease-in-out',
                     flexShrink: 0,
                     '&:hover': {
-                      opacity: 0.8,
-                      transform: 'scale(1.05)'
+                      opacity: 0.85,
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)'
                     }
                   }}
                 />
@@ -350,7 +340,7 @@ const BusinessDetail = () => {
           <Grid item xs={12} md={4}>
             {/* Location Map */}
             <Box sx={{ mb: 2 }}>
-              <Card sx={{ overflow: 'hidden', borderRadius: 2 }}>
+              <Card sx={{ overflow: 'hidden', borderRadius: 2, position: 'relative' }}>
                 <MapView
                   businesses={[{
                     id: business.id,
@@ -362,13 +352,25 @@ const BusinessDetail = () => {
                   }]}
                   userLocation={null}
                   onBusinessClick={() => {}}
-                  height="200px"
+                  height="250px"
+                />
+                {/* Nearby Businesses Count */}
+                <Chip
+                  label={language === 'en' ? '1 businesses nearby' : language === 'tr' ? '1 işletme yakında' : '1 предприятие рядом'}
+                  sx={{
+                    position: 'absolute',
+                    top: 12,
+                    right: 12,
+                    bgcolor: 'white',
+                    boxShadow: 2,
+                    fontWeight: 600
+                  }}
                 />
               </Card>
             </Box>
 
             {/* Contact Info */}
-            <Card>
+            <Card sx={{ mb: 2 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
                   {language === 'en' ? 'Contact' : language === 'tr' ? 'İletişim' : 'Контакты'}
@@ -382,6 +384,18 @@ const BusinessDetail = () => {
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
                         {business.phone || '+90 555 123 4567'}
                       </Typography>
+                      <Button
+                        size="small"
+                        sx={{
+                          mt: 0.5,
+                          bgcolor: '#e8f5e9',
+                          color: '#2d3748',
+                          fontWeight: 600,
+                          '&:hover': { bgcolor: '#c8e6c9' }
+                        }}
+                      >
+                        {language === 'en' ? 'Call' : language === 'tr' ? 'Ara' : 'Позвонить'}
+                      </Button>
                     </Box>
                   </Box>
 
@@ -397,8 +411,71 @@ const BusinessDetail = () => {
                 </Stack>
               </CardContent>
             </Card>
+
+            {/* Business Hours */}
+            <Card sx={{ mb: 2 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                  {language === 'en' ? 'Contact & Business Hours' : language === 'tr' ? 'İletişim & Çalışma Saatleri' : 'Контакты и часы работы'}
+                </Typography>
+
+                <Stack spacing={1.5}>
+                  {/* Monday to Friday */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {language === 'en' ? 'Today' : language === 'tr' ? 'Bugün' : 'Сегодня'}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#00BFA6', fontWeight: 600 }}>
+                      10:00 AM - 01:00 PM
+                    </Typography>
+                  </Box>
+
+                  <Button
+                    variant="text"
+                    size="small"
+                    sx={{ color: '#00BFA6', justifyContent: 'flex-start', pl: 0 }}
+                  >
+                    {language === 'en' ? 'Show full week' : language === 'tr' ? 'Tüm haftayı göster' : 'Показать всю неделю'}
+                  </Button>
+                </Stack>
+              </CardContent>
+            </Card>
+
+            {/* Payment & Cancellation Policy */}
+            <Card>
+              <CardContent>
+                <Button
+                  fullWidth
+                  variant="text"
+                  sx={{
+                    justifyContent: 'space-between',
+                    py: 1,
+                    color: '#2d3748',
+                    fontWeight: 600,
+                    '&:hover': { bgcolor: '#f9fafb' }
+                  }}
+                >
+                  {language === 'en' ? 'Payment & Cancellation Policy' : language === 'tr' ? 'Ödeme & İptal Politikası' : 'Политика оплаты и отмены'}
+                  <Box sx={{ fontSize: '1.2rem' }}>›</Box>
+                </Button>
+              </CardContent>
+            </Card>
           </Grid>
         </Grid>
+
+        {/* About Us Section */}
+        <Box sx={{ mb: 6 }}>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
+            {language === 'en' ? 'About Us' : language === 'tr' ? 'Hakkımızda' : 'О нас'}
+          </Typography>
+          <Card>
+            <CardContent>
+              <Typography variant="body1" sx={{ lineHeight: 1.8, color: '#4b5563' }}>
+                {business.description || (language === 'en' ? 'Welcome to our business! We are dedicated to providing the highest quality services to our valued customers. With years of experience in the industry, our team of professionals is committed to ensuring your satisfaction.' : language === 'tr' ? 'İşletmemize hoş geldiniz! Değerli müşterilerimize en yüksek kalitede hizmet sunmaya dediktir. Sektördeki yılların tecrübesiyle, profesyonel ekibimiz memnuniyetinizi sağlamaya kararlıdır.' : 'Добро пожаловать в наш бизнес! Мы привержены предоставлению высочайшего качества услуг нашим ценным клиентам. С многолетним опытом работы в отрасли, наша команда профессионалов стремится обеспечить вашу удовлетворенность.')}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Box>
 
         {/* Services Section */}
         <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
@@ -409,7 +486,7 @@ const BusinessDetail = () => {
               <Card>
                 <CardContent>
                   <Typography color="text.secondary" textAlign="center">
-                    {language === 'en' ? 'No services available' : language === 'tr' ? 'Henüz hizmet yok' : 'Услуги недоступны'}
+                    {language === 'en' ? 'No services available' : language === 'tr' ? 'Henüz hizmet yok' : 'Услуги недос���упны'}
                   </Typography>
                 </CardContent>
               </Card>
