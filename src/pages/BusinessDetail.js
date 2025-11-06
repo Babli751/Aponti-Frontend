@@ -47,7 +47,6 @@ const BusinessDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { language, changeLanguage } = useLanguage();
-  const { isAuthenticated } = useAuth();
 
   const [business, setBusiness] = useState(null);
   const [workers, setWorkers] = useState([]);
