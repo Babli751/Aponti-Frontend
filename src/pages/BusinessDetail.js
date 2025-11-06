@@ -400,6 +400,20 @@ const BusinessDetail = () => {
           </Grid>
         </Grid>
 
+        {/* About Us Section */}
+        <Box sx={{ mb: 6 }}>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
+            {language === 'en' ? 'About Us' : language === 'tr' ? 'Hakkımızda' : 'О нас'}
+          </Typography>
+          <Card>
+            <CardContent>
+              <Typography variant="body1" sx={{ lineHeight: 1.8, color: '#4b5563' }}>
+                {business.description || (language === 'en' ? 'Welcome to our business! We are dedicated to providing the highest quality services to our valued customers. With years of experience in the industry, our team of professionals is committed to ensuring your satisfaction.' : language === 'tr' ? 'İşletmemize ho�� geldiniz! Değerli müşterilerimize en yüksek kalitede hizmet sunmaya dediktir. Sektördeki yılların tecrübesiyle, profesyonel ekibimiz memnuniyetinizi sağlamaya kararlıdır.' : 'Добро пожаловать в наш бизнес! Мы привержены предоставлению высочайшего качества услуг нашим ценным клиентам. С многолетним опытом работы в отрасли, наша команда профессионалов стремится обеспечить вашу удовлетворенность.')}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Box>
+
         {/* Services Section */}
         <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
           {language === 'en' ? 'Services' : language === 'tr' ? 'Hizmetler' : 'Услуги'}
