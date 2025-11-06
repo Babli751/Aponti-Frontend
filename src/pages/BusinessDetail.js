@@ -350,7 +350,7 @@ const BusinessDetail = () => {
           <Grid item xs={12} md={4}>
             {/* Location Map */}
             <Box sx={{ mb: 2 }}>
-              <Card sx={{ overflow: 'hidden', borderRadius: 2 }}>
+              <Card sx={{ overflow: 'hidden', borderRadius: 2, position: 'relative' }}>
                 <MapView
                   businesses={[{
                     id: business.id,
@@ -362,7 +362,19 @@ const BusinessDetail = () => {
                   }]}
                   userLocation={null}
                   onBusinessClick={() => {}}
-                  height="200px"
+                  height="250px"
+                />
+                {/* Nearby Businesses Count */}
+                <Chip
+                  label={language === 'en' ? '1 businesses nearby' : language === 'tr' ? '1 işletme yakında' : '1 предприятие рядом'}
+                  sx={{
+                    position: 'absolute',
+                    top: 12,
+                    right: 12,
+                    bgcolor: 'white',
+                    boxShadow: 2,
+                    fontWeight: 600
+                  }}
                 />
               </Card>
             </Box>
