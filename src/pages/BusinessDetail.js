@@ -66,7 +66,6 @@ const BusinessDetail = () => {
   const [reviewText, setReviewText] = useState('');
 
   // Calendar state for Booksy-style booking
-  const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [timeOfDay, setTimeOfDay] = useState('Morning'); // Morning, Afternoon, Evening
@@ -633,7 +632,7 @@ const BusinessDetail = () => {
                 {[
                   { name: 'John Doe', rating: 5, date: '2 days ago', text: language === 'en' ? 'Excellent service! The barber was very professional and the atmosphere was great.' : language === 'tr' ? 'Mükemmel hizmet! Berber çok profesyoneldi ve atmosfer harikaydı.' : 'Отличный сервис!' },
                   { name: 'Jane Smith', rating: 5, date: '1 week ago', text: language === 'en' ? 'Best haircut I\'ve had in years. Highly recommend!' : language === 'tr' ? 'Yıllardır aldığım en iyi saç kesimi. Kesinlikle tavsiye ederim!' : 'Лучшая стрижка!' },
-                  { name: 'Mike Johnson', rating: 4, date: '2 weeks ago', text: language === 'en' ? 'Good service, friendly staff. Will come back again.' : language === 'tr' ? 'İyi hizmet, güler yüzlü personel. Tekrar geleceğim.' : 'Хороший сер��ис!' }
+                  { name: 'Mike Johnson', rating: 4, date: '2 weeks ago', text: language === 'en' ? 'Good service, friendly staff. Will come back again.' : language === 'tr' ? 'İyi hizmet, güler yüzlü personel. Tekrar geleceğim.' : 'Хороший сервис!' }
                 ].map((review, index) => (
                   <Card key={index}>
                     <CardContent>
@@ -919,7 +918,7 @@ const BusinessDetail = () => {
                 ? 'Share your experience with this business...'
                 : language === 'tr'
                 ? 'Bu işletme hakkındaki deneyiminizi paylaşın...'
-                : 'Поделитес�� своим опытом...'}
+                : 'Поделитесь своим опытом...'}
             />
           </Box>
         </DialogContent>
