@@ -58,6 +58,7 @@ const BusinessDetail = () => {
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookingError, setBookingError] = useState('');
 
   // Review dialog state
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
@@ -485,7 +486,7 @@ const BusinessDetail = () => {
               <Card>
                 <CardContent>
                   <Typography color="text.secondary" textAlign="center">
-                    {language === 'en' ? 'No services available' : language === 'tr' ? 'Henüz hizmet yok' : 'Услуги недос��упны'}
+                    {language === 'en' ? 'No services available' : language === 'tr' ? 'Henüz hizmet yok' : 'Услуги недос���упны'}
                   </Typography>
                 </CardContent>
               </Card>
