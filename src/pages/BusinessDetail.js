@@ -368,7 +368,7 @@ const BusinessDetail = () => {
             </Box>
 
             {/* Contact Info */}
-            <Card>
+            <Card sx={{ mb: 2 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
                   {language === 'en' ? 'Contact' : language === 'tr' ? 'İletişim' : 'Контакты'}
@@ -382,6 +382,18 @@ const BusinessDetail = () => {
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
                         {business.phone || '+90 555 123 4567'}
                       </Typography>
+                      <Button
+                        size="small"
+                        sx={{
+                          mt: 0.5,
+                          bgcolor: '#e8f5e9',
+                          color: '#2d3748',
+                          fontWeight: 600,
+                          '&:hover': { bgcolor: '#c8e6c9' }
+                        }}
+                      >
+                        {language === 'en' ? 'Call' : language === 'tr' ? 'Ara' : 'Позвонить'}
+                      </Button>
                     </Box>
                   </Box>
 
@@ -397,6 +409,35 @@ const BusinessDetail = () => {
                 </Stack>
               </CardContent>
             </Card>
+
+            {/* Business Hours */}
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                  {language === 'en' ? 'Contact & Business Hours' : language === 'tr' ? 'İletişim & Çalışma Saatleri' : 'Контакты и часы работы'}
+                </Typography>
+
+                <Stack spacing={1.5}>
+                  {/* Monday to Friday */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {language === 'en' ? 'Today' : language === 'tr' ? 'Bugün' : 'Сегодня'}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#00BFA6', fontWeight: 600 }}>
+                      10:00 AM - 01:00 PM
+                    </Typography>
+                  </Box>
+
+                  <Button
+                    variant="text"
+                    size="small"
+                    sx={{ color: '#00BFA6', justifyContent: 'flex-start', pl: 0 }}
+                  >
+                    {language === 'en' ? 'Show full week' : language === 'tr' ? 'Tüm haftayı göster' : 'Показать всю неделю'}
+                  </Button>
+                </Stack>
+              </CardContent>
+            </Card>
           </Grid>
         </Grid>
 
@@ -408,7 +449,7 @@ const BusinessDetail = () => {
           <Card>
             <CardContent>
               <Typography variant="body1" sx={{ lineHeight: 1.8, color: '#4b5563' }}>
-                {business.description || (language === 'en' ? 'Welcome to our business! We are dedicated to providing the highest quality services to our valued customers. With years of experience in the industry, our team of professionals is committed to ensuring your satisfaction.' : language === 'tr' ? 'İşletmemize ho�� geldiniz! Değerli müşterilerimize en yüksek kalitede hizmet sunmaya dediktir. Sektördeki yılların tecrübesiyle, profesyonel ekibimiz memnuniyetinizi sağlamaya kararlıdır.' : 'Добро пожаловать в наш бизнес! Мы привержены предоставлению высочайшего качества услуг нашим ценным клиентам. С многолетним опытом работы в отрасли, наша команда профессионалов стремится обеспечить вашу удовлетворенность.')}
+                {business.description || (language === 'en' ? 'Welcome to our business! We are dedicated to providing the highest quality services to our valued customers. With years of experience in the industry, our team of professionals is committed to ensuring your satisfaction.' : language === 'tr' ? 'İşletmemize hoş geldiniz! Değerli müşterilerimize en yüksek kalitede hizmet sunmaya dediktir. Sektördeki yılların tecrübesiyle, profesyonel ekibimiz memnuniyetinizi sağlamaya kararlıdır.' : 'Добро пожаловать в наш бизнес! Мы привержены предоставлению высочайшего качества услуг нашим ценным клиентам. С многолетним опытом работы в отрасли, наша команда профессионалов стремится обеспечить вашу удовлетворенность.')}
               </Typography>
             </CardContent>
           </Card>
