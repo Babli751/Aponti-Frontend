@@ -125,7 +125,7 @@ const BusinessDetail = () => {
           ? 'Failed to load business details'
           : language === 'tr'
           ? 'İşletme detayları yüklenemedi'
-          : 'Не удалось загрузить детали бизнеса'
+          : 'Не ��далось загрузить детали бизнеса'
         );
       } finally {
         setLoading(false);
@@ -318,6 +318,20 @@ const BusinessDetail = () => {
 
   return (
     <Box sx={{ bgcolor: '#ffffff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Test Data Banner */}
+      {showTestDataBanner && (
+        <Alert severity="warning" sx={{ m: 2, mb: 0 }}>
+          <Typography variant="body2">
+            ⚠️ {language === 'en'
+              ? 'Displaying test data (API unavailable)'
+              : language === 'tr'
+              ? 'Test verileri gösteriliyor (API kullanılamıyor)'
+              : 'Отображаются тестовые данные (API недоступен)'
+            }
+          </Typography>
+        </Alert>
+      )}
+
       {/* Header with Logo and Language Selector */}
       <AppBar position="sticky" elevation={0} sx={{
         background: 'linear-gradient(135deg, #2d3748 0%, #4a5568 100%)',
