@@ -124,7 +124,7 @@ const BusinessDetail = () => {
         setError(language === 'en'
           ? 'Failed to load business details'
           : language === 'tr'
-          ? 'İşletme detayları yüklenemedi'
+          ? 'İ��letme detayları yüklenemedi'
           : 'Не удалось загрузить детали бизнеса'
         );
       } finally {
@@ -441,7 +441,7 @@ const BusinessDetail = () => {
                     <Phone sx={{ color: '#2d3748', fontSize: 20 }} />
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {business.phone || '+90 555 123 4567'}
+                        {displayBusiness.phone || '+90 555 123 4567'}
                       </Typography>
                     </Box>
                   </Box>
@@ -451,7 +451,7 @@ const BusinessDetail = () => {
                     <LocationOn sx={{ color: '#2d3748', fontSize: 20, mt: 0.2 }} />
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="body2">
-                        {business.address || 'Test Street 123'}
+                        {displayBusiness.address || 'Test Street 123'}
                       </Typography>
                     </Box>
                   </Box>
