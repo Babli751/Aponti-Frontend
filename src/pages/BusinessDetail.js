@@ -124,7 +124,7 @@ const BusinessDetail = () => {
         setError(language === 'en'
           ? 'Failed to load business details'
           : language === 'tr'
-          ? 'İ��letme detayları yüklenemedi'
+          ? 'İşletme detayları yüklenemedi'
           : 'Не удалось загрузить детали бизнеса'
         );
       } finally {
@@ -466,7 +466,7 @@ const BusinessDetail = () => {
           {language === 'en' ? 'Services' : language === 'tr' ? 'Hizmetler' : 'Услуги'}
         </Typography>
 
-            {services.length === 0 ? (
+            {displayServices.length === 0 ? (
               <Card>
                 <CardContent>
                   <Typography color="text.secondary" textAlign="center">
@@ -478,7 +478,7 @@ const BusinessDetail = () => {
               <Grid container spacing={2}>
                 {(() => {
                   // Group services by name
-                  const groupedServices = services.reduce((acc, service) => {
+                  const groupedServices = displayServices.reduce((acc, service) => {
                     if (!acc[service.name]) {
                       acc[service.name] = [];
                     }
@@ -489,7 +489,7 @@ const BusinessDetail = () => {
                   return Object.entries(groupedServices).map(([serviceName, serviceGroup]) => {
                     const firstService = serviceGroup[0];
                     const serviceWorkers = serviceGroup
-                      .map(s => workers.find(w => w.id === s.barber_id))
+                      .map(s => displayWorkers.find(w => w.id === s.barber_id))
                       .filter(Boolean);
 
                     // Determine icon based on service name/category
