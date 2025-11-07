@@ -238,6 +238,58 @@ const BusinessDetail = () => {
     }
   };
 
+  // Test data for when API fails
+  const testBusinessData = {
+    id: 1,
+    business_name: 'Premium Barbershop',
+    address: '123 Main Street, Istanbul',
+    phone: '+90 555 123 4567',
+    latitude: 41.0082,
+    longitude: 28.9784,
+    business_type: 'Barbershop',
+    description: 'Professional barbershop with experienced barbers'
+  };
+
+  const testServicesData = [
+    {
+      id: 1,
+      name: 'Haircut',
+      description: 'Professional men\'s haircut',
+      price: 25,
+      duration: 30,
+      barber_id: 1
+    },
+    {
+      id: 2,
+      name: 'Beard Trim',
+      description: 'Professional beard trimming and shaping',
+      price: 15,
+      duration: 15,
+      barber_id: 1
+    },
+    {
+      id: 3,
+      name: 'Haircut + Beard',
+      description: 'Complete grooming package',
+      price: 35,
+      duration: 45,
+      barber_id: 1
+    }
+  ];
+
+  const testWorkersData = [
+    {
+      id: 1,
+      full_name: 'John Barber',
+      email: 'john@barbershop.com'
+    },
+    {
+      id: 2,
+      full_name: 'Mike Expert',
+      email: 'mike@barbershop.com'
+    }
+  ];
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
@@ -246,19 +298,28 @@ const BusinessDetail = () => {
     );
   }
 
-  if (error || !business) {
-    return (
-      <Container sx={{ py: 4 }}>
-        <Alert severity="error">{error || 'Business not found'}</Alert>
-        <Button startIcon={<ArrowBack />} onClick={() => navigate('/')} sx={{ mt: 2 }}>
-          {language === 'en' ? 'Back to Home' : language === 'tr' ? 'Ana Sayfaya Dön' : 'Вернуться на главную'}
-        </Button>
-      </Container>
-    );
-  }
+  // Use test data as fallback when API fails
+  const displayBusiness = business || testBusinessData;
+  const displayServices = services.length > 0 ? services : (error ? testServicesData : []);
+  const displayWorkers = workers.length > 0 ? workers : (error ? testWorkersData : []);
+  const showTestDataBanner = error && !business;
 
   return (
     <Box sx={{ bgcolor: '#ffffff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Test Data Banner */}
+      {showTestDataBanner && (
+        <Alert severity="warning" sx={{ m: 2, mb: 0 }}>
+          <Typography variant="body2">
+            ⚠️ {language === 'en'
+              ? 'Displaying test data (API unavailable)'
+              : language === 'tr'
+              ? 'Test verileri gösteriliyor (API kullanılamıyor)'
+              : 'Отображаются тестовые данные (API недоступен)'
+            }
+          </Typography>
+        </Alert>
+      )}
+
       {/* Header with Logo and Language Selector */}
       <AppBar position="sticky" elevation={0} sx={{
         background: 'linear-gradient(135deg, #2d3748 0%, #4a5568 100%)',
@@ -343,12 +404,12 @@ const BusinessDetail = () => {
               <Card sx={{ overflow: 'hidden', borderRadius: 2, position: 'relative' }}>
                 <MapView
                   businesses={[{
-                    id: business.id,
-                    name: business.business_name,
-                    latitude: parseFloat(business.latitude || 41.0082),
-                    longitude: parseFloat(business.longitude || 28.9784),
-                    address: business.address || 'Test Street 123',
-                    category: business.business_type
+                    id: displayBusiness.id,
+                    name: displayBusiness.business_name,
+                    latitude: parseFloat(displayBusiness.latitude || 41.0082),
+                    longitude: parseFloat(displayBusiness.longitude || 28.9784),
+                    address: displayBusiness.address || 'Test Street 123',
+                    category: displayBusiness.business_type
                   }]}
                   userLocation={null}
                   onBusinessClick={() => {}}
@@ -382,7 +443,7 @@ const BusinessDetail = () => {
                     <Phone sx={{ color: '#2d3748', fontSize: 20 }} />
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {business.phone || '+90 555 123 4567'}
+                        {displayBusiness.phone || '+90 555 123 4567'}
                       </Typography>
                       <Button
                         size="small"
@@ -404,7 +465,7 @@ const BusinessDetail = () => {
                     <LocationOn sx={{ color: '#2d3748', fontSize: 20, mt: 0.2 }} />
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="body2">
-                        {business.address || 'Test Street 123'}
+                        {displayBusiness.address || 'Test Street 123'}
                       </Typography>
                     </Box>
                   </Box>
@@ -482,7 +543,7 @@ const BusinessDetail = () => {
           {language === 'en' ? 'Services' : language === 'tr' ? 'Hizmetler' : 'Услуги'}
         </Typography>
 
-            {services.length === 0 ? (
+            {displayServices.length === 0 ? (
               <Card>
                 <CardContent>
                   <Typography color="text.secondary" textAlign="center">
@@ -494,7 +555,7 @@ const BusinessDetail = () => {
               <Grid container spacing={2}>
                 {(() => {
                   // Group services by name
-                  const groupedServices = services.reduce((acc, service) => {
+                  const groupedServices = displayServices.reduce((acc, service) => {
                     if (!acc[service.name]) {
                       acc[service.name] = [];
                     }
@@ -505,7 +566,7 @@ const BusinessDetail = () => {
                   return Object.entries(groupedServices).map(([serviceName, serviceGroup]) => {
                     const firstService = serviceGroup[0];
                     const serviceWorkers = serviceGroup
-                      .map(s => workers.find(w => w.id === s.barber_id))
+                      .map(s => displayWorkers.find(w => w.id === s.barber_id))
                       .filter(Boolean);
 
                     // Determine icon based on service name/category

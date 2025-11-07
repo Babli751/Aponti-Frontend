@@ -56,7 +56,7 @@ const AppointmentNew = () => {
   useEffect(() => {
     const fetchAllBusinesses = async () => {
       try {
-        const response = await api.get('/business/list');
+        const response = await api.get('/business/');
         setAllBusinesses(response.data || []);
       } catch (error) {
         console.error('Error fetching businesses:', error);

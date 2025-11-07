@@ -146,7 +146,7 @@ const Home = () => {
           console.error('Primary API error:', apiError);
           // Try alternative endpoint
           try {
-            const response = await api.get('/business/list');
+            const response = await api.get('/business/');
             data = response.data;
           } catch (altError) {
             console.error('Alternative API error:', altError);
@@ -465,7 +465,7 @@ const Home = () => {
       alert(language === 'en'
         ? 'Geolocation is not supported by your browser. Showing Istanbul as default location.'
         : language === 'tr'
-        ? 'Tarayıcınız konum özelliğini desteklemiyor.'
+        ? 'Taray��cınız konum özelliğini desteklemiyor.'
         : 'Ваш браузер не поддерживает геолокацию.');
     }
   };
@@ -1338,7 +1338,7 @@ const Home = () => {
                   if (cat.includes('barber') || cat.includes('berber')) {
                     return { icon: '💈', color: '#ef4444', bgColor: 'rgba(239, 68, 68, 0.1)', name: language === 'en' ? 'Barber' : language === 'tr' ? 'Berber' : 'Парикмахер' };
                   } else if (cat.includes('beauty') || cat.includes('güzellik') || cat.includes('красота')) {
-                    return { icon: '💅', color: '#ec4899', bgColor: 'rgba(236, 72, 153, 0.1)', name: language === 'en' ? 'Beauty & Wellness' : language === 'tr' ? 'Güzellik & Sağl��k' : 'Красота' };
+                    return { icon: '💅', color: '#ec4899', bgColor: 'rgba(236, 72, 153, 0.1)', name: language === 'en' ? 'Beauty & Wellness' : language === 'tr' ? 'Güzellik & Sağl��k' : 'Кра��ота' };
                   } else if (cat.includes('automotive') || cat.includes('otomotiv') || cat.includes('авто')) {
                     return { icon: '🚗', color: '#3b82f6', bgColor: 'rgba(59, 130, 246, 0.1)', name: language === 'en' ? 'Automotive' : language === 'tr' ? 'Otomotiv' : 'Авто' };
                   } else if (cat.includes('pet') || cat.includes('hayvan') || cat.includes('питомц')) {
@@ -1868,7 +1868,7 @@ const Home = () => {
                   ? 'The leading platform for booking professional barber services across Europe. Find and book the best barbers in your city.'
                   : language === 'tr'
                   ? 'Avrupa\'da profesyonel berber hizmetleri rezervasyonu için önde gelen platform. Şehrinizdeki en iyi berberleri bulun ve rezervasyon yapın.'
-                  : 'Ведущая платфор��а для бронирования профессиональных парикмахерских услуг по всей Европе. Найдите и заброн��руйте лучших парикмахеров в своем городе.'
+                  : 'Вед��щая платфор��а для бронирования профессиональных парикмахерских услуг по всей Европе. Найдите и заброн��руйте лучших парикмахеров в своем городе.'
                 }
               </Typography>
               <Stack direction="row" spacing={1}>

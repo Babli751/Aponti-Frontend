@@ -71,7 +71,7 @@ const Appointment = () => {
         console.log('Fetching businesses...');
         // Use direct fetch to avoid axios interceptors
         const API_BASE_URL = window.API_BASE_URL || '/api/v1';
-        const response = await fetch(`${API_BASE_URL}/business/list`, {
+        const response = await fetch(`${API_BASE_URL}/business/`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
