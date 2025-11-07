@@ -125,7 +125,7 @@ const BusinessDetail = () => {
           ? 'Failed to load business details'
           : language === 'tr'
           ? 'İşletme detayları yüklenemedi'
-          : 'Не ��далось загрузить детали бизнеса'
+          : 'Не удалось загрузить детали бизнеса'
         );
       } finally {
         setLoading(false);
@@ -414,12 +414,12 @@ const BusinessDetail = () => {
               <Card sx={{ overflow: 'hidden', borderRadius: 2 }}>
                 <MapView
                   businesses={[{
-                    id: business.id,
-                    name: business.business_name,
-                    latitude: parseFloat(business.latitude || 41.0082),
-                    longitude: parseFloat(business.longitude || 28.9784),
-                    address: business.address || 'Test Street 123',
-                    category: business.business_type
+                    id: displayBusiness.id,
+                    name: displayBusiness.business_name,
+                    latitude: parseFloat(displayBusiness.latitude || 41.0082),
+                    longitude: parseFloat(displayBusiness.longitude || 28.9784),
+                    address: displayBusiness.address || 'Test Street 123',
+                    category: displayBusiness.business_type
                   }]}
                   userLocation={null}
                   onBusinessClick={() => {}}
