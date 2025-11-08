@@ -18,8 +18,8 @@ import {
   Select,
   MenuItem,
   Avatar,
-  useTheme,
-  useMediaQuery
+  Paper,
+  Stack
 } from '@mui/material';
 import {
   Business,
@@ -87,7 +87,7 @@ const About = () => {
         ? 'Cutting-edge technology for seamless experience'
         : language === 'tr' 
         ? 'Yüksek teknoloji ile kolay deneyim'
-        : 'Современные технологи��',
+        : 'Современные технологии',
       icon: <TrendingUp />,
       image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop'
     }
