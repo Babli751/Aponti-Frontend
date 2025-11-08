@@ -25,9 +25,8 @@ import {
   LocationOn,
   Send,
   Verified,
-  ArrowForward,
-  Clock,
-  CheckCircle
+  CheckCircle,
+  AccessTime
 } from '@mui/icons-material';
 import Logo from '../components/Logo';
 import Footer from '../components/Footer';
