@@ -10,13 +10,11 @@ import {
   Card,
   CardContent,
   Alert,
-  Stack,
   AppBar,
   Toolbar,
   FormControl,
   Select,
   MenuItem,
-  Paper,
   Divider
 } from '@mui/material';
 import {
@@ -32,7 +30,7 @@ import Logo from '../components/Logo';
 import Footer from '../components/Footer';
 
 const ContactUs = () => {
-  const { language, changeLanguage, t: translations } = useLanguage();
+  const { language, changeLanguage } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -163,7 +161,7 @@ const ContactUs = () => {
                 '& .MuiSvgIcon-root': { color: 'white' }
               }}
             >
-              <MenuItem value="en">����🇧 English</MenuItem>
+              <MenuItem value="en">🇬🇧 English</MenuItem>
               <MenuItem value="tr">🇹🇷 Türkçe</MenuItem>
               <MenuItem value="ru">🇷🇺 Русский</MenuItem>
             </Select>
