@@ -9,6 +9,7 @@ import {
   Typography,
   Card,
   CardContent,
+  CardMedia,
   Button,
   Grid,
   AppBar,
@@ -21,7 +22,8 @@ import {
   Avatar,
   useTheme,
   useMediaQuery,
-  Paper
+  Paper,
+  Divider
 } from '@mui/material';
 import {
   ArrowBack,
@@ -32,7 +34,9 @@ import {
   Star,
   TrendingUp,
   CheckCircle,
-  EuroSymbol
+  EuroSymbol,
+  ArrowForward,
+  Verified
 } from '@mui/icons-material';
 
 const About = () => {
@@ -42,87 +46,80 @@ const About = () => {
   const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
   const { language, changeLanguage, t: translations } = useLanguage();
 
-  // Use translations from context
   const t = {
     ...translations,
     about: translations.aboutUs,
     subtitle: translations.aboutSubtitle
   };
 
-
   const stats = [
     {
       number: '2,000+',
-      label: language === 'en' ? 'Professional Businesses' : language === 'tr' ? 'Profesyonel İşletme' : 'Профессиональных предприятий',
-      icon: <People />
-    },
-    {
-      number: '50+',
-      label: language === 'en' ? 'European Cities' : language === 'tr' ? 'Avrupa Şehri' : 'Европейских городов',
+      label: language === 'en' ? 'Businesses' : language === 'tr' ? 'İşletme' : 'Компаний',
       icon: <Business />
     },
     {
+      number: '50+',
+      label: language === 'en' ? 'Cities' : language === 'tr' ? 'Şehir' : 'Городов',
+      icon: <EuroSymbol />
+    },
+    {
       number: '150K+',
-      label: language === 'en' ? 'Happy Customers' : language === 'tr' ? 'Mutlu Müşteri' : 'Довольных клиентов',
-      icon: <Star />
+      label: language === 'en' ? 'Customers' : language === 'tr' ? 'Müşteri' : 'Клиентов',
+      icon: <People />
     },
     {
       number: '4.8/5',
-      label: language === 'en' ? 'Average Rating' : language === 'tr' ? 'Ortalama Puan' : 'Средний рейтинг',
-      icon: <TrendingUp />
+      label: language === 'en' ? 'Rating' : language === 'tr' ? 'Puan' : 'Оценка',
+      icon: <Star />
     }
   ];
 
   const values = [
     {
-      title: language === 'en' ? 'Quality First' : language === 'tr' ? 'Önce Kalite' : 'Качество прежде всего',
+      title: language === 'en' ? 'Quality' : language === 'tr' ? 'Kalite' : 'Качество',
       description: language === 'en' 
-        ? 'We partner only with verified, professional businesses who maintain the highest standards'
+        ? 'Top-tier professionals vetted and verified'
         : language === 'tr' 
-        ? 'Sadece en yüksek standartları koruyan doğrulanmış, profesyonel berberlerle ortaklık kuruyoruz'
-        : 'Мы сотрудничаем только �� проверенными профессиональными парикмахерами, поддерживающими высочайшие стандарты',
-      icon: <CheckCircle />
+        ? 'Kontrol edilmiş profesyoneller'
+        : 'Проверенные профессионалы',
+      icon: <CheckCircle />,
+      image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop'
     },
     {
-      title: language === 'en' ? 'Trust & Safety' : language === 'tr' ? 'Güven ve Güvenlik' : 'Доверие и безопасность',
+      title: language === 'en' ? 'Safety' : language === 'tr' ? 'Güvenlik' : 'Безопасность',
       description: language === 'en' 
-        ? 'Your safety is our priority. All our businesses are verified and follow strict hygiene protocols'
+        ? 'Secure booking with verified hygiene protocols'
         : language === 'tr' 
-        ? 'Güvenliğiniz önceliğimizdir. Tüm berberlerimiz doğrulanmış ve sıkı hijyen protokollerini takip ediyor'
-        : 'Ваша безопасность - наш приоритет. Все наши парикмахеры проверены и следуют строгим протоколам гигиены',
-      icon: <Security />
+        ? 'Güvenli rezervasyon sistemi'
+        : 'Безопасное бронирование',
+      icon: <Security />,
+      image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop'
     },
     {
-      title: language === 'en' ? 'Innovation' : language === 'tr' ? 'İnovasyon' : 'Инновации',
+      title: language === 'en' ? 'Innovation' : language === 'tr' ? 'İnovasyon' : 'Инновация',
       description: language === 'en' 
-        ? 'We continuously improve our platform to provide the best booking experience'
+        ? 'Cutting-edge technology for seamless experience'
         : language === 'tr' 
-        ? 'En iyi rezervasyon deneyimi sağlamak için platformumuzu sürekli geliştiriyoruz'
-        : 'Мы постоянно улучшаем нашу платформу, чтобы обеспечить лучший опыт бронирования',
-      icon: <TrendingUp />
+        ? 'Yüksek teknoloji ile kolay deneyim'
+        : 'Современные технологии',
+      icon: <TrendingUp />,
+      image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop'
     }
   ];
 
   const team = [
     {
       name: 'Babek Mammadov',
-      position: language === 'en' ? 'CEO & Founder' : language === 'tr' ? 'CEO ve Kurucu' : 'Генеральный директор и основатель',
-      bio: language === 'en'
-        ? 'Entrepreneur leading Aponti\'s vision and growth across Europe'
-        : language === 'tr'
-        ? 'BarberPro’nun vizyonunu ve Avrupa genelindeki büyümesini yöneten girişimci'
-        : 'Предприниматель, ведущий видение и рост BarberPro по всей Европе',
-      image: 'https://images.unsplash.com/photo-1608160888760-3d4b4a3f95b9?w=150&h=150&fit=crop&crop=face'
+      position: language === 'en' ? 'CEO & Founder' : language === 'tr' ? 'CEO ve Kurucu' : 'Генеральный директор',
+      bio: language === 'en' ? 'Visionary entrepreneur' : language === 'tr' ? 'Vizyoner girişimci' : 'Предприниматель',
+      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face'
     },
     {
       name: 'Cavansir Mammadov',
       position: language === 'en' ? 'COO' : language === 'tr' ? 'Operasyon Direktörü' : 'Операционный директор',
-      bio: language === 'en'
-        ? 'Operations leader focused on service excellence and customer experience'
-        : language === 'tr'
-        ? 'Hizmet mükemmeliyeti ve müşteri deneyimine odaklanan operasyon lideri'
-        : 'Руководитель операций, сосредоточенный на качестве сервиса и опыте клиентов',
-      image: 'https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=150&h=150&fit=crop&crop=face'
+      bio: language === 'en' ? 'Operations expert' : language === 'tr' ? 'Operasyon uzmanı' : 'Эксперт операций',
+      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face'
     }
   ];
 
@@ -130,8 +127,8 @@ const About = () => {
     <Box sx={{ bgcolor: '#ffffff', minHeight: '100vh' }}>
       {/* Header */}
       <AppBar position="sticky" elevation={0} sx={{
-        background: 'linear-gradient(135deg, #2d3748 0%, #4a5568 100%)',
-        borderBottom: '1px solid #1a202c'
+        background: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)',
+        borderBottom: '1px solid #e5e7eb'
       }}>
         <Toolbar sx={{ px: { xs: 2, md: 4 } }}>
           <Box sx={{ flexGrow: 1 }}>
@@ -158,207 +155,239 @@ const About = () => {
 
       {/* Hero Section */}
       <Box sx={{
-        background: 'linear-gradient(135deg, rgba(0, 166, 147, 0.95) 0%, rgba(79, 213, 199, 0.9) 100%)',
+        background: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)',
         color: 'white',
-        py: { xs: 2, sm: 2.5, md: 3 },
+        py: { xs: 8, sm: 10, md: 12 },
         textAlign: 'center',
         position: 'relative',
         overflow: 'hidden'
       }}>
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: 'url(https://images.unsplash.com/photo-1622287162716-f311baa1a2b8?w=1920&h=1080&fit=crop)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            opacity: 0.1,
-            zIndex: 0
-          }}
-        />
+        {/* Animated background */}
+        <Box sx={{
+          position: 'absolute',
+          top: '-10%',
+          right: '-5%',
+          width: '300px',
+          height: '300px',
+          borderRadius: '50%',
+          background: 'rgba(255, 255, 255, 0.05)',
+          zIndex: 0
+        }} />
+        <Box sx={{
+          position: 'absolute',
+          bottom: '-10%',
+          left: '5%',
+          width: '250px',
+          height: '250px',
+          borderRadius: '50%',
+          background: 'rgba(255, 255, 255, 0.03)',
+          zIndex: 0
+        }} />
+
         <Container sx={{ position: 'relative', zIndex: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 2 }}>
+            <Verified sx={{ fontSize: 24 }} />
+            <Typography variant="overline" sx={{ fontWeight: 700, letterSpacing: '2px' }}>
+              {language === 'en' ? 'About Us' : language === 'tr' ? 'Hakkımızda' : 'О нас'}
+            </Typography>
+          </Box>
+
           <Typography variant="h1" component="h1" sx={{
-            fontWeight: 'bold',
-            mb: { xs: 2, md: 3 },
-            fontSize: { xs: '2rem', sm: '2.5rem', md: '4rem' }
+            fontWeight: 900,
+            mb: 3,
+            fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
+            lineHeight: 1.1
           }}>
-            {t.about}
+            {language === 'en' 
+              ? 'Europe\'s #1 Booking Platform'
+              : language === 'tr'
+              ? 'Avrupa\'nın #1 Rezervasyon Platformu'
+              : 'Ведущая платформа бронирования'
+            }
           </Typography>
+
           <Typography variant="h5" sx={{
-            opacity: 0.95,
-            fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' },
-            maxWidth: { xs: '90%', sm: 600 },
-            mx: 'auto'
+            opacity: 0.9,
+            fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
+            maxWidth: 700,
+            mx: 'auto',
+            fontWeight: 300,
+            lineHeight: 1.6
           }}>
-            {t.subtitle}
+            {language === 'en'
+              ? 'Connecting customers with top professionals across Europe'
+              : language === 'tr'
+              ? 'Müşterileri Avrupa\'daki en iyi profesyonellerle buluşturu'
+              : 'Соединяем клиентов с лучшими профессионалами'
+            }
           </Typography>
         </Container>
       </Box>
 
       {/* Stats Section */}
-      <Container sx={{ py: { xs: 3, sm: 4, md: 6 }, px: { xs: 1, sm: 2, md: 3 } }}>
-        <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mb: { xs: 4, md: 8 } }}>
+      <Container sx={{ py: { xs: 6, md: 8 } }}>
+        <Grid container spacing={{ xs: 2, md: 3 }}>
           {stats.map((stat, index) => (
-            <Grid item xs={6} sm={3} md={3} key={index}>
-              <Paper sx={{ 
-                p: 3, 
+            <Grid item xs={6} sm={3} key={index}>
+              <Paper sx={{
+                p: 3,
                 textAlign: 'center',
                 height: '100%',
-                transition: 'transform 0.3s ease',
-                '&:hover': { transform: 'translateY(-4px)' }
+                background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
+                border: '1px solid #d1d5db',
+                borderRadius: 3,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 12px 32px rgba(55, 65, 81, 0.15)',
+                  borderColor: '#374151'
+                }
               }}>
-                <Box sx={{ 
-                  bgcolor: '#e6f7f5', 
-                  borderRadius: '50%', 
-                  p: 2, 
+                <Box sx={{
+                  bgcolor: 'white',
+                  borderRadius: '50%',
+                  p: 2,
                   display: 'inline-flex',
                   mb: 2,
-                  color: '#2d3748'
+                  color: '#374151'
                 }}>
                   {React.cloneElement(stat.icon, { sx: { fontSize: 32 } })}
                 </Box>
-                <Typography variant="h3" sx={{ 
-                  fontWeight: 'bold', 
-                  color: '#2d3748',
-                  fontSize: { xs: '2rem', md: '3rem' }
+                <Typography variant="h3" sx={{
+                  fontWeight: 900,
+                  color: '#1f2937',
+                  fontSize: { xs: '1.75rem', md: '2.5rem' }
                 }}>
                   {stat.number}
                 </Typography>
-                <Typography variant="body1" color="text.secondary">
+                <Typography variant="body1" sx={{ color: '#6b7280', fontWeight: 500 }}>
                   {stat.label}
                 </Typography>
               </Paper>
             </Grid>
           ))}
         </Grid>
+      </Container>
 
-        {/* Mission, Vision, Values */}
-        <Grid container spacing={4} sx={{ mb: 8 }}>
-          <Grid item xs={12} md={4}>
-            <Card sx={{ height: '100%', textAlign: 'center' }}>
-              <CardContent sx={{ p: 4 }}>
-                <Business sx={{ fontSize: 48, color: '#2d3748', mb: 2 }} />
-                <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
-                  {t.ourMission}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  {language === 'en' 
-                    ? 'To revolutionize the service industry by connecting customers with skilled professionals through innovative technology, making quality services accessible to everyone across Europe.'
-                    : language === 'tr' 
-                    ? 'Müşterileri yenilikçi teknoloji aracılığıyla yetenekli profesyonellerle buluşturarak berberlik sektöründe devrim yaratmak, kaliteli bakımı Avrupa genelinde herkese erişilebilir kılmak.'
-                    : 'Революционизировать парикмахерскую индустрию, соединяя клиентов с квалифицированными профессионалами через инновационные технологии, делая качественный уход доступным для всех в Европе.'
-                  }
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Card sx={{ height: '100%', textAlign: 'center' }}>
-              <CardContent sx={{ p: 4 }}>
-                <TrendingUp sx={{ fontSize: 48, color: '#2d3748', mb: 2 }} />
-                <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
-                  {t.ourVision}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  {language === 'en' 
-                    ? 'To become Europe\'s leading platform for professional services, setting new standards for convenience, quality, and customer satisfaction across all industries.'
-                    : language === 'tr' 
-                    ? 'Profesyonel bakım hizmetleri için Avrupa\'nın önde gelen platformu olmak, güzellik sektöründe rahatlık, kalite ve müşteri memnuniyeti için yeni standartlar belirlemek.'
-                    : 'Стать ведущей платформой Европы для профессиональных услуг по уходу, устанавливая новые стандарты удобства, качества и удовлетворенности клиентов в индустрии красоты.'
-                  }
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Card sx={{ height: '100%', textAlign: 'center' }}>
-              <CardContent sx={{ p: 4 }}>
-                <Star sx={{ fontSize: 48, color: '#2d3748', mb: 2 }} />
-                <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
-                  {t.ourValues}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  {language === 'en' 
-                    ? 'We believe in quality, trust, innovation, and putting our customers first. Every decision we make is guided by these core principles that drive our success.'
-                    : language === 'tr' 
-                    ? 'Kalite, güven, inovasyon ve müşterilerimizi ön planda tutmaya inanıyoruz. Aldığımız her karar, başarımızı yönlendiren bu temel ilkeler tarafından yönlendirilir.'
-                    : 'Мы верим в качество, доверие, инновации и ставим наших клиентов на первое место. Каждое наше решение руководствуется этими основными принципами, которые движут нашим успехом.'
-                  }
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+      {/* Mission, Vision, Values with Images */}
+      <Box sx={{ bgcolor: '#f9fafb', py: { xs: 6, md: 8 } }}>
+        <Container>
+          <Typography variant="h3" sx={{
+            fontWeight: 900,
+            textAlign: 'center',
+            mb: 8,
+            color: '#1f2937',
+            fontSize: { xs: '2rem', md: '3rem' }
+          }}>
+            {language === 'en' ? 'Why Choose Us' : language === 'tr' ? 'Neden Biz' : 'Почему мы'}
+          </Typography>
 
-        {/* Values Detail */}
-        <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 4, textAlign: 'center' }}>
-          {language === 'en' ? 'What Drives Us' : language === 'tr' ? 'Bizi Neler Yönlendiriyor' : 'Что нами движет'}
+          <Grid container spacing={4}>
+            {values.map((value, index) => (
+              <Grid item xs={12} md={4} key={index}>
+                <Card sx={{
+                  height: '100%',
+                  borderRadius: 3,
+                  overflow: 'hidden',
+                  border: '1px solid #e5e7eb',
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    transform: 'translateY(-12px)',
+                    boxShadow: '0 20px 48px rgba(55, 65, 81, 0.15)',
+                    borderColor: '#374151'
+                  }
+                }}>
+                  <CardMedia
+                    component="img"
+                    height="200"
+                    image={value.image}
+                    alt={value.title}
+                    sx={{ objectFit: 'cover' }}
+                  />
+                  <CardContent sx={{ p: 4 }}>
+                    <Box sx={{
+                      bgcolor: '#f3f4f6',
+                      borderRadius: '50%',
+                      p: 2,
+                      display: 'inline-flex',
+                      mb: 3,
+                      color: '#374151'
+                    }}>
+                      {React.cloneElement(value.icon, { sx: { fontSize: 28 } })}
+                    </Box>
+                    <Typography variant="h5" sx={{ fontWeight: 800, mb: 2, color: '#1f2937' }}>
+                      {value.title}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#6b7280', lineHeight: 1.6, fontWeight: 500 }}>
+                      {value.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* Team Section */}
+      <Container sx={{ py: { xs: 6, md: 8 } }}>
+        <Typography variant="h3" sx={{
+          fontWeight: 900,
+          textAlign: 'center',
+          mb: 8,
+          color: '#1f2937',
+          fontSize: { xs: '2rem', md: '3rem' }
+        }}>
+          {language === 'en' ? 'Leadership Team' : language === 'tr' ? 'Liderlik Takımı' : 'Команда руководства'}
         </Typography>
-        <Grid container spacing={3} sx={{ mb: 8 }}>
-          {values.map((value, index) => (
-            <Grid item xs={12} md={4} key={index}>
-              <Card sx={{ 
-                height: '100%',
-                transition: 'transform 0.3s ease',
-                '&:hover': { transform: 'translateY(-4px)' }
-              }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ 
-                    bgcolor: '#e6f7f5', 
-                    borderRadius: '50%', 
-                    p: 2, 
-                    display: 'inline-flex',
-                    mb: 2,
-                    color: '#2d3748'
-                  }}>
-                    {React.cloneElement(value.icon, { sx: { fontSize: 32 } })}
-                  </Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2 }}>
-                    {value.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {value.description}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
 
-        {/* Team Section */}
-        <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 4, textAlign: 'center' }}>
-          {t.team}
-        </Typography>
-        <Grid container spacing={4} sx={{ mb: 8 }}>
+        <Grid container spacing={4} sx={{ maxWidth: 900, mx: 'auto' }}>
           {team.map((member, index) => (
-            <Grid item xs={12} md={4} key={index}>
-              <Card sx={{ 
+            <Grid item xs={12} sm={6} key={index}>
+              <Card sx={{
                 textAlign: 'center',
                 height: '100%',
-                transition: 'transform 0.3s ease',
-                '&:hover': { transform: 'translateY(-4px)' }
+                borderRadius: 3,
+                border: '1px solid #e5e7eb',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 16px 40px rgba(55, 65, 81, 0.12)',
+                  borderColor: '#374151'
+                }
               }}>
-                <CardContent sx={{ p: 4 }}>
+                <Box sx={{
+                  background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
+                  p: 4,
+                  pb: 2
+                }}>
                   <Avatar
                     src={member.image}
                     sx={{
                       width: 120,
                       height: 120,
                       mx: 'auto',
-                      mb: 2,
-                      border: '4px solid #e6f7f5'
+                      border: '4px solid white',
+                      boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
                     }}
                   />
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+                </Box>
+
+                <CardContent sx={{ p: 4 }}>
+                  <Typography variant="h5" sx={{ fontWeight: 800, mb: 1, color: '#1f2937' }}>
                     {member.name}
                   </Typography>
-                  <Typography variant="subtitle1" color="primary" sx={{ mb: 2, fontWeight: 'medium' }}>
+                  <Typography variant="subtitle2" sx={{
+                    mb: 3,
+                    fontWeight: 700,
+                    color: '#374151',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    fontSize: '0.8rem'
+                  }}>
                     {member.position}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500 }}>
                     {member.bio}
                   </Typography>
                 </CardContent>
@@ -366,46 +395,122 @@ const About = () => {
             </Grid>
           ))}
         </Grid>
-
-        {/* Call to Action */}
-        <Box sx={{ 
-          textAlign: 'center', 
-          p: 4,
-          bgcolor: '#e6f7f5',
-          borderRadius: 3
-        }}>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2, color: '#1f2937' }}>
-            {t.joinUs}
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary', maxWidth: 600, mx: 'auto' }}>
-            {language === 'en' 
-              ? 'Experience the future of service booking. Book your appointment today and discover why thousands of customers trust Aponti for their service needs.'
-              : language === 'tr' 
-              ? 'Berberliğin geleceğini deneyimleyin. Bugün randevunuzu alın ve binlerce müşterinin neden bakım ihtiyaçları için BarberPro\'ya güvendiğini keşfedin.'
-              : 'Испытайте будущее парикмахерского дела. Запишитесь на прием сегодня и узнайте, почему тысячи клиентов доверяют BarberPro для своих потребностей в уходе.'
-            }
-          </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            sx={{
-              bgcolor: '#2d3748',
-              fontWeight: 'bold',
-              px: 4,
-              py: 1.5,
-              '&:hover': { bgcolor: '#007562' }
-            }}
-            onClick={() => navigate('/')}
-          >
-            {language === 'en' 
-              ? 'Find Your Business'
-              : language === 'tr' 
-              ? 'Berberinizi Bulun'
-              : 'На��ти парикмахера'
-            }
-          </Button>
-        </Box>
       </Container>
+
+      {/* Call to Action */}
+      <Box sx={{
+        background: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)',
+        color: 'white',
+        py: { xs: 6, md: 8 },
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <Box sx={{
+          position: 'absolute',
+          top: '-10%',
+          right: '-5%',
+          width: '300px',
+          height: '300px',
+          borderRadius: '50%',
+          background: 'rgba(255, 255, 255, 0.05)',
+          zIndex: 0
+        }} />
+
+        <Container sx={{ position: 'relative', zIndex: 1 }}>
+          <Typography variant="h3" sx={{
+            fontWeight: 900,
+            mb: 3,
+            fontSize: { xs: '2rem', md: '3rem' }
+          }}>
+            {language === 'en'
+              ? 'Ready to Get Started?'
+              : language === 'tr'
+              ? 'Başlamaya Hazır?'
+              : 'Готовы начать?'
+            }
+          </Typography>
+
+          <Typography variant="h6" sx={{
+            mb: 6,
+            opacity: 0.9,
+            maxWidth: 600,
+            mx: 'auto',
+            fontWeight: 300,
+            fontSize: { xs: '1rem', md: '1.2rem' }
+          }}>
+            {language === 'en'
+              ? 'Join thousands of satisfied customers and book your appointment today'
+              : language === 'tr'
+              ? 'Binlerce memnun müşterimize katılın ve randevunuzu alın'
+              : 'Присоединитесь к тысячам довольных клиентов'
+            }
+          </Typography>
+
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ justifyContent: 'center' }}>
+            <Button
+              variant="contained"
+              size="large"
+              endIcon={<ArrowForward />}
+              sx={{
+                bgcolor: 'white',
+                color: '#374151',
+                fontWeight: 700,
+                px: 4,
+                py: 1.5,
+                fontSize: '1rem',
+                borderRadius: '50px',
+                textTransform: 'none',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-3px)',
+                  boxShadow: '0 12px 32px rgba(0,0,0,0.2)',
+                  bgcolor: '#f3f4f6'
+                }
+              }}
+              onClick={() => navigate('/')}
+            >
+              {language === 'en'
+                ? 'Book Now'
+                : language === 'tr'
+                ? 'Şimdi Rezervasyon Yap'
+                : 'Забронировать'
+              }
+            </Button>
+
+            <Button
+              variant="outlined"
+              size="large"
+              sx={{
+                borderColor: 'white',
+                color: 'white',
+                fontWeight: 700,
+                px: 4,
+                py: 1.5,
+                fontSize: '1rem',
+                borderRadius: '50px',
+                borderWidth: 2,
+                textTransform: 'none',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  borderColor: 'white',
+                  bgcolor: 'rgba(255,255,255,0.1)',
+                  transform: 'translateY(-3px)'
+                }
+              }}
+              onClick={() => navigate('/business-signup')}
+            >
+              {language === 'en'
+                ? 'For Businesses'
+                : language === 'tr'
+                ? 'İşletmeler İçin'
+                : 'Для бизнеса'
+              }
+            </Button>
+          </Stack>
+        </Container>
+      </Box>
 
       <Footer />
     </Box>
