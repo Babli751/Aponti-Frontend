@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // 1. BASE URL CONFIGURATION
-const API_BASE_URL = window.API_BASE_URL || process.env.REACT_APP_API_URL || '/api/v1';
+const API_BASE_URL = window.API_BASE_URL || process.env.REACT_APP_API_URL || '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
