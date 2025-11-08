@@ -186,7 +186,7 @@ const BusinessDetail = () => {
           ? 'Please select a day and time'
           : language === 'tr'
           ? 'Lütfen bir gün ve saat seçin'
-          : 'Пожалуйста, выберите день и время'
+          : 'Пожалуйста, выберите день и в��емя'
         );
         return;
       }
@@ -352,10 +352,10 @@ const BusinessDetail = () => {
       </AppBar>
 
       <Container sx={{ mt: 4, mb: 6 }}>
-        {/* Photo Gallery with Map/Contact on Right */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        {/* Photo Gallery with Map/Contact/About on Right */}
+        <Grid container spacing={3} sx={{ mb: 6 }}>
           {/* Left Side - Photos */}
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={6}>
             {/* Main large photo */}
             <Box
               component="img"
@@ -400,10 +400,10 @@ const BusinessDetail = () => {
             </Box>
           </Grid>
 
-          {/* Right Side - Map and Contact */}
-          <Grid item xs={12} md={4}>
-            {/* Location Map */}
-            <Box sx={{ mb: 2 }}>
+          {/* Right Side - Map, About Us, Contact */}
+          <Grid item xs={12} md={6}>
+            <Stack spacing={2} sx={{ height: '100%' }}>
+              {/* Location Map */}
               <Card sx={{ overflow: 'hidden', borderRadius: 2, position: 'relative' }}>
                 <MapView
                   businesses={[{
@@ -418,7 +418,6 @@ const BusinessDetail = () => {
                   onBusinessClick={() => {}}
                   height="250px"
                 />
-                {/* Nearby Businesses Count */}
                 <Chip
                   label={language === 'en' ? '1 businesses nearby' : language === 'tr' ? '1 işletme yakında' : '1 предприятие рядом'}
                   sx={{
@@ -431,115 +430,79 @@ const BusinessDetail = () => {
                   }}
                 />
               </Card>
-            </Box>
 
-            {/* Contact Info */}
-            <Card sx={{ mb: 2 }}>
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                  {language === 'en' ? 'Contact' : language === 'tr' ? 'İletişim' : 'Контакты'}
-                </Typography>
+              {/* About Us Card */}
+              <Card sx={{ flex: 1 }}>
+                <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1.5 }}>
+                    {language === 'en' ? 'About Us' : language === 'tr' ? 'Hakkımızda' : 'О нас'}
+                  </Typography>
+                  <Typography variant="body2" sx={{ lineHeight: 1.6, color: '#4b5563', flex: 1 }}>
+                    {displayBusiness.description || (language === 'en' ? 'Welcome to our business! We are dedicated to providing the highest quality services.' : language === 'tr' ? 'İşletmemize hoş geldiniz! En yüksek kalitede hizmet sunmaya dediktir.' : 'Добро пожаловать в наш бизнес!')}
+                  </Typography>
+                </CardContent>
+              </Card>
 
-                <Stack spacing={2}>
-                  {/* Phone */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Phone sx={{ color: '#2d3748', fontSize: 20 }} />
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {displayBusiness.phone || '+90 555 123 4567'}
-                      </Typography>
-                      <Button
-                        size="small"
-                        sx={{
-                          mt: 0.5,
-                          bgcolor: '#e8f5e9',
-                          color: '#2d3748',
-                          fontWeight: 600,
-                          '&:hover': { bgcolor: '#c8e6c9' }
-                        }}
-                      >
-                        {language === 'en' ? 'Call' : language === 'tr' ? 'Ara' : 'Позвонить'}
-                      </Button>
+              {/* Contact Info Card */}
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                    {language === 'en' ? 'Contact & Hours' : language === 'tr' ? 'İletişim & Saatler' : 'Контакты'}
+                  </Typography>
+
+                  <Stack spacing={1.5}>
+                    {/* Phone */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Phone sx={{ color: '#2d3748', fontSize: 18 }} />
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
+                          {displayBusiness.phone || '+90 555 123 4567'}
+                        </Typography>
+                        <Button
+                          size="small"
+                          sx={{
+                            mt: 0.3,
+                            bgcolor: '#e8f5e9',
+                            color: '#2d3748',
+                            fontWeight: 600,
+                            fontSize: '0.75rem',
+                            py: 0.3,
+                            px: 1,
+                            '&:hover': { bgcolor: '#c8e6c9' }
+                          }}
+                        >
+                          {language === 'en' ? 'Call' : language === 'tr' ? 'Ara' : 'Позвонить'}
+                        </Button>
+                      </Box>
                     </Box>
-                  </Box>
 
-                  {/* Address */}
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                    <LocationOn sx={{ color: '#2d3748', fontSize: 20, mt: 0.2 }} />
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2">
-                        {displayBusiness.address || 'Test Street 123'}
-                      </Typography>
+                    {/* Address */}
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                      <LocationOn sx={{ color: '#2d3748', fontSize: 18, mt: 0.2, flexShrink: 0 }} />
+                      <Box>
+                        <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                          {displayBusiness.address || 'Test Street 123'}
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
 
-            {/* Business Hours */}
-            <Card sx={{ mb: 2 }}>
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                  {language === 'en' ? 'Contact & Business Hours' : language === 'tr' ? 'İletişim & Çalışma Saatleri' : 'Контакты и часы работы'}
-                </Typography>
-
-                <Stack spacing={1.5}>
-                  {/* Monday to Friday */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {language === 'en' ? 'Today' : language === 'tr' ? 'Bugün' : 'Сегодня'}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#00BFA6', fontWeight: 600 }}>
-                      10:00 AM - 01:00 PM
-                    </Typography>
-                  </Box>
-
-                  <Button
-                    variant="text"
-                    size="small"
-                    sx={{ color: '#00BFA6', justifyContent: 'flex-start', pl: 0 }}
-                  >
-                    {language === 'en' ? 'Show full week' : language === 'tr' ? 'Tüm haftayı göster' : 'Показать всю неделю'}
-                  </Button>
-                </Stack>
-              </CardContent>
-            </Card>
-
-            {/* Payment & Cancellation Policy */}
-            <Card>
-              <CardContent>
-                <Button
-                  fullWidth
-                  variant="text"
-                  sx={{
-                    justifyContent: 'space-between',
-                    py: 1,
-                    color: '#2d3748',
-                    fontWeight: 600,
-                    '&:hover': { bgcolor: '#f9fafb' }
-                  }}
-                >
-                  {language === 'en' ? 'Payment & Cancellation Policy' : language === 'tr' ? 'Ödeme & İptal Politikası' : 'Политика оплаты и отмены'}
-                  <Box sx={{ fontSize: '1.2rem' }}>›</Box>
-                </Button>
-              </CardContent>
-            </Card>
+                    {/* Business Hours */}
+                    <Box sx={{ pt: 1, borderTop: '1px solid #e5e7eb' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
+                          {language === 'en' ? 'Today' : language === 'tr' ? 'Bugün' : 'Сегодня'}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#00BFA6', fontWeight: 600, fontSize: '0.9rem' }}>
+                          10:00 AM - 01:00 PM
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Stack>
           </Grid>
         </Grid>
-
-        {/* About Us Section */}
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
-            {language === 'en' ? 'About Us' : language === 'tr' ? 'Hakkımızda' : 'О нас'}
-          </Typography>
-          <Card>
-            <CardContent>
-              <Typography variant="body1" sx={{ lineHeight: 1.8, color: '#4b5563' }}>
-                {displayBusiness.description || (language === 'en' ? 'Welcome to our business! We are dedicated to providing the highest quality services to our valued customers. With years of experience in the industry, our team of professionals is committed to ensuring your satisfaction.' : language === 'tr' ? 'İşletmemize hoş geldiniz! Değerli müşterilerimize en yüksek kalitede hizmet sunmaya dediktir. Sektördeki yılların tecrübesiyle, profesyonel ekibimiz memnuniyetinizi sağlamaya kararlıdır.' : 'Добро пожаловать в наш бизнес! Мы привержены предоставлению высочайшего качества услуг нашим ценным клиентам. С многолетним опытом работы в отрасли, наша команда профессионалов стремится обеспечить вашу удовлетворенность.')}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
 
         {/* Services Section */}
         <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
