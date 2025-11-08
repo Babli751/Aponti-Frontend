@@ -376,7 +376,7 @@ const Home = () => {
       ? 'To find businesses near you, we need access to your location. Click OK to allow location access in the next prompt.'
       : language === 'tr'
       ? 'Size yakın işletmeleri bulmak için konumunuza erişmemiz gerekiyor. Sonraki uyarıda konum erişimine izin vermek için Tamam\'a tıklayın.'
-      : 'Чтобы найти предприятия ря��ом с вами, нам нужен доступ к вашему местоположению. Нажмите OK, чтобы разрешить доступ к местоположению.';
+      : 'Чтобы найти предприятия ря��ом с вами, нам нужен доступ к вашему место��оложению. Нажмите OK, чтобы разрешить доступ к местоположению.';
 
     const userConfirmed = window.confirm(confirmMessage);
 
@@ -1241,7 +1241,7 @@ const Home = () => {
             height: { xs: 400, md: 600 },
             borderRadius: 2,
             overflow: 'hidden',
-            boxShadow: '0 8px 24px rgba(0,166,147,0.2)',
+            boxShadow: '0 8px 24px rgba(55, 65, 81, 0.15)',
             border: '3px solid #2d3748',
             position: 'relative'
           }}>
@@ -1328,7 +1328,7 @@ const Home = () => {
                   } else if (cat.includes('pet') || cat.includes('hayvan') || cat.includes('питомц')) {
                     return { icon: '🐾', color: '#f59e0b', bgColor: 'rgba(245, 158, 11, 0.1)', name: language === 'en' ? 'Pet Care' : language === 'tr' ? 'Evcil Hayvan' : 'Питомцы' };
                   } else if (cat.includes('home') || cat.includes('ev') || cat.includes('дом')) {
-                    return { icon: '🏠', color: '#10b981', bgColor: 'rgba(16, 185, 129, 0.1)', name: language === 'en' ? 'Home Services' : language === 'tr' ? 'Ev Hizmetleri' : 'Дом' };
+                    return { icon: '🏠', color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.1)', name: language === 'en' ? 'Home Services' : language === 'tr' ? 'Ev Hizmetleri' : 'Дом' };
                   } else if (cat.includes('health') || cat.includes('sağlık') || cat.includes('здоровье')) {
                     return { icon: '⚕️', color: '#06b6d4', bgColor: 'rgba(6, 182, 212, 0.1)', name: language === 'en' ? 'Health' : language === 'tr' ? 'Sağlık' : 'Здоровье' };
                   } else {
@@ -1852,7 +1852,7 @@ const Home = () => {
                   ? 'The leading platform for booking professional barber services across Europe. Find and book the best barbers in your city.'
                   : language === 'tr'
                   ? 'Avrupa\'da profesyonel berber hizmetleri rezervasyonu için önde gelen platform. Şehrinizdeki en iyi berberleri bulun ve rezervasyon yapın.'
-                  : 'Вед��щая платфор��а для бронирования профессиональных парикмахерских услуг по всей Европе. Найдите и заброн��руйте лучших парикмахеров в своем городе.'
+                  : 'Вед��щая платфор��а для бронирования профессиональных парикмахерских услуг по всей Европе. Найдите и заброн��руйте лучших парикма��еров в своем городе.'
                 }
               </Typography>
               <Stack direction="row" spacing={1}>
