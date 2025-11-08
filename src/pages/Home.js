@@ -387,7 +387,7 @@ const Home = () => {
         ? 'Location access cancelled. Showing Istanbul as default location.'
         : language === 'tr'
         ? 'Konum erişimi iptal edildi. Varsayılan olarak İstanbul gösteriliyor.'
-        : 'Доступ к местоположению отменен. Показываем Стамбул по умол��анию.');
+        : 'Доступ к мест��положению отменен. Показываем Стамбул по умол��анию.');
       return;
     }
 
@@ -418,7 +418,7 @@ const Home = () => {
               ? 'Location access denied. Showing Istanbul as default location. To enable location access, please check your browser settings (usually in the address bar or browser settings).'
               : language === 'tr'
               ? 'Konum erişimi reddedildi. Varsayılan olarak İstanbul gösteriliyor. Konum erişimini açmak için tarayıcı ayarlarınızı kontrol edin (genellikle adres çubuğunda veya tarayıcı ayarlarında).'
-              : 'Доступ к местоположению за����реще��. Показываем Стамбул по умолчанию. Включите доступ к местоположению в настройках браузера.';
+              : 'Д��ступ к местоположению за����реще��. Показываем Стамбул по умолчанию. Включите доступ к местоположению в настройках браузера.';
           } else if (error.code === 2) {
             // POSITION_UNAVAILABLE
             errorMessage = language === 'en'
@@ -489,7 +489,7 @@ const Home = () => {
         ? 'Cutting-edge techniques and contemporary designs'
         : language === 'tr'
         ? 'Son teknoloji ve çağdaş tasarımlar'
-        : 'Передовые техники и современный дизайн',
+        : 'Передовые техники и с��временный дизайн',
       image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=800&h=600&fit=crop',
       features: [
         language === 'en' ? 'Trendy Styles' : language === 'tr' ? 'Trend Saç Modelleri' : 'Модные стили',
@@ -1794,7 +1794,7 @@ const Home = () => {
                   py: 1.5,
                   fontSize: '1.1rem',
                   '&:hover': {
-                    bgcolor: '#f0fffe',
+                    bgcolor: '#f3f4f6',
                     transform: 'translateY(-2px)'
                   }
                 }}
