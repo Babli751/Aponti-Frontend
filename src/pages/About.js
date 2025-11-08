@@ -35,16 +35,7 @@ import {
 
 const About = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
-  const { language, changeLanguage, t: translations } = useLanguage();
-
-  const t = {
-    ...translations,
-    about: translations.aboutUs,
-    subtitle: translations.aboutSubtitle
-  };
+  const { language, changeLanguage } = useLanguage();
 
   const stats = [
     {
@@ -96,7 +87,7 @@ const About = () => {
         ? 'Cutting-edge technology for seamless experience'
         : language === 'tr' 
         ? 'Yüksek teknoloji ile kolay deneyim'
-        : 'Современные технологии',
+        : 'Современные технологи��',
       icon: <TrendingUp />,
       image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop'
     }
