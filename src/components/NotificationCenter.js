@@ -27,7 +27,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
-const API_BASE_URL = window.API_BASE_URL || process.env.REACT_APP_API_URL || '/api/v1';
+const API_BASE_URL = window.API_BASE_URL || process.env.REACT_APP_API_URL || '/api';
 
 const NotificationCenter = () => {
   const [anchorEl, setAnchorEl] = useState(null);

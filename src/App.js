@@ -54,7 +54,7 @@ const BarberDebug = () => {
     }
 
     try {
-      const response = await fetch(`${window.API_BASE_URL}/api/v1/auth/me`, {
+      const response = await fetch(`${window.API_BASE_URL}/api/auth/me`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
