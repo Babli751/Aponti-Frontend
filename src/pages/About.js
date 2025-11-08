@@ -14,20 +14,14 @@ import {
   Grid,
   AppBar,
   Toolbar,
-  IconButton,
   FormControl,
   Select,
   MenuItem,
-  Stack,
   Avatar,
   useTheme,
-  useMediaQuery,
-  Paper,
-  Divider
+  useMediaQuery
 } from '@mui/material';
 import {
-  ArrowBack,
-  Language,
   Business,
   People,
   Security,
