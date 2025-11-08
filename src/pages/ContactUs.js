@@ -163,7 +163,7 @@ const ContactUs = () => {
                 '& .MuiSvgIcon-root': { color: 'white' }
               }}
             >
-              <MenuItem value="en">🇬🇧 English</MenuItem>
+              <MenuItem value="en">����🇧 English</MenuItem>
               <MenuItem value="tr">🇹🇷 Türkçe</MenuItem>
               <MenuItem value="ru">🇷🇺 Русский</MenuItem>
             </Select>
@@ -518,7 +518,7 @@ const ContactUs = () => {
                 border: '1px solid #d1d5db'
               }}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                  <Clock sx={{ color: '#374151', fontSize: 28, mt: 0.5, flexShrink: 0 }} />
+                  <AccessTime sx={{ color: '#374151', fontSize: 28, mt: 0.5, flexShrink: 0 }} />
                   <Box>
                     <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, color: '#1f2937' }}>
                       {language === 'en' ? 'Quick Response' : language === 'tr' ? 'Hızlı Yanıt' : 'Быстрый ответ'}
