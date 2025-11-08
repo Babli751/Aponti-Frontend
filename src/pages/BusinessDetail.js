@@ -86,24 +86,27 @@ const BusinessDetail = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch business profile
-        const businessResponse = await api.get(`/business/${id}`);
-        setBusiness(businessResponse.data);
-
-        // Fetch workers for this business
+        // Fetch all workers from the general endpoint
         try {
-          const workersResponse = await api.get(`/business/${id}/workers`);
-          console.log('Workers for business:', workersResponse.data);
-          setWorkers(workersResponse.data || []);
+          const workersResponse = await api.get('/barbers/');
+          console.log('All workers:', workersResponse.data);
+          // Filter workers by business ID if it's in the data
+          const allWorkers = Array.isArray(workersResponse.data) ? workersResponse.data : [];
+          const businessWorkers = allWorkers.filter(w => String(w.business_id) === String(id) || String(w.barber_shop_id) === String(id));
+          setWorkers(businessWorkers.length > 0 ? businessWorkers : allWorkers);
         } catch (err) {
           console.error('Error fetching workers:', err);
           setWorkers([]);
         }
 
-        // Fetch services for this business
+        // Fetch all services from the general endpoint
         try {
-          const servicesResponse = await api.get(`/business/${id}/services`);
-          setServices(servicesResponse.data || []);
+          const servicesResponse = await api.get('/services/');
+          console.log('All services:', servicesResponse.data);
+          // Filter services by business ID if it's in the data
+          const allServices = Array.isArray(servicesResponse.data) ? servicesResponse.data : [];
+          const businessServices = allServices.filter(s => String(s.business_id) === String(id) || String(s.barber_shop_id) === String(id));
+          setServices(businessServices.length > 0 ? businessServices : allServices);
         } catch (err) {
           console.error('Error fetching services:', err);
           setServices([]);
@@ -349,10 +352,10 @@ const BusinessDetail = () => {
       </AppBar>
 
       <Container sx={{ mt: 4, mb: 6 }}>
-        {/* Photo Gallery with Map/Contact on Right */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        {/* Photo Gallery with Map/Contact/About on Right */}
+        <Grid container spacing={3} sx={{ mb: 6 }}>
           {/* Left Side - Photos */}
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={7}>
             {/* Main large photo */}
             <Box
               component="img"
@@ -360,7 +363,7 @@ const BusinessDetail = () => {
               alt="Business main"
               sx={{
                 width: '100%',
-                height: { xs: 300, sm: 350, md: 420 },
+                height: { xs: 320, sm: 380, md: 480 },
                 objectFit: 'cover',
                 borderRadius: 2,
                 mb: 2,
@@ -368,7 +371,7 @@ const BusinessDetail = () => {
               }}
             />
 
-            {/* Smaller thumbnail photos below */}
+            {/* Larger thumbnail photos below */}
             <Box sx={{ display: 'flex', gap: 1.5, overflow: 'auto', scrollBehavior: 'smooth', pb: 1 }}>
               {galleryPhotos.map((photo, index) => (
                 <Box
@@ -378,8 +381,8 @@ const BusinessDetail = () => {
                   alt={`Business photo ${index + 1}`}
                   onClick={() => setMainPhoto(photo)}
                   sx={{
-                    width: 110,
-                    height: 85,
+                    width: 130,
+                    height: 100,
                     objectFit: 'cover',
                     borderRadius: 1.5,
                     cursor: 'pointer',
@@ -397,10 +400,10 @@ const BusinessDetail = () => {
             </Box>
           </Grid>
 
-          {/* Right Side - Map and Contact */}
-          <Grid item xs={12} md={4}>
-            {/* Location Map */}
-            <Box sx={{ mb: 2 }}>
+          {/* Right Side - Map, About Us, Contact */}
+          <Grid item xs={12} md={5}>
+            <Stack spacing={2} sx={{ height: '100%' }}>
+              {/* Location Map */}
               <Card sx={{ overflow: 'hidden', borderRadius: 2, position: 'relative' }}>
                 <MapView
                   businesses={[{
@@ -415,7 +418,6 @@ const BusinessDetail = () => {
                   onBusinessClick={() => {}}
                   height="250px"
                 />
-                {/* Nearby Businesses Count */}
                 <Chip
                   label={language === 'en' ? '1 businesses nearby' : language === 'tr' ? '1 işletme yakında' : '1 предприятие рядом'}
                   sx={{
@@ -428,115 +430,79 @@ const BusinessDetail = () => {
                   }}
                 />
               </Card>
-            </Box>
 
-            {/* Contact Info */}
-            <Card sx={{ mb: 2 }}>
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                  {language === 'en' ? 'Contact' : language === 'tr' ? 'İletişim' : 'Контакты'}
-                </Typography>
+              {/* About Us Card */}
+              <Card sx={{ flex: 1 }}>
+                <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1.5 }}>
+                    {language === 'en' ? 'About Us' : language === 'tr' ? 'Hakkımızda' : 'О нас'}
+                  </Typography>
+                  <Typography variant="body2" sx={{ lineHeight: 1.6, color: '#4b5563', flex: 1 }}>
+                    {displayBusiness.description || (language === 'en' ? 'Welcome to our business! We are dedicated to providing the highest quality services.' : language === 'tr' ? 'İşletmemize hoş geldiniz! En yüksek kalitede hizmet sunmaya dediktir.' : 'Добро пожаловать в наш бизнес!')}
+                  </Typography>
+                </CardContent>
+              </Card>
 
-                <Stack spacing={2}>
-                  {/* Phone */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Phone sx={{ color: '#2d3748', fontSize: 20 }} />
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {displayBusiness.phone || '+90 555 123 4567'}
-                      </Typography>
-                      <Button
-                        size="small"
-                        sx={{
-                          mt: 0.5,
-                          bgcolor: '#e8f5e9',
-                          color: '#2d3748',
-                          fontWeight: 600,
-                          '&:hover': { bgcolor: '#c8e6c9' }
-                        }}
-                      >
-                        {language === 'en' ? 'Call' : language === 'tr' ? 'Ara' : 'Позвонить'}
-                      </Button>
+              {/* Contact Info Card */}
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                    {language === 'en' ? 'Contact & Hours' : language === 'tr' ? 'İletişim & Saatler' : 'Контакты'}
+                  </Typography>
+
+                  <Stack spacing={1.5}>
+                    {/* Phone */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Phone sx={{ color: '#2d3748', fontSize: 18 }} />
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
+                          {displayBusiness.phone || '+90 555 123 4567'}
+                        </Typography>
+                        <Button
+                          size="small"
+                          sx={{
+                            mt: 0.3,
+                            bgcolor: '#e8f5e9',
+                            color: '#2d3748',
+                            fontWeight: 600,
+                            fontSize: '0.75rem',
+                            py: 0.3,
+                            px: 1,
+                            '&:hover': { bgcolor: '#c8e6c9' }
+                          }}
+                        >
+                          {language === 'en' ? 'Call' : language === 'tr' ? 'Ara' : 'Позвонить'}
+                        </Button>
+                      </Box>
                     </Box>
-                  </Box>
 
-                  {/* Address */}
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                    <LocationOn sx={{ color: '#2d3748', fontSize: 20, mt: 0.2 }} />
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2">
-                        {displayBusiness.address || 'Test Street 123'}
-                      </Typography>
+                    {/* Address */}
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                      <LocationOn sx={{ color: '#2d3748', fontSize: 18, mt: 0.2, flexShrink: 0 }} />
+                      <Box>
+                        <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                          {displayBusiness.address || 'Test Street 123'}
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
 
-            {/* Business Hours */}
-            <Card sx={{ mb: 2 }}>
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                  {language === 'en' ? 'Contact & Business Hours' : language === 'tr' ? 'İletişim & Çalışma Saatleri' : 'Контакты и часы работы'}
-                </Typography>
-
-                <Stack spacing={1.5}>
-                  {/* Monday to Friday */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {language === 'en' ? 'Today' : language === 'tr' ? 'Bugün' : 'Сегодня'}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#00BFA6', fontWeight: 600 }}>
-                      10:00 AM - 01:00 PM
-                    </Typography>
-                  </Box>
-
-                  <Button
-                    variant="text"
-                    size="small"
-                    sx={{ color: '#00BFA6', justifyContent: 'flex-start', pl: 0 }}
-                  >
-                    {language === 'en' ? 'Show full week' : language === 'tr' ? 'Tüm haftayı göster' : 'Показать всю неделю'}
-                  </Button>
-                </Stack>
-              </CardContent>
-            </Card>
-
-            {/* Payment & Cancellation Policy */}
-            <Card>
-              <CardContent>
-                <Button
-                  fullWidth
-                  variant="text"
-                  sx={{
-                    justifyContent: 'space-between',
-                    py: 1,
-                    color: '#2d3748',
-                    fontWeight: 600,
-                    '&:hover': { bgcolor: '#f9fafb' }
-                  }}
-                >
-                  {language === 'en' ? 'Payment & Cancellation Policy' : language === 'tr' ? 'Ödeme & İptal Politikası' : 'Политика оплаты и отмены'}
-                  <Box sx={{ fontSize: '1.2rem' }}>›</Box>
-                </Button>
-              </CardContent>
-            </Card>
+                    {/* Business Hours */}
+                    <Box sx={{ pt: 1, borderTop: '1px solid #e5e7eb' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
+                          {language === 'en' ? 'Today' : language === 'tr' ? 'Bugün' : 'Сегодня'}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#00BFA6', fontWeight: 600, fontSize: '0.9rem' }}>
+                          10:00 AM - 01:00 PM
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Stack>
           </Grid>
         </Grid>
-
-        {/* About Us Section */}
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
-            {language === 'en' ? 'About Us' : language === 'tr' ? 'Hakkımızda' : 'О нас'}
-          </Typography>
-          <Card>
-            <CardContent>
-              <Typography variant="body1" sx={{ lineHeight: 1.8, color: '#4b5563' }}>
-                {business.description || (language === 'en' ? 'Welcome to our business! We are dedicated to providing the highest quality services to our valued customers. With years of experience in the industry, our team of professionals is committed to ensuring your satisfaction.' : language === 'tr' ? 'İşletmemize hoş geldiniz! Değerli müşterilerimize en yüksek kalitede hizmet sunmaya dediktir. Sektördeki yılların tecrübesiyle, profesyonel ekibimiz memnuniyetinizi sağlamaya kararlıdır.' : 'Добро пожаловать в наш бизнес! Мы привержены предоставлению высочайшего качества услуг нашим ценным клиентам. С многолетним опытом работы в отрасли, наша команда профессионалов стремится обеспечить вашу удовлетворенность.')}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
 
         {/* Services Section */}
         <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
@@ -569,73 +535,113 @@ const BusinessDetail = () => {
                       .map(s => displayWorkers.find(w => w.id === s.barber_id))
                       .filter(Boolean);
 
-                    // Determine icon based on service name/category
                     const getCategoryIcon = () => {
                       const name = serviceName.toLowerCase();
                       const desc = (firstService.description || '').toLowerCase();
                       const text = name + ' ' + desc;
 
                       if (text.includes('hair') || text.includes('barber') || text.includes('cut') || text.includes('saç') || text.includes('kuaför') || text.includes('gttt')) {
-                        return <ContentCut sx={{ fontSize: 28, color: '#2d3748' }} />;
+                        return <ContentCut sx={{ fontSize: 32, color: 'white' }} />;
                       } else if (text.includes('spa') || text.includes('massage') || text.includes('facial') || text.includes('beauty') || text.includes('güzellik')) {
-                        return <Spa sx={{ fontSize: 28, color: '#2d3748' }} />;
+                        return <Spa sx={{ fontSize: 32, color: 'white' }} />;
                       } else if (text.includes('fitness') || text.includes('gym') || text.includes('workout') || text.includes('spor')) {
-                        return <FitnessCenter sx={{ fontSize: 28, color: '#2d3748' }} />;
+                        return <FitnessCenter sx={{ fontSize: 32, color: 'white' }} />;
                       }
-                      return <ContentCut sx={{ fontSize: 28, color: '#2d3748' }} />; // Default to barber icon
+                      return <ContentCut sx={{ fontSize: 32, color: 'white' }} />;
                     };
 
                     return (
-                      <Grid item xs={12} key={serviceName}>
+                      <Grid item xs={12} sm={6} md={4} key={serviceName}>
                         <Card sx={{
-                          transition: 'transform 0.2s',
-                          '&:hover': { transform: 'translateY(-4px)', boxShadow: 3 }
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          borderRadius: 2.5,
+                          overflow: 'hidden',
+                          '&:hover': {
+                            transform: 'translateY(-8px)',
+                            boxShadow: '0 20px 32px rgba(0, 0, 0, 0.15)'
+                          }
                         }}>
-                          <CardContent>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                              <Box sx={{ flex: 1 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-                                  {getCategoryIcon()}
-                                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                    {serviceName}
-                                  </Typography>
-                                </Box>
-                                {firstService.description && (
-                                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                    {firstService.description}
-                                  </Typography>
-                                )}
-                                <Stack direction="row" spacing={2} sx={{ mb: 1, flexWrap: 'wrap', gap: 1 }}>
-                                  <Chip
-                                    icon={<Schedule />}
-                                    label={`${firstService.duration} ${language === 'en' ? 'min' : language === 'tr' ? 'dk' : 'мин'}`}
-                                    size="small"
-                                  />
-                                  <Chip
-                                    label={`€${firstService.price}`}
-                                    size="small"
-                                    color="primary"
-                                    sx={{ fontWeight: 'bold' }}
-                                  />
+                          <Box sx={{
+                            background: 'linear-gradient(135deg, #2d3748 0%, #4a5568 100%)',
+                            p: 3,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minHeight: 100
+                          }}>
+                            {getCategoryIcon()}
+                          </Box>
+
+                          <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1f2937' }}>
+                              {serviceName}
+                            </Typography>
+
+                            {firstService.description && (
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 2, flex: 1, lineHeight: 1.5 }}>
+                                {firstService.description}
+                              </Typography>
+                            )}
+
+                            <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'baseline' }}>
+                              <Box>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
+                                  {language === 'en' ? 'Price' : language === 'tr' ? 'Fiyat' : 'Цена'}
+                                </Typography>
+                                <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#00BFA6' }}>
+                                  €{firstService.price}
+                                </Typography>
+                              </Box>
+                              <Box sx={{ borderLeft: '1px solid #e5e7eb', pl: 2 }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
+                                  {language === 'en' ? 'Duration' : language === 'tr' ? 'Süre' : 'Длительность'}
+                                </Typography>
+                                <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#4a5568' }}>
+                                  {firstService.duration}m
+                                </Typography>
+                              </Box>
+                            </Box>
+
+                            {serviceWorkers.length > 0 && (
+                              <Box sx={{ mb: 2, pb: 2, borderTop: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb' }}>
+                                <Typography variant="caption" sx={{ fontWeight: 600, color: '#6b7280', display: 'block', mb: 1 }}>
+                                  {language === 'en' ? 'Available with' : language === 'tr' ? 'Kullanılabilir' : 'Доступно'}:
+                                </Typography>
+                                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.8 }}>
                                   {serviceWorkers.map((worker, idx) => (
                                     <Chip
                                       key={idx}
                                       icon={<Person />}
                                       label={worker.full_name || worker.email}
                                       size="small"
-                                      sx={{ bgcolor: '#edf2f7', color: '#2d3748' }}
+                                      sx={{
+                                        bgcolor: '#edf2f7',
+                                        color: '#2d3748',
+                                        fontWeight: 500
+                                      }}
                                     />
                                   ))}
                                 </Stack>
                               </Box>
-                            <Stack direction="row" spacing={1}>
+                            )}
+
+                            <Stack direction="row" spacing={1.5} sx={{ mt: 'auto' }}>
                               <Button
                                 variant="outlined"
+                                size="small"
                                 startIcon={<Favorite />}
+                                fullWidth
                                 sx={{
                                   borderColor: '#ff6b35',
                                   color: '#ff6b35',
-                                  '&:hover': { borderColor: '#e55a2e', bgcolor: '#fff5f0' }
+                                  fontWeight: 600,
+                                  '&:hover': {
+                                    borderColor: '#e55a2e',
+                                    bgcolor: '#fff5f0'
+                                  }
                                 }}
                                 onClick={() => {
                                   alert(language === 'en'
@@ -645,23 +651,28 @@ const BusinessDetail = () => {
                                     : 'Добавлено в избранное!');
                                 }}
                               >
-                                {language === 'en' ? 'Favorite' : language === 'tr' ? 'Favori' : 'В избранное'}
+                                {language === 'en' ? 'Save' : language === 'tr' ? 'Kaydet' : 'Сохранить'}
                               </Button>
                               <Button
                                 variant="contained"
+                                size="small"
+                                fullWidth
                                 sx={{
-                                  bgcolor: '#2d3748',
-                                  '&:hover': { bgcolor: '#1a202c' }
+                                  bgcolor: '#00BFA6',
+                                  color: 'white',
+                                  fontWeight: 600,
+                                  '&:hover': {
+                                    bgcolor: '#00A693'
+                                  }
                                 }}
                                 onClick={() => handleBooking({ ...firstService, workers: serviceWorkers, allServices: serviceGroup })}
                               >
-                                {language === 'en' ? 'Book' : language === 'tr' ? 'Rezervasyon' : 'Забронировать'}
+                                {language === 'en' ? 'Book' : language === 'tr' ? 'Rezerv' : 'Забронировать'}
                               </Button>
                             </Stack>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    </Grid>
+                          </CardContent>
+                        </Card>
+                      </Grid>
                     );
                   });
                 })()}

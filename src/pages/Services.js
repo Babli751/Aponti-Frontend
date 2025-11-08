@@ -20,9 +20,10 @@ const Services = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        // Fetch services from business endpoint
-        const response = await api.get('/business/1/services');
-        setServices(response.data);
+        // Fetch all services
+        const response = await api.get('/services/');
+        const servicesData = Array.isArray(response.data) ? response.data : [];
+        setServices(servicesData);
       } catch (error) {
         console.error('Error fetching services:', error);
         setServices([]);

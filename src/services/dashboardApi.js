@@ -4,7 +4,7 @@
 const API_BASE_URL =
   (typeof window !== 'undefined' && window.API_BASE_URL) ||
   process.env.REACT_APP_API_BASE_URL ||
-  '/api/v1';
+  '/api';
 
 // Helper function to make API requests
 const apiRequest = async (endpoint, options = {}) => {

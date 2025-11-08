@@ -46,7 +46,7 @@ import {
 } from '@mui/icons-material';
 
 // Use the same API base URL as the rest of the app
-const API_BASE_URL = window.API_BASE_URL || process.env.REACT_APP_API_URL || '/api/v1';
+const API_BASE_URL = window.API_BASE_URL || process.env.REACT_APP_API_URL || '/api';
 
 function formatDate(d) {
   const pad = (n) => String(n).padStart(2, '0');
@@ -107,7 +107,7 @@ const BarberDashboard = () => {
       tabs: ['Календарь', 'Мои встречи', 'Клиенты', 'Профиль'],
       addFree: 'Добавить окно',
       editFree: 'Изменить окно',
-      date: 'Дата', start: 'Начало', end: 'Конец', save: 'Сохранить', cancel: 'Отмена', add: 'Добавить',
+      date: 'Дата', start: 'Начало', end: 'Конец', save: 'Сохранит��', cancel: 'Отмена', add: 'Добавить',
       today: 'Сегодня', tomorrow: 'Завтра', week: 'Неделя',
       time: 'Время', client: 'Клиент', service: 'Услуга', phone: 'Телефон', call: 'Позвонить', rating: 'Рейтинг',
       customers: 'Клиенты', noCustomers: 'Пока нет клиентов',
