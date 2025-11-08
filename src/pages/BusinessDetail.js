@@ -86,36 +86,27 @@ const BusinessDetail = () => {
         setLoading(true);
         setError(null);
 
-        // Try to fetch business by ID from the /business/ endpoint and filter
-        let businessData = null;
+        // Fetch all workers from the general endpoint
         try {
-          const allBusinessesResponse = await api.get('/business/');
-          const businesses = Array.isArray(allBusinessesResponse.data)
-            ? allBusinessesResponse.data
-            : allBusinessesResponse.data?.businesses || [];
-          businessData = businesses.find(b => String(b.id) === String(id));
-
-          if (businessData) {
-            setBusiness(businessData);
-          }
-        } catch (err) {
-          console.error('Error fetching business from list:', err);
-        }
-
-        // Fetch workers for this business
-        try {
-          const workersResponse = await api.get(`/business/${id}/workers`);
-          console.log('Workers for business:', workersResponse.data);
-          setWorkers(workersResponse.data || []);
+          const workersResponse = await api.get('/barbers/');
+          console.log('All workers:', workersResponse.data);
+          // Filter workers by business ID if it's in the data
+          const allWorkers = Array.isArray(workersResponse.data) ? workersResponse.data : [];
+          const businessWorkers = allWorkers.filter(w => String(w.business_id) === String(id) || String(w.barber_shop_id) === String(id));
+          setWorkers(businessWorkers.length > 0 ? businessWorkers : allWorkers);
         } catch (err) {
           console.error('Error fetching workers:', err);
           setWorkers([]);
         }
 
-        // Fetch services for this business
+        // Fetch all services from the general endpoint
         try {
-          const servicesResponse = await api.get(`/business/${id}/services`);
-          setServices(servicesResponse.data || []);
+          const servicesResponse = await api.get('/services/');
+          console.log('All services:', servicesResponse.data);
+          // Filter services by business ID if it's in the data
+          const allServices = Array.isArray(servicesResponse.data) ? servicesResponse.data : [];
+          const businessServices = allServices.filter(s => String(s.business_id) === String(id) || String(s.barber_shop_id) === String(id));
+          setServices(businessServices.length > 0 ? businessServices : allServices);
         } catch (err) {
           console.error('Error fetching services:', err);
           setServices([]);
