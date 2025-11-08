@@ -535,73 +535,113 @@ const BusinessDetail = () => {
                       .map(s => displayWorkers.find(w => w.id === s.barber_id))
                       .filter(Boolean);
 
-                    // Determine icon based on service name/category
                     const getCategoryIcon = () => {
                       const name = serviceName.toLowerCase();
                       const desc = (firstService.description || '').toLowerCase();
                       const text = name + ' ' + desc;
 
                       if (text.includes('hair') || text.includes('barber') || text.includes('cut') || text.includes('saç') || text.includes('kuaför') || text.includes('gttt')) {
-                        return <ContentCut sx={{ fontSize: 28, color: '#2d3748' }} />;
+                        return <ContentCut sx={{ fontSize: 32, color: 'white' }} />;
                       } else if (text.includes('spa') || text.includes('massage') || text.includes('facial') || text.includes('beauty') || text.includes('güzellik')) {
-                        return <Spa sx={{ fontSize: 28, color: '#2d3748' }} />;
+                        return <Spa sx={{ fontSize: 32, color: 'white' }} />;
                       } else if (text.includes('fitness') || text.includes('gym') || text.includes('workout') || text.includes('spor')) {
-                        return <FitnessCenter sx={{ fontSize: 28, color: '#2d3748' }} />;
+                        return <FitnessCenter sx={{ fontSize: 32, color: 'white' }} />;
                       }
-                      return <ContentCut sx={{ fontSize: 28, color: '#2d3748' }} />; // Default to barber icon
+                      return <ContentCut sx={{ fontSize: 32, color: 'white' }} />;
                     };
 
                     return (
-                      <Grid item xs={12} key={serviceName}>
+                      <Grid item xs={12} sm={6} md={4} key={serviceName}>
                         <Card sx={{
-                          transition: 'transform 0.2s',
-                          '&:hover': { transform: 'translateY(-4px)', boxShadow: 3 }
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          borderRadius: 2.5,
+                          overflow: 'hidden',
+                          '&:hover': {
+                            transform: 'translateY(-8px)',
+                            boxShadow: '0 20px 32px rgba(0, 0, 0, 0.15)'
+                          }
                         }}>
-                          <CardContent>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                              <Box sx={{ flex: 1 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-                                  {getCategoryIcon()}
-                                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                    {serviceName}
-                                  </Typography>
-                                </Box>
-                                {firstService.description && (
-                                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                    {firstService.description}
-                                  </Typography>
-                                )}
-                                <Stack direction="row" spacing={2} sx={{ mb: 1, flexWrap: 'wrap', gap: 1 }}>
-                                  <Chip
-                                    icon={<Schedule />}
-                                    label={`${firstService.duration} ${language === 'en' ? 'min' : language === 'tr' ? 'dk' : 'мин'}`}
-                                    size="small"
-                                  />
-                                  <Chip
-                                    label={`€${firstService.price}`}
-                                    size="small"
-                                    color="primary"
-                                    sx={{ fontWeight: 'bold' }}
-                                  />
+                          <Box sx={{
+                            background: 'linear-gradient(135deg, #2d3748 0%, #4a5568 100%)',
+                            p: 3,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minHeight: 100
+                          }}>
+                            {getCategoryIcon()}
+                          </Box>
+
+                          <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1f2937' }}>
+                              {serviceName}
+                            </Typography>
+
+                            {firstService.description && (
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 2, flex: 1, lineHeight: 1.5 }}>
+                                {firstService.description}
+                              </Typography>
+                            )}
+
+                            <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'baseline' }}>
+                              <Box>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
+                                  {language === 'en' ? 'Price' : language === 'tr' ? 'Fiyat' : 'Цена'}
+                                </Typography>
+                                <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#00BFA6' }}>
+                                  €{firstService.price}
+                                </Typography>
+                              </Box>
+                              <Box sx={{ borderLeft: '1px solid #e5e7eb', pl: 2 }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
+                                  {language === 'en' ? 'Duration' : language === 'tr' ? 'Süre' : 'Длительность'}
+                                </Typography>
+                                <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#4a5568' }}>
+                                  {firstService.duration}m
+                                </Typography>
+                              </Box>
+                            </Box>
+
+                            {serviceWorkers.length > 0 && (
+                              <Box sx={{ mb: 2, pb: 2, borderTop: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb' }}>
+                                <Typography variant="caption" sx={{ fontWeight: 600, color: '#6b7280', display: 'block', mb: 1 }}>
+                                  {language === 'en' ? 'Available with' : language === 'tr' ? 'Kullanılabilir' : 'Доступно'}:
+                                </Typography>
+                                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.8 }}>
                                   {serviceWorkers.map((worker, idx) => (
                                     <Chip
                                       key={idx}
                                       icon={<Person />}
                                       label={worker.full_name || worker.email}
                                       size="small"
-                                      sx={{ bgcolor: '#edf2f7', color: '#2d3748' }}
+                                      sx={{
+                                        bgcolor: '#edf2f7',
+                                        color: '#2d3748',
+                                        fontWeight: 500
+                                      }}
                                     />
                                   ))}
                                 </Stack>
                               </Box>
-                            <Stack direction="row" spacing={1}>
+                            )}
+
+                            <Stack direction="row" spacing={1.5} sx={{ mt: 'auto' }}>
                               <Button
                                 variant="outlined"
+                                size="small"
                                 startIcon={<Favorite />}
+                                fullWidth
                                 sx={{
                                   borderColor: '#ff6b35',
                                   color: '#ff6b35',
-                                  '&:hover': { borderColor: '#e55a2e', bgcolor: '#fff5f0' }
+                                  fontWeight: 600,
+                                  '&:hover': {
+                                    borderColor: '#e55a2e',
+                                    bgcolor: '#fff5f0'
+                                  }
                                 }}
                                 onClick={() => {
                                   alert(language === 'en'
@@ -611,23 +651,28 @@ const BusinessDetail = () => {
                                     : 'Добавлено в избранное!');
                                 }}
                               >
-                                {language === 'en' ? 'Favorite' : language === 'tr' ? 'Favori' : 'В избранное'}
+                                {language === 'en' ? 'Save' : language === 'tr' ? 'Kaydet' : 'Сохранить'}
                               </Button>
                               <Button
                                 variant="contained"
+                                size="small"
+                                fullWidth
                                 sx={{
-                                  bgcolor: '#2d3748',
-                                  '&:hover': { bgcolor: '#1a202c' }
+                                  bgcolor: '#00BFA6',
+                                  color: 'white',
+                                  fontWeight: 600,
+                                  '&:hover': {
+                                    bgcolor: '#00A693'
+                                  }
                                 }}
                                 onClick={() => handleBooking({ ...firstService, workers: serviceWorkers, allServices: serviceGroup })}
                               >
-                                {language === 'en' ? 'Book' : language === 'tr' ? 'Rezervasyon' : 'Забронировать'}
+                                {language === 'en' ? 'Book' : language === 'tr' ? 'Rezerv' : 'Забронировать'}
                               </Button>
                             </Stack>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    </Grid>
+                          </CardContent>
+                        </Card>
+                      </Grid>
                     );
                   });
                 })()}
