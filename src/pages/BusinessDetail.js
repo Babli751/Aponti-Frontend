@@ -186,7 +186,7 @@ const BusinessDetail = () => {
           ? 'Please select a day and time'
           : language === 'tr'
           ? 'Lütfen bir gün ve saat seçin'
-          : 'Пожалуйста, выберите день и в��емя'
+          : 'Пожалуйста, выберите день и время'
         );
         return;
       }
@@ -355,7 +355,7 @@ const BusinessDetail = () => {
         {/* Photo Gallery with Map/Contact/About on Right */}
         <Grid container spacing={3} sx={{ mb: 6 }}>
           {/* Left Side - Photos */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={7}>
             {/* Main large photo */}
             <Box
               component="img"
@@ -363,7 +363,7 @@ const BusinessDetail = () => {
               alt="Business main"
               sx={{
                 width: '100%',
-                height: { xs: 300, sm: 350, md: 420 },
+                height: { xs: 320, sm: 380, md: 480 },
                 objectFit: 'cover',
                 borderRadius: 2,
                 mb: 2,
@@ -371,7 +371,7 @@ const BusinessDetail = () => {
               }}
             />
 
-            {/* Smaller thumbnail photos below */}
+            {/* Larger thumbnail photos below */}
             <Box sx={{ display: 'flex', gap: 1.5, overflow: 'auto', scrollBehavior: 'smooth', pb: 1 }}>
               {galleryPhotos.map((photo, index) => (
                 <Box
@@ -381,8 +381,8 @@ const BusinessDetail = () => {
                   alt={`Business photo ${index + 1}`}
                   onClick={() => setMainPhoto(photo)}
                   sx={{
-                    width: 110,
-                    height: 85,
+                    width: 130,
+                    height: 100,
                     objectFit: 'cover',
                     borderRadius: 1.5,
                     cursor: 'pointer',
@@ -401,7 +401,7 @@ const BusinessDetail = () => {
           </Grid>
 
           {/* Right Side - Map, About Us, Contact */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={5}>
             <Stack spacing={2} sx={{ height: '100%' }}>
               {/* Location Map */}
               <Card sx={{ overflow: 'hidden', borderRadius: 2, position: 'relative' }}>
