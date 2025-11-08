@@ -418,7 +418,7 @@ const Home = () => {
               ? 'Location access denied. Showing Istanbul as default location. To enable location access, please check your browser settings (usually in the address bar or browser settings).'
               : language === 'tr'
               ? 'Konum erişimi reddedildi. Varsayılan olarak İstanbul gösteriliyor. Konum erişimini açmak için tarayıcı ayarlarınızı kontrol edin (genellikle adres çubuğunda veya tarayıcı ayarlarında).'
-              : 'Доступ к местоположению запрещен. Показываем Стамбул по умолчанию. Включите доступ к местоположению в настройках браузера.';
+              : 'Доступ к местоположению за��рещен. Показываем Стамбул по умолчанию. Включите доступ к местоположению в настройках браузера.';
           } else if (error.code === 2) {
             // POSITION_UNAVAILABLE
             errorMessage = language === 'en'
@@ -1062,16 +1062,16 @@ const Home = () => {
                         onClick={handleBookNow}
                         disabled={!selectedBusiness || !selectedWorker || !selectedService || !selectedDate || !selectedTime}
                         sx={{
-                          bgcolor: '#00a693',
+                          bgcolor: '#374151',
                           color: 'white',
                           fontWeight: 'bold',
                           py: 1.5,
                           mt: 1,
                           fontSize: '1.1rem',
                           '&:hover': {
-                            bgcolor: '#008c7a',
+                            bgcolor: '#1f2937',
                             transform: 'translateY(-2px)',
-                            boxShadow: '0 4px 12px rgba(0,166,147,0.4)'
+                            boxShadow: '0 4px 12px rgba(55, 65, 81, 0.4)'
                           },
                           '&:disabled': {
                             bgcolor: '#d1d5db',
