@@ -387,7 +387,7 @@ const Home = () => {
         ? 'Location access cancelled. Showing Istanbul as default location.'
         : language === 'tr'
         ? 'Konum erişimi iptal edildi. Varsayılan olarak İstanbul gösteriliyor.'
-        : 'Доступ к местоположению отменен. Показываем Стамбул по умолчанию.');
+        : 'Доступ к местоположению отменен. Показываем Стамбул по умол��анию.');
       return;
     }
 
@@ -418,7 +418,7 @@ const Home = () => {
               ? 'Location access denied. Showing Istanbul as default location. To enable location access, please check your browser settings (usually in the address bar or browser settings).'
               : language === 'tr'
               ? 'Konum erişimi reddedildi. Varsayılan olarak İstanbul gösteriliyor. Konum erişimini açmak için tarayıcı ayarlarınızı kontrol edin (genellikle adres çubuğunda veya tarayıcı ayarlarında).'
-              : 'Доступ к местоположению за��рещен. Показываем Стамбул по умолчанию. Включите доступ к местоположению в настройках браузера.';
+              : 'Доступ к местоположению за��реще��. Показываем Стамбул по умолчанию. Включите доступ к местоположению в настройках браузера.';
           } else if (error.code === 2) {
             // POSITION_UNAVAILABLE
             errorMessage = language === 'en'
@@ -1328,7 +1328,7 @@ const Home = () => {
                   } else if (cat.includes('pet') || cat.includes('hayvan') || cat.includes('питомц')) {
                     return { icon: '🐾', color: '#f59e0b', bgColor: 'rgba(245, 158, 11, 0.1)', name: language === 'en' ? 'Pet Care' : language === 'tr' ? 'Evcil Hayvan' : 'Питомцы' };
                   } else if (cat.includes('home') || cat.includes('ev') || cat.includes('дом')) {
-                    return { icon: '🏠', color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.1)', name: language === 'en' ? 'Home Services' : language === 'tr' ? 'Ev Hizmetleri' : 'Дом' };
+                    return { icon: '🏠', color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.1)', name: language === 'en' ? 'Home Services' : language === 'tr' ? 'Ev Hizmetleri' : '��ом' };
                   } else if (cat.includes('health') || cat.includes('sağlık') || cat.includes('здоровье')) {
                     return { icon: '⚕️', color: '#06b6d4', bgColor: 'rgba(6, 182, 212, 0.1)', name: language === 'en' ? 'Health' : language === 'tr' ? 'Sağlık' : 'Здоровье' };
                   } else {
@@ -1607,7 +1607,7 @@ const Home = () => {
                 boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 borderRadius: 2,
                 transition: 'transform 0.2s',
-                '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 6px 20px rgba(0,166,147,0.15)' }
+                '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 6px 20px rgba(55, 65, 81, 0.15)' }
               }}>
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -1654,7 +1654,7 @@ const Home = () => {
                 boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 borderRadius: 2,
                 transition: 'transform 0.2s',
-                '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 6px 20px rgba(0,166,147,0.15)' }
+                '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 6px 20px rgba(55, 65, 81, 0.15)' }
               }}>
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -1701,7 +1701,7 @@ const Home = () => {
                 boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 borderRadius: 2,
                 transition: 'transform 0.2s',
-                '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 6px 20px rgba(0,166,147,0.15)' }
+                '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 6px 20px rgba(55, 65, 81, 0.15)' }
               }}>
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
