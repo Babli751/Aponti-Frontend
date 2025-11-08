@@ -418,7 +418,7 @@ const Home = () => {
               ? 'Location access denied. Showing Istanbul as default location. To enable location access, please check your browser settings (usually in the address bar or browser settings).'
               : language === 'tr'
               ? 'Konum erişimi reddedildi. Varsayılan olarak İstanbul gösteriliyor. Konum erişimini açmak için tarayıcı ayarlarınızı kontrol edin (genellikle adres çubuğunda veya tarayıcı ayarlarında).'
-              : 'Доступ к местоположению за��реще��. Показываем Стамбул по умолчанию. Включите доступ к местоположению в настройках браузера.';
+              : 'Доступ к местоположению за����реще��. Показываем Стамбул по умолчанию. Включите доступ к местоположению в настройках браузера.';
           } else if (error.code === 2) {
             // POSITION_UNAVAILABLE
             errorMessage = language === 'en'
@@ -1991,7 +1991,7 @@ const Home = () => {
 
           {/* User Profile Section in Drawer */}
           {isAuthenticated && (
-            <Box sx={{ mb: 2, p: 2, bgcolor: '#f0fffe', borderRadius: 2 }}>
+            <Box sx={{ mb: 2, p: 2, bgcolor: '#f3f4f6', borderRadius: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Avatar
                   src={user?.avatar}
