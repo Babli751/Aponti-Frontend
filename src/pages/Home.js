@@ -479,7 +479,7 @@ const Home = () => {
       features: [
         language === 'en' ? 'Master Barbers' : language === 'tr' ? 'Usta Berberler' : 'Мастер-парикмахеры',
         language === 'en' ? 'Classic Cuts' : language === 'tr' ? 'Klasik Kesimler' : 'Классичес��ие стрижки',
-        language === 'en' ? 'Hot Towel Service' : language === 'tr' ? 'S��cak Havlu Hizmeti' : 'Горячее полотенце'
+        language === 'en' ? 'Hot Towel Service' : language === 'tr' ? 'S����cak Havlu Hizmeti' : 'Горячее полотенце'
       ]
     },
     {
@@ -1133,7 +1133,7 @@ const Home = () => {
             }}>
               {language === 'en' ? 'Explore registered businesses on the map' :
                 language === 'tr' ? 'Kayıtlı işletmeleri haritada keşfedin' :
-                'Исследуйте зарегистрированные предприятия на карте'}
+                'Иссле��уйте зарегистрированные предприятия на карте'}
             </Typography>
           </Box>
 
@@ -1408,28 +1408,8 @@ const Home = () => {
 
                         {/* Category Badge on Image */}
                         <Box sx={{
-                          position: 'absolute',
-                          top: 12,
-                          left: 12,
-                          zIndex: 2,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          px: 1.5,
-                          py: 0.5,
-                          borderRadius: 2,
-                          bgcolor: 'rgba(255, 255, 255, 0.95)',
-                          backdropFilter: 'blur(8px)',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                          display: 'none'
                         }}>
-                          <Typography sx={{ fontSize: '1rem' }}>{categoryInfo.icon}</Typography>
-                          <Typography variant="caption" sx={{
-                            color: categoryInfo.color,
-                            fontWeight: 600,
-                            fontSize: '0.75rem'
-                          }}>
-                            {categoryInfo.name}
-                          </Typography>
                         </Box>
 
                         {/* Business Name Overlay at Bottom */}
@@ -1852,7 +1832,7 @@ const Home = () => {
                   ? 'The leading platform for booking professional barber services across Europe. Find and book the best barbers in your city.'
                   : language === 'tr'
                   ? 'Avrupa\'da profesyonel berber hizmetleri rezervasyonu için önde gelen platform. Şehrinizdeki en iyi berberleri bulun ve rezervasyon yapın.'
-                  : 'Вед��щая платфор��а для бронирования профессиональных парикмахерских услуг по всей Европе. Найдите и заброн��руйте лучших парикма��еров в своем городе.'
+                  : 'Вед��щая платфор��а для бронирования профессиональных парикмахерск��х услуг по всей Европе. Найдите и заброн��руйте лучших парикма��еров в своем городе.'
                 }
               </Typography>
               <Stack direction="row" spacing={1}>
