@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
         firstName: userProfile.first_name || '',
         lastName: userProfile.last_name || '',
         phone_number: userProfile.phone_number || '',
-        avatar: userProfile.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+        avatar: userProfile.avatar || null, // Only set avatar if it actually exists
         isActive: userProfile.is_active,
         memberSince: userProfile.created_at ? new Date(userProfile.created_at).getFullYear().toString() : '2024',
         totalAppointments: userProfile.total_appointments || 0,

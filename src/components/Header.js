@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import Logo from './Logo';
 import colors from '../theme/colors';
 import {
-  AppBar, Toolbar, Button, Stack, IconButton, Menu, MenuItem, Box
+  AppBar, Toolbar, Button, Stack, IconButton, Menu, MenuItem, Box, Avatar
 } from '@mui/material';
 import { ArrowBack, AccountCircle } from '@mui/icons-material';
 
@@ -72,7 +72,15 @@ const Header = ({ showBack = false }) => {
                 color="inherit"
                 onClick={handleMenu}
               >
-                <AccountCircle />
+                {user.avatar ? (
+                  <Avatar
+                    src={user.avatar}
+                    alt={user.name}
+                    sx={{ width: 32, height: 32 }}
+                  />
+                ) : (
+                  <AccountCircle />
+                )}
               </IconButton>
               <Menu
                 anchorEl={anchorEl}
