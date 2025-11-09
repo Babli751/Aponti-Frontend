@@ -138,7 +138,20 @@ const Home = () => {
       try {
         setLoadingBusinesses(true);
 
-        // Fetch all barbers/workers
+        // Try to fetch businesses from /businesses/ endpoint first
+        try {
+          const businessesResponse = await api.get('/businesses/');
+          if (businessesResponse.data && Array.isArray(businessesResponse.data) && businessesResponse.data.length > 0) {
+            console.log('✅ Fetched businesses from API:', businessesResponse.data);
+            setFeaturedBusinesses(businessesResponse.data);
+            setLoadingBusinesses(false);
+            return;
+          }
+        } catch (err) {
+          console.log('⚠️ Businesses endpoint not available, falling back to workers data:', err.message);
+        }
+
+        // Fallback: Fetch all barbers/workers
         let allWorkers = [];
         try {
           const workersResponse = await api.get('/barbers/');
