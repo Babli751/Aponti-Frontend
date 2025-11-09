@@ -423,8 +423,8 @@ useEffect(() => {
         return;
       }
 
-      // Register new worker via API
-      const response = await api.post('/auth/register', {
+      // Add worker to business via new endpoint
+      const response = await api.post('/businesses/workers/add', {
         email: newWorker.email,
         password: newWorker.password,
         first_name: newWorker.first_name,
@@ -432,6 +432,13 @@ useEffect(() => {
         phone_number: newWorker.phone_number || '',
         is_barber: true
       });
+
+      // Add the new worker to businessData immediately for instant UI update
+      const newWorkerData = response.data.worker;
+      setBusinessData(prev => ({
+        ...prev,
+        workers: [...(prev.workers || []), newWorkerData]
+      }));
 
       setSnackbar({
         open: true,
@@ -452,14 +459,6 @@ useEffect(() => {
       });
 
       setBarberDialogOpen(false);
-
-      // Refresh business data to show new worker
-      const businessDataResponse = await businessAPI.getProfile();
-      setBusinessData({
-        ...businessDataResponse,
-        owner: businessDataResponse.owner_name,
-        address: `${businessDataResponse.address || ''}, ${businessDataResponse.city || ''}`
-      });
 
     } catch (err) {
       console.error('Failed to add worker:', err);
