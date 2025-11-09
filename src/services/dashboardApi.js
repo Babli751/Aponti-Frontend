@@ -75,7 +75,7 @@ export const businessApi = {
  getBusinessProfile: async () => {
    try {
      console.log("Fetching business profile...");
-     const response = await apiRequest('/business/profile');
+     const response = await apiRequest('/businesses/profile');
      console.log("Business profile response:", response);
      return response;
    } catch (error) {
@@ -86,22 +86,22 @@ export const businessApi = {
 
   // Get business stats and analytics
   getBusinessStats: async () => {
-    return apiRequest('/business/stats');
+    return apiRequest('/businesses/stats');
   },
 
   // Get upcoming appointments for business
   getUpcomingAppointments: async () => {
-    return apiRequest('/business/appointments/upcoming');
+    return apiRequest('/businesses/appointments/upcoming');
   },
 
   // Get recent activity for business
   getRecentActivity: async () => {
-    return apiRequest('/business/activity/recent');
+    return apiRequest('/businesses/activity/recent');
   },
 
   // Update business profile
    updateBusinessProfile: async (profileData) => {
-     return apiRequest('/business/profile', {
+     return apiRequest('/businesses/profile', {
        method: 'PUT',
        body: JSON.stringify(profileData),
      });
@@ -109,7 +109,7 @@ export const businessApi = {
 
   // Add a new service
   addService: async (serviceData) => {
-    return apiRequest('/business/services', {
+    return apiRequest('/businesses/my-services', {
       method: 'POST',
       body: JSON.stringify(serviceData),
     });
@@ -117,7 +117,7 @@ export const businessApi = {
 
   // Update existing service
   updateService: async (serviceId, serviceData) => {
-    return apiRequest(`/business/services/${serviceId}`, {
+    return apiRequest(`/businesses/my-services/${serviceId}`, {
       method: 'PUT',
       body: JSON.stringify(serviceData),
     });
@@ -125,14 +125,14 @@ export const businessApi = {
 
   // Delete a service
   deleteService: async (serviceId) => {
-    return apiRequest(`/business/services/${serviceId}`, {
+    return apiRequest(`/businesses/my-services/${serviceId}`, {
       method: 'DELETE',
     });
   },
 
   // Update appointment status
   updateAppointmentStatus: async (appointmentId, status) => {
-    return apiRequest(`/business/appointments/${appointmentId}/status`, {
+    return apiRequest(`/businesses/appointments/${appointmentId}/status`, {
       method: 'PUT',
       body: JSON.stringify({ status }),
     });

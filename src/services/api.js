@@ -174,7 +174,7 @@ export const barberAPI = {
 // 8. BUSINESS API ENDPOINTS
 export const businessAPI = {
   signup: async (businessData) => {
-    const response = await api.post('/business/signup', businessData, {
+    const response = await api.post('/businesses/signup', businessData, {
       headers: { 'Content-Type': 'application/json' }
     });
     return response.data;
@@ -182,7 +182,7 @@ export const businessAPI = {
 
   login: async (email, password) => {
     console.log('🔐 Business login attempt:', { email, password: password ? '***' : 'EMPTY' });
-    const response = await api.post('/business/login', {
+    const response = await api.post('/businesses/login', {
       email: email,
       password: password
     }, {
@@ -193,54 +193,54 @@ export const businessAPI = {
   },
 
   getBusinesses: async () => {
-    const response = await api.get('/business/');
+    const response = await api.get('/businesses/');
     return response.data;
   },
 
   getProfile: async () => {
-    const response = await api.get('/business/profile');
+    const response = await api.get('/businesses/profile');
     return response.data;
   },
 
   updateProfile: async (profileData) => {
-    const response = await api.put('/business/profile', profileData);
+    const response = await api.put('/businesses/profile', profileData);
     return response.data;
   },
 
   getAppointments: async () => {
-    const response = await api.get('/business/appointments');
+    const response = await api.get('/businesses/appointments');
     return response.data;
   },
 
   getActivity: async () => {
-    const response = await api.get('/business/activity');
+    const response = await api.get('/businesses/activity');
     return response.data;
   },
 
   getServices: async () => {
-    const response = await api.get('/business/services');
+    const response = await api.get('/businesses/my-services');
     return response.data;
   },
 
   createService: async (serviceData) => {
-    const response = await api.post('/business/services', serviceData);
+    const response = await api.post('/businesses/my-services', serviceData);
     return response.data;
   },
 
   deleteService: async (serviceId) => {
-    const response = await api.delete(`/business/services/${serviceId}`);
+    const response = await api.delete(`/businesses/my-services/${serviceId}`);
     return response.data;
   },
 
   getNearbyBusinesses: async (lat, lon, radius = 10, category = null) => {
     const params = { lat, lon, radius };
     if (category) params.category = category;
-    const response = await api.get('/business/nearby', { params });
+    const response = await api.get('/businesses/nearby', { params });
     return response.data;
   },
 
   geocodeAddress: async (address, city, country) => {
-    const response = await api.post('/business/geocode', { address, city, country });
+    const response = await api.post('/businesses/geocode', { address, city, country });
     return response.data;
   }
 };
