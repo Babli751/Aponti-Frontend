@@ -1159,7 +1159,7 @@ const Home = () => {
             <CardContent sx={{ p: { xs: 2, md: 3 } }}>
               <Grid container spacing={2} alignItems="center">
                 {/* Search Input */}
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={3}>
                   <TextField
                     fullWidth
                     size="small"
@@ -1170,6 +1170,11 @@ const Home = () => {
                       : 'Поиск местоположения...'}
                     value={mapSearchQuery}
                     onChange={(e) => setMapSearchQuery(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleMapSearch();
+                      }
+                    }}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -1191,7 +1196,7 @@ const Home = () => {
                 </Grid>
 
                 {/* Category Dropdown */}
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={3}>
                   <FormControl fullWidth size="small">
                     <Select
                       value={mapCategory}
@@ -1228,13 +1233,13 @@ const Home = () => {
                   </FormControl>
                 </Grid>
 
-                {/* Find My Location Button */}
-                <Grid item xs={12} md={4}>
+                {/* Search Button */}
+                <Grid item xs={6} md={3}>
                   <Button
                     fullWidth
                     variant="contained"
-                    startIcon={<LocationOn />}
-                    onClick={handleFindMyLocation}
+                    startIcon={<Search />}
+                    onClick={handleMapSearch}
                     sx={{
                       bgcolor: '#2d3748',
                       fontWeight: 600,
@@ -1243,7 +1248,28 @@ const Home = () => {
                       }
                     }}
                   >
-                    {language === 'en' ? 'Find My Location' : language === 'tr' ? 'Konumumu Bul' : 'Найти мою локацию'}
+                    {language === 'en' ? 'Search' : language === 'tr' ? 'Ara' : 'Поиск'}
+                  </Button>
+                </Grid>
+
+                {/* Find My Location Button */}
+                <Grid item xs={6} md={3}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<LocationOn />}
+                    onClick={handleFindMyLocation}
+                    sx={{
+                      color: '#2d3748',
+                      borderColor: '#2d3748',
+                      fontWeight: 600,
+                      '&:hover': {
+                        bgcolor: 'rgba(45, 55, 72, 0.04)',
+                        borderColor: '#1a202c',
+                      }
+                    }}
+                  >
+                    {language === 'en' ? 'My Location' : language === 'tr' ? 'Konumum' : 'Моя локация'}
                   </Button>
                 </Grid>
               </Grid>
