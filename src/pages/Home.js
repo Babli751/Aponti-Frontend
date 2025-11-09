@@ -479,7 +479,7 @@ const Home = () => {
       features: [
         language === 'en' ? 'Master Barbers' : language === 'tr' ? 'Usta Berberler' : 'Мастер-парикмахеры',
         language === 'en' ? 'Classic Cuts' : language === 'tr' ? 'Klasik Kesimler' : 'Классичес��ие стрижки',
-        language === 'en' ? 'Hot Towel Service' : language === 'tr' ? 'S����cak Havlu Hizmeti' : 'Горячее полотенце'
+        language === 'en' ? 'Hot Towel Service' : language === 'tr' ? 'S��cak Havlu Hizmeti' : 'Горячее полотенце'
       ]
     },
     {
@@ -1133,7 +1133,7 @@ const Home = () => {
             }}>
               {language === 'en' ? 'Explore registered businesses on the map' :
                 language === 'tr' ? 'Kayıtlı işletmeleri haritada keşfedin' :
-                'Иссле��уйте зарегистрированные предприятия на карте'}
+                'Исследуйте зарегистрированные предприятия на карте'}
             </Typography>
           </Box>
 
@@ -1276,7 +1276,7 @@ const Home = () => {
               <Typography variant="body2" sx={{ color: '#6b7280', fontStyle: 'italic' }}>
                 {language === 'en' ? '💡 Showing businesses near your current location' :
                   language === 'tr' ? '💡 Mevcut konumunuza yakın işletmeler gösteriliyor' :
-                  '💡 Показаны предприятия рядом с вашим текущим местоположением'}
+                  '💡 Показаны предприятия рядом с ��ашим текущим местоположением'}
               </Typography>
             )}
           </Box>
@@ -1456,22 +1456,41 @@ const Home = () => {
                         }}>
                           {/* Workers Count */}
                           <Box sx={{
-                            p: 1.5,
-                            borderRadius: 2,
-                            bgcolor: '#f9fafb',
-                            textAlign: 'center'
+                            p: 2,
+                            borderRadius: 3,
+                            bgcolor: '#f3f4f6',
+                            textAlign: 'center',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              bgcolor: '#e5e7eb',
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                            }
                           }}>
-                            <People sx={{ fontSize: 24, color: categoryInfo.color, mb: 0.5 }} />
+                            <Box sx={{
+                              display: 'flex',
+                              justifyContent: 'center',
+                              mb: 1
+                            }}>
+                              <People sx={{
+                                fontSize: 48,
+                                color: categoryInfo.color,
+                                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                              }} />
+                            </Box>
                             <Typography variant="h6" sx={{
                               fontWeight: 'bold',
                               color: '#1f2937',
-                              fontSize: '1.25rem'
+                              fontSize: '1.5rem'
                             }}>
                               {business.workers_count || 0}
                             </Typography>
                             <Typography variant="caption" sx={{
                               color: '#6b7280',
-                              fontSize: '0.7rem'
+                              fontSize: '0.75rem',
+                              fontWeight: 500,
+                              letterSpacing: '0.5px',
+                              textTransform: 'uppercase'
                             }}>
                               {language === 'en' ? 'Workers' : language === 'tr' ? 'Çalışan' : 'Работники'}
                             </Typography>
@@ -1479,22 +1498,41 @@ const Home = () => {
 
                           {/* Services Count */}
                           <Box sx={{
-                            p: 1.5,
-                            borderRadius: 2,
-                            bgcolor: '#f9fafb',
-                            textAlign: 'center'
+                            p: 2,
+                            borderRadius: 3,
+                            bgcolor: '#f3f4f6',
+                            textAlign: 'center',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              bgcolor: '#e5e7eb',
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                            }
                           }}>
-                            <ContentCut sx={{ fontSize: 24, color: categoryInfo.color, mb: 0.5 }} />
+                            <Box sx={{
+                              display: 'flex',
+                              justifyContent: 'center',
+                              mb: 1
+                            }}>
+                              <ContentCut sx={{
+                                fontSize: 48,
+                                color: categoryInfo.color,
+                                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                              }} />
+                            </Box>
                             <Typography variant="h6" sx={{
                               fontWeight: 'bold',
                               color: '#1f2937',
-                              fontSize: '1.25rem'
+                              fontSize: '1.5rem'
                             }}>
                               {business.services_count || 0}
                             </Typography>
                             <Typography variant="caption" sx={{
                               color: '#6b7280',
-                              fontSize: '0.7rem'
+                              fontSize: '0.75rem',
+                              fontWeight: 500,
+                              letterSpacing: '0.5px',
+                              textTransform: 'uppercase'
                             }}>
                               {language === 'en' ? 'Services' : language === 'tr' ? 'Hizmet' : 'Услуги'}
                             </Typography>
@@ -1755,7 +1793,7 @@ const Home = () => {
                 ? 'Join thousands of satisfied customers who trust us with their beauty and grooming needs'
                 : language === 'tr'
                 ? 'Güzellik ve bakım ihtiyaçları için bize güvenen binlerce memnun müşteriye katılın'
-                : 'Присоединяйтесь �� тысячам довольных клиентов, которые доверяют нам свои потребности в красоте и уходе'
+                : 'Присоединяйтесь �� тысячам довольных клиентов, которые до��еряют нам свои потребности в красоте и уходе'
               }
             </Typography>
             <Stack
@@ -1832,7 +1870,7 @@ const Home = () => {
                   ? 'The leading platform for booking professional barber services across Europe. Find and book the best barbers in your city.'
                   : language === 'tr'
                   ? 'Avrupa\'da profesyonel berber hizmetleri rezervasyonu için önde gelen platform. Şehrinizdeki en iyi berberleri bulun ve rezervasyon yapın.'
-                  : 'Вед��щая платфор��а для бронирования профессиональных парикмахерск��х услуг по всей Европе. Найдите и заброн��руйте лучших парикма��еров в своем городе.'
+                  : 'Вед��щая платфор��а для бронирования профессиональных парикмахерских услуг по всей Европе. Найдите и заброн��руйте лучших парикма��еров в своем городе.'
                 }
               </Typography>
               <Stack direction="row" spacing={1}>
