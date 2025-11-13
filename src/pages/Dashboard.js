@@ -208,24 +208,24 @@ const Dashboard = () => {
         // Fetch appointments using bookingAPI
         const appointmentsResponse = await bookingAPI.getAppointments().catch(() => []);
 
-        // Fetch workers and services for all businesses
-        const businessesResponse = await api.get('/business/').catch(() => ({ data: [] }));
-        const businesses = businessesResponse.data || [];
-
-        // Create maps for workers and services
+        // Fetch all barbers and services directly
         const workersMap = {};
         const servicesMap = {};
 
-        for (const business of businesses) {
-          // Fetch workers for this business
-          const workersResponse = await api.get(`/business/${business.id}/workers`).catch(() => ({ data: [] }));
-          const workers = workersResponse.data || [];
-          workers.forEach(w => {
-            workersMap[w.id] = w.name || w.full_name || `${w.first_name || ''} ${w.last_name || ''}`.trim() || 'Worker';
+        // Fetch all barbers
+        try {
+          const barbersResponse = await api.get('/barbers/');
+          const barbers = barbersResponse.data || [];
+          barbers.forEach(b => {
+            workersMap[b.id] = b.name || b.full_name || `${b.first_name || ''} ${b.last_name || ''}`.trim() || 'Worker';
           });
+        } catch (error) {
+          console.error('Error fetching barbers:', error);
+        }
 
-          // Fetch services for this business
-          const servicesResponse = await api.get(`/business/${business.id}/services`).catch(() => ({ data: [] }));
+        // Fetch all services
+        try {
+          const servicesResponse = await api.get('/services/');
           const services = servicesResponse.data || [];
           services.forEach(s => {
             servicesMap[s.id] = {
@@ -234,6 +234,8 @@ const Dashboard = () => {
               duration: s.duration || 0
             };
           });
+        } catch (error) {
+          console.error('Error fetching services:', error);
         }
 
         // Transform appointments to display format with real data
