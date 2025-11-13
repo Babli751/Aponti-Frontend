@@ -1,5 +1,5 @@
-// Runtime configuration for API URL - PRODUCTION v18 (Business Photo Upload)
-console.log('🔄 Loading API config v18...');
+// Runtime configuration for API URL - PRODUCTION v19 (Map Search Button)
+console.log('🔄 Loading API config v19...');
 
 // Try to get API URL from meta tag (injected at build/deploy time)
 const getMetaTagValue = (name) => {

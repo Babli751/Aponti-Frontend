@@ -332,12 +332,25 @@ const Home = () => {
 
   // Map section handlers
   const handleFindMyLocation = () => {
+    // Check if site is HTTPS (required for geolocation in modern browsers)
+    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+      const message = language === 'en'
+        ? 'Location access requires HTTPS for security. The map shows businesses in Istanbul. You can search for your city using the search box above.'
+        : language === 'tr'
+        ? 'Güvenlik için konum erişimi HTTPS gerektirir. Harita İstanbul işletmelerini gösteriyor. Yukarıdaki arama kutusunu kullanarak şehrinizi arayabilirsiniz.'
+        : 'Для доступа к местоположению требуется HTTPS. На карте показаны предприятия в Стамбуле. Используйте поле поиска выше для поиска вашего города.';
+
+      alert(message);
+      setUserLocation({ lat: 41.0082, lng: 28.9784 });
+      return;
+    }
+
     // First, show an informational prompt
     const confirmMessage = language === 'en'
       ? 'To find businesses near you, we need access to your location. Click OK to allow location access in the next prompt.'
       : language === 'tr'
       ? 'Size yakın işletmeleri bulmak için konumunuza erişmemiz gerekiyor. Sonraki uyarıda konum erişimine izin vermek için Tamam\'a tıklayın.'
-      : 'Чтобы найти предприятия ря��ом с вами, нам нужен доступ к вашему место��оложению. Нажмите OK, чтобы разрешить доступ к местоположению.';
+      : 'Чтобы найти предприятия рядом с вами, нам нужен доступ к вашему местоположению. Нажмите OK, чтобы разрешить доступ к местоположению.';
 
     const userConfirmed = window.confirm(confirmMessage);
 
@@ -1107,7 +1120,7 @@ const Home = () => {
             <CardContent sx={{ p: { xs: 2, md: 3 } }}>
               <Grid container spacing={2} alignItems="center">
                 {/* Search Input */}
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={3}>
                   <TextField
                     fullWidth
                     size="small"
@@ -1118,6 +1131,11 @@ const Home = () => {
                       : 'Поиск местоположения...'}
                     value={mapSearchQuery}
                     onChange={(e) => setMapSearchQuery(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && mapSearchQuery.trim()) {
+                        handleMapSearch();
+                      }
+                    }}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -1138,8 +1156,31 @@ const Home = () => {
                   />
                 </Grid>
 
+                {/* Search Button */}
+                <Grid item xs={12} md={3}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    startIcon={<Search />}
+                    onClick={handleMapSearch}
+                    disabled={!mapSearchQuery.trim()}
+                    sx={{
+                      bgcolor: '#2d3748',
+                      fontWeight: 600,
+                      '&:hover': {
+                        bgcolor: '#1a202c',
+                      },
+                      '&:disabled': {
+                        bgcolor: '#9ca3af',
+                      }
+                    }}
+                  >
+                    {language === 'en' ? 'Search' : language === 'tr' ? 'Ara' : 'Поиск'}
+                  </Button>
+                </Grid>
+
                 {/* Category Dropdown */}
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={3}>
                   <FormControl fullWidth size="small">
                     <Select
                       value={mapCategory}
@@ -1177,7 +1218,7 @@ const Home = () => {
                 </Grid>
 
                 {/* Find My Location Button */}
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={3}>
                   <Button
                     fullWidth
                     variant="contained"
