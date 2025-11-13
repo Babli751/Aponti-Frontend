@@ -1,5 +1,5 @@
-// Runtime configuration for API URL - PRODUCTION v14
-console.log('🔄 Loading API config v14...');
+// Runtime configuration for API URL - PRODUCTION v18 (Business Photo Upload)
+console.log('🔄 Loading API config v18...');
 
 // Try to get API URL from meta tag (injected at build/deploy time)
 const getMetaTagValue = (name) => {
@@ -28,7 +28,7 @@ window.API_BASE_URL = (() => {
   // Production: Use same origin - server will proxy /api requests to backend
   if (host === '206.189.57.55') {
     console.log('🔗 Production on 206.189.57.55: Using same origin');
-    return `http://${host}:8001/api/v1`;
+    return "/api/v1";
   }
 
   // For all other deployments (fly.dev, netlify, etc): Use relative paths

@@ -1489,24 +1489,42 @@ useEffect(() => {
               style={{ display: 'none' }}
               id="photo-upload-input"
               type="file"
-              onChange={(e) => {
+              onChange={async (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                  const reader = new FileReader();
-                  reader.onloadend = () => {
+                  try {
+                    // Upload to backend
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const endpoint = uploadType === 'avatar' ? '/businesses/avatar' : '/businesses/cover-photo';
+                    const response = await api.post(endpoint, formData, {
+                      headers: {
+                        'Content-Type': 'multipart/form-data'
+                      }
+                    });
+
+                    // Update local state with the URL from backend
                     if (uploadType === 'avatar') {
-                      setBusinessData({ ...businessData, avatar: reader.result });
+                      setBusinessData({ ...businessData, avatar: response.data.avatar_url });
                     } else {
-                      setBusinessData({ ...businessData, coverPhoto: reader.result });
+                      setBusinessData({ ...businessData, coverPhoto: response.data.cover_photo_url });
                     }
+
                     setSnackbar({
                       open: true,
                       message: language === 'en' ? 'Photo uploaded successfully!' : language === 'tr' ? 'Fotoğraf başarıyla yüklendi!' : 'Фото загружено!',
                       severity: 'success'
                     });
                     setPhotoUploadOpen(false);
-                  };
-                  reader.readAsDataURL(file);
+                  } catch (error) {
+                    console.error('Error uploading photo:', error);
+                    setSnackbar({
+                      open: true,
+                      message: language === 'en' ? 'Failed to upload photo' : language === 'tr' ? 'Fotoğraf yüklenemedi' : 'Ошибка загрузки',
+                      severity: 'error'
+                    });
+                  }
                 }
               }}
             />

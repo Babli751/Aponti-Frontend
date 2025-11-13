@@ -20,6 +20,8 @@ import BusinessDashboard from './pages/BusinessDashboard';
 import BarberDashboard from './pages/BarberDashboard';
 import BusinessDetail from './pages/BusinessDetail';
 import ContactUs from './pages/ContactUs';
+import Payment from './pages/Payment';
+import PaymentSuccess from './pages/PaymentSuccess';
 
 // Favorites redirect component
 const FavoritesRedirect = () => {
@@ -297,6 +299,10 @@ function AuthAwareRoutes() {
       <Route path="/barber-debug" element={<BarberDebug />} />
       <Route path="/debug-barber-login.html" element={<BarberDebug />} />
       <Route path="/test-barber-login.html" element={<BarberDebug />} />
+
+      {/* Payment Routes */}
+      <Route path="/payment" element={<Payment />} />
+      <Route path="/payment/success" element={<PaymentSuccess />} />
 
       {/* Other Routes */}
       <Route path="/services" element={<Services />} />

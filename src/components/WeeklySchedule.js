@@ -15,11 +15,11 @@ const WeeklySchedule = ({ appointments = [], onAddAvailability, language = 'en' 
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Time slots (8 AM to 8 PM, 30-minute intervals)
+  // Time slots (8 AM to 11 PM, 30-minute intervals)
   const timeSlots = [];
-  for (let hour = 8; hour <= 20; hour++) {
+  for (let hour = 8; hour <= 23; hour++) {
     timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
-    if (hour < 20) {
+    if (hour < 23) {
       timeSlots.push(`${hour.toString().padStart(2, '0')}:30`);
     }
   }
@@ -231,10 +231,10 @@ const WeeklySchedule = ({ appointments = [], onAddAvailability, language = 'en' 
             zIndex: 10,
             boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
           }}>
-            <Grid item xs={2} sx={{
+            <Grid item sx={{
               py: 2.5,
-              px: 3,
-              width: `${100/8}%`,
+              px: 2,
+              width: '12.5%',
               borderRight: '3px solid #2d3748',
               borderBottom: '3px solid #2d3748',
               bgcolor: 'linear-gradient(135deg, #edf2f7 0%, #b2dfdb 100%)',
@@ -251,12 +251,12 @@ const WeeklySchedule = ({ appointments = [], onAddAvailability, language = 'en' 
               const isToday = day.toDateString() === new Date().toDateString();
               const dayIndex = (day.getDay() + 6) % 7; // Convert to Monday-first
               return (
-                <Grid item xs={10/7} key={index} sx={{
+                <Grid item key={index} sx={{
                   py: 2.5,
-                  px: 3,
-                  width: `${100/8}%`,
+                  px: 1,
+                  width: '12.5%',
                   textAlign: 'center',
-                  borderRight: index === 6 ? '3px solid #2d3748' : '3px solid #2d3748',
+                  borderRight: '3px solid #2d3748',
                   borderBottom: '3px solid #2d3748',
                   bgcolor: 'linear-gradient(135deg, #edf2f7 0%, #b2dfdb 100%)',
                   transition: 'all 0.2s',
@@ -311,10 +311,10 @@ const WeeklySchedule = ({ appointments = [], onAddAvailability, language = 'en' 
                 bgcolor: '#f9fafb'
               }
             }}>
-              <Grid item xs={2} sx={{
+              <Grid item sx={{
                 py: 3.5,
-                px: 3,
-                width: `${100/8}%`,
+                px: 2,
+                width: '12.5%',
                 borderRight: '3px solid #2d3748',
                 borderBottom: '3px solid #2d3748',
                 display: 'flex',
@@ -333,14 +333,13 @@ const WeeklySchedule = ({ appointments = [], onAddAvailability, language = 'en' 
                 return (
                   <Grid
                     item
-                    xs={10/7}
                     key={index}
                     onClick={() => handleSlotClick(day, time)}
                     sx={{
                       py: 3.5,
-                      px: 3,
-                      width: `${100/8}%`,
-                      borderRight: index === 6 ? '3px solid #2d3748' : '3px solid #2d3748',
+                      px: 1,
+                      width: '12.5%',
+                      borderRight: '3px solid #2d3748',
                       borderBottom: '3px solid #2d3748',
                       cursor: 'pointer',
                       minHeight: 85,

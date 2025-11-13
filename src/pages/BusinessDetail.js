@@ -56,6 +56,7 @@ const BusinessDetail = () => {
   // Booking dialog state
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
+  const [selectedWorker, setSelectedWorker] = useState(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingError, setBookingError] = useState('');
 
@@ -86,27 +87,23 @@ const BusinessDetail = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch all workers from the general endpoint
+        // Fetch workers for this specific business
         try {
-          const workersResponse = await api.get('/barbers/');
-          console.log('All workers:', workersResponse.data);
-          // Filter workers by business ID if it's in the data
-          const allWorkers = Array.isArray(workersResponse.data) ? workersResponse.data : [];
-          const businessWorkers = allWorkers.filter(w => String(w.business_id) === String(id) || String(w.barber_shop_id) === String(id));
-          setWorkers(businessWorkers.length > 0 ? businessWorkers : allWorkers);
+          const workersResponse = await api.get(`/businesses/${id}/workers`);
+          console.log('Business workers:', workersResponse.data);
+          const businessWorkers = Array.isArray(workersResponse.data) ? workersResponse.data : [];
+          setWorkers(businessWorkers);
         } catch (err) {
           console.error('Error fetching workers:', err);
           setWorkers([]);
         }
 
-        // Fetch all services from the general endpoint
+        // Fetch services for this specific business
         try {
-          const servicesResponse = await api.get('/services/');
-          console.log('All services:', servicesResponse.data);
-          // Filter services by business ID if it's in the data
-          const allServices = Array.isArray(servicesResponse.data) ? servicesResponse.data : [];
-          const businessServices = allServices.filter(s => String(s.business_id) === String(id) || String(s.barber_shop_id) === String(id));
-          setServices(businessServices.length > 0 ? businessServices : allServices);
+          const servicesResponse = await api.get(`/businesses/${id}/services`);
+          console.log('Business services:', servicesResponse.data);
+          const businessServices = Array.isArray(servicesResponse.data) ? servicesResponse.data : [];
+          setServices(businessServices);
         } catch (err) {
           console.error('Error fetching services:', err);
           setServices([]);
@@ -170,6 +167,9 @@ const BusinessDetail = () => {
   const handleBooking = (service) => {
     // Open booking dialog instead of navigating
     setSelectedService(service);
+    // Set first worker as default
+    const firstWorker = service.workers?.[0] || workers[0];
+    setSelectedWorker(firstWorker);
     setBookingDialogOpen(true);
     setBookingSuccess(false);
     setSelectedDayOfWeek(null);
@@ -211,9 +211,9 @@ const BusinessDetail = () => {
       // Combine date and time into ISO format
       const startTime = `${dateStr}T${formattedTime}:00`;
 
-      // Auto-select first available worker/barber for this service
+      // Use selected worker
       const serviceForWorker = selectedService.allServices?.[0] || selectedService;
-      const barberId = serviceForWorker.barber_id || workers[0]?.id;
+      const barberId = selectedWorker?.id || serviceForWorker.barber_id || workers[0]?.id;
 
       const appointmentData = {
         service_id: serviceForWorker.id,
@@ -221,13 +221,23 @@ const BusinessDetail = () => {
         start_time: startTime
       };
 
-      await api.post('/bookings/', appointmentData);
+      const response = await api.post('/bookings/', appointmentData);
+      const booking = response.data;
 
       setBookingSuccess(true);
       setTimeout(() => {
         setBookingDialogOpen(false);
-        navigate('/dashboard');
-      }, 2000);
+        // Redirect to payment page with booking details
+        navigate('/payment', {
+          state: {
+            booking: booking,
+            servicePrice: serviceForWorker.price || 0,
+            serviceName: serviceForWorker.name || selectedService.name,
+            workerName: selectedWorker?.full_name || selectedWorker?.name || 'Unknown',
+            businessName: business?.business_name || business?.name || 'Unknown Business'
+          }
+        });
+      }, 1500);
 
     } catch (err) {
       console.error('Booking error:', err);
@@ -643,12 +653,30 @@ const BusinessDetail = () => {
                                     bgcolor: '#fff5f0'
                                   }
                                 }}
-                                onClick={() => {
-                                  alert(language === 'en'
-                                    ? 'Added to favorites!'
-                                    : language === 'tr'
-                                    ? 'Favorilere eklendi!'
-                                    : 'Добавлено в избранное!');
+                                onClick={async () => {
+                                  // Save the service to favorites
+                                  const serviceId = firstService.id;
+
+                                  if (!serviceId) {
+                                    alert('Service not found');
+                                    return;
+                                  }
+
+                                  try {
+                                    await api.post(`/users/favorites/services/${serviceId}`);
+                                    alert(language === 'en'
+                                      ? 'Added to favorites!'
+                                      : language === 'tr'
+                                      ? 'Favorilere eklendi!'
+                                      : 'Добавлено в избранное!');
+                                  } catch (error) {
+                                    console.error('Error adding to favorites:', error);
+                                    alert(language === 'en'
+                                      ? 'Failed to add to favorites'
+                                      : language === 'tr'
+                                      ? 'Favorilere eklenemedi'
+                                      : 'Не удалось добавить в избранное');
+                                  }
                                 }}
                               >
                                 {language === 'en' ? 'Save' : language === 'tr' ? 'Kaydet' : 'Сохранить'}
@@ -783,6 +811,43 @@ const BusinessDetail = () => {
                   {selectedMonth.toLocaleDateString(language === 'tr' ? 'tr-TR' : language === 'ru' ? 'ru-RU' : 'en-US', { month: 'long', year: 'numeric' })}
                 </Typography>
               </Box>
+
+              {/* Worker Selection */}
+              {selectedService?.workers && selectedService.workers.length > 0 && (
+                <Box sx={{ px: 3, pb: 2 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#4b5563' }}>
+                    {language === 'en' ? 'Select Worker' : language === 'tr' ? 'Çalışan Seçin' : 'Выберите работника'}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                    {selectedService.workers.map((worker) => (
+                      <Box
+                        key={worker.id}
+                        onClick={() => setSelectedWorker(worker)}
+                        sx={{
+                          flex: '0 0 auto',
+                          minWidth: 120,
+                          py: 1.5,
+                          px: 2,
+                          textAlign: 'center',
+                          borderRadius: 2,
+                          cursor: 'pointer',
+                          bgcolor: selectedWorker?.id === worker.id ? '#00BFA6' : 'white',
+                          color: selectedWorker?.id === worker.id ? 'white' : 'inherit',
+                          border: '1px solid',
+                          borderColor: selectedWorker?.id === worker.id ? '#00BFA6' : '#e5e7eb',
+                          '&:hover': {
+                            bgcolor: selectedWorker?.id === worker.id ? '#00A693' : '#f9fafb'
+                          }
+                        }}
+                      >
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {worker.full_name || `${worker.first_name || ''} ${worker.last_name || ''}`.trim() || 'Worker'}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              )}
 
               {/* Week Days Selector */}
               <Box sx={{ px: 2, pb: 2, overflow: 'auto' }}>

@@ -90,7 +90,7 @@ const Dashboard = () => {
     email: '',
     phone_number: ''
   });
-  const [profilePhotoUrl, setProfilePhotoUrl] = useState('');
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState(user?.avatar_url || '');
 
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [pastAppointments, setPastAppointments] = useState([]);
@@ -201,31 +201,42 @@ const Dashboard = () => {
 
   const t = content[language];
 
+  // Update profile photo when user changes
+  useEffect(() => {
+    if (user?.avatar_url) {
+      setProfilePhotoUrl(user.avatar_url);
+    }
+  }, [user]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch appointments using bookingAPI
+        // Fetch appointments from real database
         const appointmentsResponse = await bookingAPI.getAppointments().catch(() => []);
+        console.log('📅 Fetched appointments from database:', appointmentsResponse);
 
-        // Fetch workers and services for all businesses
-        const businessesResponse = await api.get('/business/').catch(() => ({ data: [] }));
-        const businesses = businessesResponse.data || [];
-
-        // Create maps for workers and services
+        // Fetch all barbers and services from database
         const workersMap = {};
         const servicesMap = {};
 
-        for (const business of businesses) {
-          // Fetch workers for this business
-          const workersResponse = await api.get(`/business/${business.id}/workers`).catch(() => ({ data: [] }));
-          const workers = workersResponse.data || [];
-          workers.forEach(w => {
-            workersMap[w.id] = w.name || w.full_name || `${w.first_name || ''} ${w.last_name || ''}`.trim() || 'Worker';
+        // Fetch all barbers
+        try {
+          const barbersResponse = await api.get('/barbers/');
+          const barbers = barbersResponse.data || [];
+          barbers.forEach(b => {
+            // Use full_name if available, otherwise combine first_name and last_name
+            const name = b.full_name || `${b.first_name || ''} ${b.last_name || ''}`.trim() || 'Worker';
+            workersMap[b.id] = name;
           });
+          console.log('👨‍💼 Fetched barbers from database:', barbers.length);
+        } catch (error) {
+          console.error('Error fetching barbers:', error);
+        }
 
-          // Fetch services for this business
-          const servicesResponse = await api.get(`/business/${business.id}/services`).catch(() => ({ data: [] }));
+        // Fetch all services
+        try {
+          const servicesResponse = await api.get('/services/');
           const services = servicesResponse.data || [];
           services.forEach(s => {
             servicesMap[s.id] = {
@@ -234,6 +245,9 @@ const Dashboard = () => {
               duration: s.duration || 0
             };
           });
+          console.log('✂️ Fetched services from database:', services.length);
+        } catch (error) {
+          console.error('Error fetching services:', error);
         }
 
         // Transform appointments to display format with real data
@@ -261,7 +275,21 @@ const Dashboard = () => {
 
         setUpcomingAppointments(upcoming);
         setPastAppointments(past);
-        setFavoriteServices([]);
+
+        // Fetch favorite services
+        try {
+          const favoritesResponse = await api.get('/users/favorites');
+          const favorites = favoritesResponse.data || [];
+          console.log('⭐ Fetched favorites from database:', favorites);
+
+          // Backend now returns services directly in the right format
+          setFavoriteServices(favorites);
+          console.log('⭐ Favorites set:', favorites.length, 'items');
+        } catch (error) {
+          console.error('Error fetching favorites:', error);
+          setFavoriteServices([]);
+        }
+
         setError(null);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
@@ -298,15 +326,33 @@ const Dashboard = () => {
     return user?.email || profileInfo?.email || 'user@example.com';
   };
 
-  const handlePhotoUpload = (event) => {
+  const handlePhotoUpload = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfilePhotoUrl(reader.result);
+      try {
+        // Upload to backend
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await api.post('/users/avatar', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+
+        // Update local state with the avatar URL from backend
+        const avatarUrl = response.data.avatar_url;
+        setProfilePhotoUrl(avatarUrl);
+
+        // Update user context
+        await updateUser({ avatar_url: avatarUrl });
+
         setPhotoUploadOpen(false);
-      };
-      reader.readAsDataURL(file);
+        alert(language === 'en' ? 'Profile photo updated!' : language === 'tr' ? 'Profil fotoğrafı güncellendi!' : 'Фото профиля обновлено!');
+      } catch (error) {
+        console.error('Error uploading photo:', error);
+        alert(language === 'en' ? 'Failed to upload photo' : language === 'tr' ? 'Fotoğraf yüklenemedi' : 'Ошибка загрузки');
+      }
     }
   };
 
@@ -639,6 +685,11 @@ const Dashboard = () => {
                             color: '#2d3748',
                             borderColor: '#2d3748',
                             '&:hover': { bgcolor: '#edf2f7', borderColor: '#2d3748' }
+                          }}
+                          onClick={() => {
+                            // Navigate to barber/business detail page
+                            // Assuming business ID is 1 for now (we can improve this later)
+                            navigate(`/business/1`);
                           }}
                         >
                           View Details

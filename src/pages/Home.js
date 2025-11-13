@@ -138,81 +138,15 @@ const Home = () => {
       try {
         setLoadingBusinesses(true);
 
-        // Try to fetch businesses from /businesses/ endpoint first
-        try {
-          const businessesResponse = await api.get('/businesses/');
-          if (businessesResponse.data && Array.isArray(businessesResponse.data) && businessesResponse.data.length > 0) {
-            console.log('✅ Fetched businesses from API:', businessesResponse.data);
-            setFeaturedBusinesses(businessesResponse.data);
-            setLoadingBusinesses(false);
-            return;
-          }
-        } catch (err) {
-          console.log('⚠️ Businesses endpoint not available, falling back to workers data:', err.message);
-        }
-
-        // Fallback: Fetch all barbers/workers
-        let allWorkers = [];
-        try {
-          const workersResponse = await api.get('/barbers/');
-          allWorkers = Array.isArray(workersResponse.data) ? workersResponse.data : [];
-          console.log('Fetched all workers:', allWorkers.length, allWorkers);
-        } catch (err) {
-          console.error('Error fetching workers:', err);
-        }
-
-        // Fetch all services
-        let allServices = [];
-        try {
-          const servicesResponse = await api.get('/services/');
-          allServices = Array.isArray(servicesResponse.data) ? servicesResponse.data : [];
-          console.log('Fetched all services:', allServices.length, allServices);
-        } catch (err) {
-          console.error('Error fetching services:', err);
-        }
-
-        // Extract unique businesses from workers data
-        // Group workers by business ID to get unique businesses
-        const businessMap = {};
-        allWorkers.forEach(worker => {
-          const businessId = worker.business_id || worker.barber_shop_id || 1;
-          const businessName = worker.business_name || worker.barber_shop_name || 'Professional Services';
-
-          if (!businessMap[businessId]) {
-            businessMap[businessId] = {
-              id: businessId,
-              business_name: businessName,
-              name: businessName,
-              address: worker.address || worker.barber_shop_address || 'Location TBD',
-              phone: worker.phone_number || '+90 555 123 4567',
-              latitude: worker.latitude || 41.0082,
-              longitude: worker.longitude || 28.9784,
-              business_type: worker.business_type || 'Services',
-              description: worker.description || 'Professional services provided'
-            };
-          }
-        });
-
-        const businesses = Object.values(businessMap).slice(0, 6);
-        console.log('Extracted businesses:', businesses.length, businesses);
-
-        // Count workers and services for each business
-        const businessesWithCounts = businesses.map(business => {
-          const businessId = business.id;
-          const businessWorkers = allWorkers.filter(w => String(w.business_id || w.barber_shop_id || 1) === String(businessId));
-          const businessServices = allServices.filter(s => String(s.business_id || s.barber_shop_id || 1) === String(businessId));
-
-          console.log(`Business ${businessId}: ${businessWorkers.length} workers, ${businessServices.length} services`);
-
-          return {
-            ...business,
-            workers_count: businessWorkers.length || 1,
-            services_count: businessServices.length || 3
-          };
-        });
-
-        console.log('Businesses with counts:', businessesWithCounts);
-        setFeaturedBusinesses(businessesWithCounts);
+        // Fetch businesses from /businesses/ endpoint - NO FALLBACK, only real data
+        console.log('🔍 Fetching businesses from /businesses/...');
+        const businessesResponse = await api.get('/businesses/');
+        console.log('📦 Raw response:', businessesResponse);
+        const businesses = businessesResponse.data || [];
+        console.log('✅ Fetched businesses from database:', businesses.length, 'items');
+        console.log('📊 Businesses data:', businesses);
+        setFeaturedBusinesses(businesses);
+        console.log('✅ Featured businesses set successfully');
       } catch (error) {
         console.error('Error fetching businesses:', error);
         console.error('Error details:', error.response?.data, error.message);
@@ -281,7 +215,7 @@ const Home = () => {
 
     try {
       // Fetch real workers from API
-      const response = await api.get(`/business/${businessId}/workers`);
+      const response = await api.get(`/businesses/${businessId}/workers`);
       console.log('Workers API response:', response.data);
 
       let workers = [];
@@ -310,7 +244,7 @@ const Home = () => {
 
     try {
       // Fetch real services from API
-      const response = await api.get(`/business/worker/${workerId}/services`);
+      const response = await api.get(`/businesses/worker/${workerId}/services`);
       console.log('Services API response:', response.data);
 
       let services = [];
@@ -353,16 +287,30 @@ const Home = () => {
         });
 
         console.log('✅ Booking created:', response.data);
+        const booking = response.data;
+
+        // Get service and worker details for payment page
+        const selectedServiceData = workerServices.find(s => s.id === parseInt(selectedService));
+        const selectedWorkerData = businessWorkers.find(w => w.id === parseInt(selectedWorker));
+        const selectedBusinessData = categoryBusinesses.find(b => b.id === parseInt(selectedBusiness));
 
         // Show success message
         alert(language === 'en'
-          ? 'Booking successful! Redirecting to dashboard...'
+          ? 'Booking successful! Redirecting to payment...'
           : language === 'tr'
-            ? 'Rezervasyon başarılı! Yönlendiriliyor...'
-            : 'Бронирование успешно! Перенаправление...');
+            ? 'Rezervasyon başarılı! Ödeme sayfasına yönlendiriliyor...'
+            : 'Бронирование успешно! Перенаправление на оплату...');
 
-        // Navigate to dashboard
-        navigate('/dashboard');
+        // Navigate to payment page
+        navigate('/payment', {
+          state: {
+            booking: booking,
+            servicePrice: selectedServiceData?.price || 0,
+            serviceName: selectedServiceData?.name || 'Service',
+            workerName: selectedWorkerData?.full_name || selectedWorkerData?.name || 'Unknown',
+            businessName: selectedBusinessData?.business_name || selectedBusinessData?.name || 'Unknown Business'
+          }
+        });
       } catch (error) {
         console.error('❌ Booking failed:', error);
         alert(language === 'en'
@@ -692,10 +640,10 @@ const Home = () => {
                         }}
                       >
                         <Avatar
-                          src={user?.avatar || user?.profile_picture || undefined}
-                          sx={{ width: 32, height: 32, bgcolor: user?.avatar || user?.profile_picture ? 'transparent' : '#4b5563' }}
+                          src={user?.avatar_url || user?.avatar || user?.profile_picture || undefined}
+                          sx={{ width: 32, height: 32, bgcolor: user?.avatar_url || user?.avatar || user?.profile_picture ? 'transparent' : '#4b5563' }}
                         >
-                          {!user?.avatar && !user?.profile_picture && (user?.name?.[0] || user?.first_name?.[0] || 'U')}
+                          {!user?.avatar_url && !user?.avatar && !user?.profile_picture && (user?.name?.[0] || user?.first_name?.[0] || 'U')}
                         </Avatar>
                         {user?.name && (
                           <Box sx={{ textAlign: 'left', display: { xs: 'none', lg: 'block' } }}>
@@ -960,7 +908,7 @@ const Home = () => {
                               </em>;
                             }
                             const worker = businessWorkers.find(w => w.id === selected);
-                            return worker ? worker.name : selected;
+                            return worker ? (worker.full_name || worker.name || `${worker.first_name || ''} ${worker.last_name || ''}`.trim()) : selected;
                           }}
                           sx={{
                             bgcolor: 'white',
@@ -976,7 +924,7 @@ const Home = () => {
                         >
                           {businessWorkers.map(worker => (
                             <MenuItem key={worker.id} value={worker.id}>
-                              {worker.name}
+                              {worker.full_name || worker.name || `${worker.first_name || ''} ${worker.last_name || ''}`.trim() || 'Worker'}
                             </MenuItem>
                           ))}
                         </Select>
@@ -2025,7 +1973,7 @@ const Home = () => {
             <Box sx={{ mb: 2, p: 2, bgcolor: '#f3f4f6', borderRadius: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Avatar
-                  src={user?.avatar}
+                  src={user?.avatar_url || user?.avatar}
                   sx={{ width: 40, height: 40 }}
                 />
                 <Box>
