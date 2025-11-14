@@ -37,6 +37,44 @@ const BusinessSignup = () => {
     services: []
   });
 
+  // Country and city data
+  const countryData = {
+    'Turkey': {
+      name: { en: 'Turkey', tr: 'Türkiye', ru: 'Турция' },
+      cities: ['Istanbul', 'Ankara', 'Izmir', 'Bursa', 'Antalya', 'Adana', 'Konya', 'Gaziantep', 'Mersin', 'Diyarbakir']
+    },
+    'Azerbaijan': {
+      name: { en: 'Azerbaijan', tr: 'Azerbaycan', ru: 'Азербайджан' },
+      cities: ['Baku', 'Ganja', 'Sumqayit', 'Mingachevir', 'Lankaran', 'Shaki', 'Yevlakh', 'Nakhchivan', 'Shirvan', 'Guba']
+    },
+    'USA': {
+      name: { en: 'United States', tr: 'Amerika Birleşik Devletleri', ru: 'США' },
+      cities: ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose']
+    },
+    'UK': {
+      name: { en: 'United Kingdom', tr: 'İngiltere', ru: 'Великобритания' },
+      cities: ['London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow', 'Liverpool', 'Newcastle', 'Sheffield', 'Bristol', 'Edinburgh']
+    },
+    'Germany': {
+      name: { en: 'Germany', tr: 'Almanya', ru: 'Германия' },
+      cities: ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt', 'Stuttgart', 'Dusseldorf', 'Dortmund', 'Essen', 'Leipzig']
+    },
+    'France': {
+      name: { en: 'France', tr: 'Fransa', ru: 'Франция' },
+      cities: ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Strasbourg', 'Montpellier', 'Bordeaux', 'Lille']
+    },
+    'Russia': {
+      name: { en: 'Russia', tr: 'Rusya', ru: 'Россия' },
+      cities: ['Moscow', 'Saint Petersburg', 'Novosibirsk', 'Yekaterinburg', 'Kazan', 'Nizhny Novgorod', 'Chelyabinsk', 'Samara', 'Omsk', 'Rostov-on-Don']
+    },
+    'Spain': {
+      name: { en: 'Spain', tr: 'İspanya', ru: 'Испания' },
+      cities: ['Madrid', 'Barcelona', 'Valencia', 'Seville', 'Zaragoza', 'Malaga', 'Murcia', 'Palma', 'Las Palmas', 'Bilbao']
+    }
+  };
+
+  const [availableCities, setAvailableCities] = useState([]);
+
   const [loginData, setLoginData] = useState({ email: '', password: '', rememberMe: false });
   const [showBusinessPassword, setShowBusinessPassword] = useState(false);
 
@@ -44,6 +82,13 @@ const BusinessSignup = () => {
 
   const handleInputChange = (field, value) => {
     setBusinessData(prev => ({ ...prev, [field]: value }));
+
+    // Update available cities when country changes
+    if (field === 'country' && countryData[value]) {
+      setAvailableCities(countryData[value].cities);
+      // Reset city if country changes
+      setBusinessData(prev => ({ ...prev, city: '' }));
+    }
   };
 
   const handleLoginChange = (field, value) => {
@@ -346,21 +391,48 @@ const BusinessSignup = () => {
                     <Grid item xs={12} md={6}>
                       <TextField fullWidth label={t.phoneNumber} value={businessData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} InputProps={{ startAdornment: <Phone sx={{ mr: 1, color: '#2d3748' }} /> }} />
                     </Grid>
-                    <Grid item xs={12} md={8}>
+                    <Grid item xs={12}>
                       <TextField fullWidth label={t.businessAddress} value={businessData.address} onChange={(e) => handleInputChange('address', e.target.value)} InputProps={{ startAdornment: <LocationOn sx={{ mr: 1, color: '#2d3748' }} /> }} />
                     </Grid>
-                    <Grid item xs={12} md={4}>
-                      <TextField fullWidth label={t.city} value={businessData.city} onChange={(e) => handleInputChange('city', e.target.value)} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: <LocationCity sx={{ mr: 1, color: '#2d3748' }} /> }} />
+                    <Grid item xs={12} md={6}>
+                      <FormControl fullWidth>
+                        <Select
+                          value={businessData.country}
+                          onChange={(e) => handleInputChange('country', e.target.value)}
+                          displayEmpty
+                          startAdornment={<LocationOn sx={{ mr: 1, color: '#2d3748' }} />}
+                          sx={{ '& .MuiSelect-select': { display: 'flex', alignItems: 'center', gap: 1 } }}
+                        >
+                          <MenuItem value="" disabled>
+                            {language === 'en' ? 'Select Country' : language === 'tr' ? 'Ülke Seçin' : 'Выберите страну'}
+                          </MenuItem>
+                          {Object.keys(countryData).map((countryKey) => (
+                            <MenuItem key={countryKey} value={countryKey}>
+                              {countryData[countryKey].name[language] || countryData[countryKey].name.en}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
                     </Grid>
-                    <Grid item xs={12} md={4}>
-                      <TextField
-                        fullWidth
-                        label={language === 'en' ? 'Country' : language === 'tr' ? 'Ülke' : 'Страна'}
-                        value={businessData.country}
-                        onChange={(e) => handleInputChange('country', e.target.value)}
-                        InputLabelProps={{ shrink: true }}
-                        InputProps={{ startAdornment: <LocationOn sx={{ mr: 1, color: '#2d3748' }} /> }}
-                      />
+                    <Grid item xs={12} md={6}>
+                      <FormControl fullWidth disabled={!businessData.country}>
+                        <Select
+                          value={businessData.city}
+                          onChange={(e) => handleInputChange('city', e.target.value)}
+                          displayEmpty
+                          startAdornment={<LocationCity sx={{ mr: 1, color: '#2d3748' }} />}
+                          sx={{ '& .MuiSelect-select': { display: 'flex', alignItems: 'center', gap: 1 } }}
+                        >
+                          <MenuItem value="" disabled>
+                            {language === 'en' ? 'Select City' : language === 'tr' ? 'Şehir Seçin' : 'Выберите город'}
+                          </MenuItem>
+                          {availableCities.map((city) => (
+                            <MenuItem key={city} value={city}>
+                              {city}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
                     </Grid>
                     <Grid item xs={12} md={4}>
                       <FormControl fullWidth>
