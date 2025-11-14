@@ -4,6 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { authAPI } from '../services/api';
 import Footer from '../components/Footer';
 import Logo from '../components/Logo';
+import { countryData } from '../data/countries';
 import {
   Box,
   Container,
@@ -47,6 +48,8 @@ const SignUp = () => {
     password: '',
     confirmPassword: '',
     phone: '',
+    country: '',
+    city: '',
     agreeToTerms: false,
     isBarber: false
   });
@@ -55,6 +58,7 @@ const SignUp = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [availableCities, setAvailableCities] = useState([]);
 
   // Page-specific translations
   const t = {
@@ -86,10 +90,19 @@ const SignUp = () => {
   };
 
   const handleInputChange = (field) => (event) => {
+    const value = event.target.value;
     setFormData(prev => ({
       ...prev,
-      [field]: event.target.value
+      [field]: value
     }));
+
+    // Update available cities when country changes
+    if (field === 'country' && countryData[value]) {
+      setAvailableCities(countryData[value].cities);
+      // Reset city if country changes
+      setFormData(prev => ({ ...prev, city: '' }));
+    }
+
     setError('');
     setSuccess('');
   };
@@ -276,6 +289,44 @@ const SignUp = () => {
                 sx={{ mb: 3 }}
                 variant="outlined"
               />
+
+              {/* Country Dropdown */}
+              <FormControl fullWidth sx={{ mb: 3 }}>
+                <Select
+                  value={formData.country}
+                  onChange={handleInputChange('country')}
+                  displayEmpty
+                  variant="outlined"
+                >
+                  <MenuItem value="" disabled>
+                    {language === 'en' ? 'Select Country' : language === 'tr' ? 'Ülke Seçin' : 'Выберите страну'}
+                  </MenuItem>
+                  {Object.keys(countryData).map((countryKey) => (
+                    <MenuItem key={countryKey} value={countryKey}>
+                      {countryData[countryKey].name[language] || countryData[countryKey].name.en}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* City Dropdown */}
+              <FormControl fullWidth disabled={!formData.country} sx={{ mb: 3 }}>
+                <Select
+                  value={formData.city}
+                  onChange={handleInputChange('city')}
+                  displayEmpty
+                  variant="outlined"
+                >
+                  <MenuItem value="" disabled>
+                    {language === 'en' ? 'Select City' : language === 'tr' ? 'Şehir Seçin' : 'Выберите город'}
+                  </MenuItem>
+                  {availableCities.map((city) => (
+                    <MenuItem key={city} value={city}>
+                      {city}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
               {/* Password Field */}
               <TextField

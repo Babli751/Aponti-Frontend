@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import Footer from '../components/Footer';
 import Logo from '../components/Logo';
+import { countryData } from '../data/countries';
 import {
   Box, Typography, TextField, Button, Container, Card, CardContent, Grid,
   Stepper, Step, StepLabel, Stack, IconButton, AppBar, Toolbar, FormControl,
@@ -36,42 +37,6 @@ const BusinessSignup = () => {
     category: '',
     services: []
   });
-
-  // Country and city data
-  const countryData = {
-    'Turkey': {
-      name: { en: 'Turkey', tr: 'Türkiye', ru: 'Турция' },
-      cities: ['Istanbul', 'Ankara', 'Izmir', 'Bursa', 'Antalya', 'Adana', 'Konya', 'Gaziantep', 'Mersin', 'Diyarbakir']
-    },
-    'Azerbaijan': {
-      name: { en: 'Azerbaijan', tr: 'Azerbaycan', ru: 'Азербайджан' },
-      cities: ['Baku', 'Ganja', 'Sumqayit', 'Mingachevir', 'Lankaran', 'Shaki', 'Yevlakh', 'Nakhchivan', 'Shirvan', 'Guba']
-    },
-    'USA': {
-      name: { en: 'United States', tr: 'Amerika Birleşik Devletleri', ru: 'США' },
-      cities: ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose']
-    },
-    'UK': {
-      name: { en: 'United Kingdom', tr: 'İngiltere', ru: 'Великобритания' },
-      cities: ['London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow', 'Liverpool', 'Newcastle', 'Sheffield', 'Bristol', 'Edinburgh']
-    },
-    'Germany': {
-      name: { en: 'Germany', tr: 'Almanya', ru: 'Германия' },
-      cities: ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt', 'Stuttgart', 'Dusseldorf', 'Dortmund', 'Essen', 'Leipzig']
-    },
-    'France': {
-      name: { en: 'France', tr: 'Fransa', ru: 'Франция' },
-      cities: ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Strasbourg', 'Montpellier', 'Bordeaux', 'Lille']
-    },
-    'Russia': {
-      name: { en: 'Russia', tr: 'Rusya', ru: 'Россия' },
-      cities: ['Moscow', 'Saint Petersburg', 'Novosibirsk', 'Yekaterinburg', 'Kazan', 'Nizhny Novgorod', 'Chelyabinsk', 'Samara', 'Omsk', 'Rostov-on-Don']
-    },
-    'Spain': {
-      name: { en: 'Spain', tr: 'İspanya', ru: 'Испания' },
-      cities: ['Madrid', 'Barcelona', 'Valencia', 'Seville', 'Zaragoza', 'Malaga', 'Murcia', 'Palma', 'Las Palmas', 'Bilbao']
-    }
-  };
 
   const [availableCities, setAvailableCities] = useState([]);
 
