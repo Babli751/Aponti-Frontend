@@ -303,38 +303,6 @@ const BusinessSignup = () => {
       >
         {language === 'en' ? 'Business Login' : language === 'tr' ? 'İşletme Giriş' : 'Войти'}
       </Button>
-
-      {/* Divider */}
-      <Box sx={{ my: 2 }}>
-        <Divider>
-          <Typography variant="body2" color="text.secondary" sx={{ px: 2 }}>
-            {language === 'en' ? 'Or continue with' : language === 'tr' ? 'Veya şununla devam edin' : 'Или продолжить с'}
-          </Typography>
-        </Divider>
-      </Box>
-
-      {/* Social Login Buttons */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Button
-          fullWidth
-          variant="outlined"
-          startIcon={<Google />}
-          onClick={() => {
-            if (window.google) {
-              window.google.accounts.id.prompt();
-            } else {
-              alert('Google Sign-In not loaded');
-            }
-          }}
-          sx={{
-            borderColor: '#db4437',
-            color: '#db4437',
-            '&:hover': { bgcolor: '#fef7f7' }
-          }}
-        >
-          {language === 'en' ? 'Continue with Google' : language === 'tr' ? 'Google ile devam et' : 'Продолжить с Google'}
-        </Button>
-      </Box>
     </Stack>
   </Box>
 )}
@@ -473,30 +441,6 @@ const BusinessSignup = () => {
                     }}
                   >
                     {language === 'en' ? 'Done' : language === 'tr' ? 'Tamamla' : 'Готово'}
-                  </Button>
-                </Box>
-                {/* Divider */}
-                <Box sx={{ my: 2 }}>
-                  <Divider>
-                    <Typography variant="body2" color="text.secondary" sx={{ px: 2 }}>
-                      {language === 'en' ? 'Or continue with' : language === 'tr' ? 'Veya şununla devam edin' : 'Или продолжить с'}
-                    </Typography>
-                  </Divider>
-                </Box>
-                {/* Social Login Buttons */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<Google />}
-                    onClick={() => handleSocialLogin('google', activeTab)}
-                    sx={{
-                      borderColor: '#db4437',
-                      color: '#db4437',
-                      '&:hover': { bgcolor: '#fef7f7' }
-                    }}
-                  >
-                    {language === 'en' ? 'Continue with Google' : language === 'tr' ? 'Google ile devam et' : 'Продолжить с Google'}
                   </Button>
                 </Box>
               </Box>

@@ -490,32 +490,6 @@ const SignUp = () => {
               </Button>
             </form>
 
-            {/* Divider */}
-            <Box sx={{ my: 3 }}>
-              <Divider>
-                <Typography variant="body2" color="text.secondary" sx={{ px: 2 }}>
-                  {t.orContinueWith}
-                </Typography>
-              </Divider>
-            </Box>
-
-            {/* Social Login Buttons */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<Google />}
-                onClick={() => handleSocialLogin('google')}
-                sx={{
-                  borderColor: '#db4437',
-                  color: '#db4437',
-                  '&:hover': { bgcolor: '#fef7f7' }
-                }}
-              >
-                {t.continueWithGoogle}
-              </Button>
-            </Box>
-
             {/* Sign In Link */}
             <Box sx={{ textAlign: 'center', mt: 3 }}>
               <Typography variant="body2" color="text.secondary">
