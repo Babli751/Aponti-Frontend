@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import Logo from '../components/Logo';
+import MapView from '../components/MapView';
 import api, { businessAPI } from '../services/api';
 import { 
   Box,
@@ -332,18 +333,7 @@ const Home = () => {
 
   // Map section handlers
   const handleFindMyLocation = () => {
-    // Check if site is HTTPS (required for geolocation in modern browsers)
-    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-      const message = language === 'en'
-        ? 'Location access requires HTTPS for security. The map shows businesses in Istanbul. You can search for your city using the search box above.'
-        : language === 'tr'
-        ? 'Güvenlik için konum erişimi HTTPS gerektirir. Harita İstanbul işletmelerini gösteriyor. Yukarıdaki arama kutusunu kullanarak şehrinizi arayabilirsiniz.'
-        : 'Для доступа к местоположению требуется HTTPS. На карте показаны предприятия в Стамбуле. Используйте поле поиска выше для поиска вашего города.';
-
-      alert(message);
-      setUserLocation({ lat: 41.0082, lng: 28.9784 });
-      return;
-    }
+    // Try geolocation directly, fallback to Istanbul if not available
 
     // First, show an informational prompt
     const confirmMessage = language === 'en'
@@ -409,7 +399,7 @@ const Home = () => {
               : 'Истекло время запроса местоположения. Показываем Стамбул по умолчанию.';
           }
 
-          alert(errorMessage);
+          // Silently use Istanbul as fallback
         },
         {
           enableHighAccuracy: false,
@@ -428,15 +418,72 @@ const Home = () => {
     }
   };
 
-  const handleMapSearch = () => {
-    // Filter businesses based on map search query and category
+  const handleMapSearch = async () => {
+    // Search using OpenStreetMap Nominatim - free geocoding service
     console.log('Searching:', { query: mapSearchQuery, category: mapCategory });
-    // This would trigger the map to show filtered results
-    alert(language === 'en'
-      ? `Searching for ${mapCategory === 'all' ? 'all services' : mapCategory} near "${mapSearchQuery || 'current location'}"...`
-      : language === 'tr'
-      ? `"${mapSearchQuery || 'mevcut konum'}" yakınında ${mapCategory === 'all' ? 'tüm hizmetler' : mapCategory} aranıyor...`
-      : `Поиск ${mapCategory === 'all' ? 'всех услуг' : mapCategory} рядом с "${mapSearchQuery || 'текущее местоположение'}"...`);
+
+    if (!mapSearchQuery.trim()) {
+      // If empty, reload all businesses
+      const businessesResponse = await api.get('/businesses/');
+      setFeaturedBusinesses(businessesResponse.data);
+      return;
+    }
+
+    const searchTerm = mapSearchQuery.trim();
+
+    // Use Nominatim (OpenStreetMap) geocoding API - completely free!
+    try {
+      const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchTerm)}&limit=1`;
+      const response = await fetch(geocodeUrl, {
+        headers: {
+          'User-Agent': 'Booksy-App/1.0' // Required by Nominatim
+        }
+      });
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        const location = data[0];
+        const lat = parseFloat(location.lat);
+        const lon = parseFloat(location.lon);
+
+        console.log(`Found location: ${location.display_name}`, { lat, lon });
+
+        // Update user location to zoom map to this place
+        setUserLocation({ lat, lng: lon });
+
+        // Keep all businesses visible, but map will zoom to searched location
+        const businessesResponse = await api.get('/businesses/');
+        setFeaturedBusinesses(businessesResponse.data);
+
+        return;
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error);
+    }
+
+    // Fallback: Search in businesses if geocoding fails
+    const currentBusinesses = featuredBusinesses.length > 0 ? featuredBusinesses : [];
+
+    if (currentBusinesses.length === 0) {
+      const businessesResponse = await api.get('/businesses/');
+      setFeaturedBusinesses(businessesResponse.data);
+      return;
+    }
+
+    const searchLower = searchTerm.toLowerCase();
+    const filtered = currentBusinesses.filter(business => {
+      return (
+        business.business_name?.toLowerCase().includes(searchLower) ||
+        business.name?.toLowerCase().includes(searchLower) ||
+        business.city?.toLowerCase().includes(searchLower) ||
+        business.address?.toLowerCase().includes(searchLower) ||
+        business.category?.toLowerCase().includes(searchLower) ||
+        business.business_type?.toLowerCase().includes(searchLower)
+      );
+    });
+
+    console.log(`Found ${filtered.length} businesses matching "${searchTerm}"`);
+    setFeaturedBusinesses(filtered.length > 0 ? filtered : currentBusinesses);
   };
 
   // Showcase categories for beauty salons and barber shops
@@ -1247,15 +1294,11 @@ const Home = () => {
             border: '3px solid #2d3748',
             position: 'relative'
           }}>
-            <iframe
-              src={`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${userLocation.lat},${userLocation.lng}&zoom=13`}
-              width="100%"
+            <MapView
+              businesses={featuredBusinesses}
+              userLocation={userLocation}
+              onBusinessClick={(id) => navigate(`/business/${id}`)}
               height="100%"
-              style={{ border: 0 }}
-              allowFullScreen=""
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title={language === 'en' ? 'Map of businesses' : language === 'tr' ? 'İşletmeler haritası' : 'Карта ��редприятий'}
             />
           </Box>
 
