@@ -87,6 +87,16 @@ const BusinessDetail = () => {
         setLoading(true);
         setError(null);
 
+        // Fetch business details
+        try {
+          const businessResponse = await api.get(`/businesses/${id}`);
+          console.log('Business details:', businessResponse.data);
+          setBusiness(businessResponse.data);
+        } catch (err) {
+          console.error('Error fetching business:', err);
+          setBusiness(null);
+        }
+
         // Fetch workers for this specific business
         try {
           const workersResponse = await api.get(`/businesses/${id}/workers`);
@@ -311,11 +321,11 @@ const BusinessDetail = () => {
     );
   }
 
-  // Use test data as fallback when API fails
-  const displayBusiness = business || testBusinessData;
-  const displayServices = services.length > 0 ? services : (error ? testServicesData : []);
-  const displayWorkers = workers.length > 0 ? workers : (error ? testWorkersData : []);
-  const showTestDataBanner = error && !business;
+  // Show only real data - no mock fallback
+  const displayBusiness = business || null;
+  const displayServices = services || [];
+  const displayWorkers = workers || [];
+  const showTestDataBanner = false; // Removed test data banner
 
   return (
     <Box sx={{ bgcolor: '#ffffff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -414,19 +424,20 @@ const BusinessDetail = () => {
           <Grid item xs={12} md={5}>
             <Stack spacing={2} sx={{ height: '100%' }}>
               {/* Location Map */}
-              <Card sx={{ overflow: 'hidden', borderRadius: 2, position: 'relative' }}>
-                <MapView
-                  businesses={[{
-                    id: displayBusiness.id,
-                    name: displayBusiness.business_name,
-                    latitude: parseFloat(displayBusiness.latitude || 41.0082),
-                    longitude: parseFloat(displayBusiness.longitude || 28.9784),
-                    address: displayBusiness.address || 'Test Street 123',
-                    category: displayBusiness.business_type
-                  }]}
-                  userLocation={null}
-                  onBusinessClick={() => {}}
-                  height="250px"
+              {displayBusiness && (
+                <Card sx={{ overflow: 'hidden', borderRadius: 2, position: 'relative' }}>
+                  <MapView
+                    businesses={[{
+                      id: displayBusiness.id,
+                      name: displayBusiness.business_name,
+                      latitude: parseFloat(displayBusiness.latitude || 41.0082),
+                      longitude: parseFloat(displayBusiness.longitude || 28.9784),
+                      address: displayBusiness.address || 'Test Street 123',
+                      category: displayBusiness.business_type
+                    }]}
+                    userLocation={null}
+                    onBusinessClick={() => {}}
+                    height="250px"
                 />
                 <Chip
                   label={language === 'en' ? '1 businesses nearby' : language === 'tr' ? '1 işletme yakında' : '1 предприятие рядом'}
@@ -440,25 +451,36 @@ const BusinessDetail = () => {
                   }}
                 />
               </Card>
+              )}
 
               {/* About Us Card */}
-              <Card sx={{ flex: 1 }}>
-                <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1.5 }}>
-                    {language === 'en' ? 'About Us' : language === 'tr' ? 'Hakkımızda' : 'О нас'}
-                  </Typography>
-                  <Typography variant="body2" sx={{ lineHeight: 1.6, color: '#4b5563', flex: 1 }}>
-                    {displayBusiness.description || (language === 'en' ? 'Welcome to our business! We are dedicated to providing the highest quality services.' : language === 'tr' ? 'İşletmemize hoş geldiniz! En yüksek kalitede hizmet sunmaya dediktir.' : 'Добро пожаловать в наш бизнес!')}
-                  </Typography>
-                </CardContent>
-              </Card>
+              {displayBusiness && (
+                <Card sx={{ flex: 1 }}>
+                  <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1.5 }}>
+                      {language === 'en' ? 'About Us' : language === 'tr' ? 'Hakkımızda' : 'О нас'}
+                    </Typography>
+                    <Typography variant="body2" sx={{ lineHeight: 1.6, color: '#4b5563', flex: 1 }}>
+                      {displayBusiness.description || (language === 'en' ? 'Welcome to our business! We are dedicated to providing the highest quality services.' : language === 'tr' ? 'İşletmemize hoş geldiniz! En yüksek kalitede hizmet sunmaya dediktir.' : 'Добро пожаловать в наш бизнес!')}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Contact Info Card */}
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                    {language === 'en' ? 'Contact & Hours' : language === 'tr' ? 'İletişim & Saatler' : 'Контакты'}
-                  </Typography>
+              {displayBusiness && (
+                <Card>
+                  <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                      {language === 'en' ? 'Contact & Hours' : language === 'tr' ? 'İletişim & Saatler' : 'Контакты'}
+                    </Typography>
+                    <Chip
+                      label={`${displayWorkers.length} ${language === 'en' ? 'workers' : language === 'tr' ? 'çalışan' : 'работников'}`}
+                      size="small"
+                      sx={{ bgcolor: '#e5e7eb', color: '#2d3748', fontWeight: 600 }}
+                    />
+                  </Box>
 
                   <Stack spacing={1.5}>
                     {/* Phone */}
@@ -510,14 +532,21 @@ const BusinessDetail = () => {
                   </Stack>
                 </CardContent>
               </Card>
+              )}
             </Stack>
           </Grid>
         </Grid>
 
         {/* Services Section */}
-        <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
-          {language === 'en' ? 'Services' : language === 'tr' ? 'Hizmetler' : 'Услуги'}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+            {language === 'en' ? 'Services' : language === 'tr' ? 'Hizmetler' : 'Услуги'}
+          </Typography>
+          <Chip
+            label={`${displayServices.length} ${language === 'en' ? 'services' : language === 'tr' ? 'hizmet' : 'услуг'}`}
+            sx={{ bgcolor: '#00BFA6', color: 'white', fontWeight: 600 }}
+          />
+        </Box>
 
             {displayServices.length === 0 ? (
               <Card>
@@ -769,7 +798,11 @@ const BusinessDetail = () => {
       {/* Booking Dialog - Booksy Style */}
       <Dialog
         open={bookingDialogOpen}
-        onClose={() => setBookingDialogOpen(false)}
+        onClose={() => {
+          setBookingDialogOpen(false);
+          setBookingError('');
+          setBookingSuccess(false);
+        }}
         maxWidth="md"
         fullWidth
         PaperProps={{
@@ -805,6 +838,12 @@ const BusinessDetail = () => {
             </Alert>
           ) : (
             <Box>
+              {/* Error Alert */}
+              {bookingError && (
+                <Alert severity="error" sx={{ m: 3 }} onClose={() => setBookingError('')}>
+                  <Typography>{bookingError}</Typography>
+                </Alert>
+              )}
               {/* Month/Year Header */}
               <Box sx={{ px: 3, pt: 3, pb: 2, textAlign: 'center' }}>
                 <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
@@ -968,7 +1007,11 @@ const BusinessDetail = () => {
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 3, bgcolor: '#f9fafb', gap: 2 }}>
           <Button
-            onClick={() => setBookingDialogOpen(false)}
+            onClick={() => {
+              setBookingDialogOpen(false);
+              setBookingError('');
+              setBookingSuccess(false);
+            }}
             variant="outlined"
             fullWidth
             sx={{
