@@ -5,6 +5,7 @@ import { authAPI } from '../services/api';
 import Footer from '../components/Footer';
 import Logo from '../components/Logo';
 import { countryData } from '../data/countries';
+import AddressAutocomplete from '../components/AddressAutocomplete';
 import {
   Box,
   Container,
@@ -48,8 +49,11 @@ const SignUp = () => {
     password: '',
     confirmPassword: '',
     phone: '',
+    address: '',
     country: '',
     city: '',
+    latitude: null,
+    longitude: null,
     agreeToTerms: false,
     isBarber: false
   });
@@ -327,6 +331,24 @@ const SignUp = () => {
                   ))}
                 </Select>
               </FormControl>
+
+              {/* Address Autocomplete */}
+              <AddressAutocomplete
+                value={formData.address}
+                onChange={(address) => handleInputChange('address')({ target: { value: address } })}
+                onLocationSelect={(locationData) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    address: locationData.address,
+                    latitude: locationData.latitude,
+                    longitude: locationData.longitude
+                  }));
+                }}
+                country={formData.country}
+                city={formData.city}
+                label={language === 'en' ? 'Address (Optional)' : language === 'tr' ? 'Adres (İsteğe Bağlı)' : 'Адрес (Необязательно)'}
+                placeholder={language === 'en' ? 'Start typing your address...' : language === 'tr' ? 'Adresinizi yazmaya başlayın...' : 'Начните вводить адрес...'}
+              />
 
               {/* Password Field */}
               <TextField

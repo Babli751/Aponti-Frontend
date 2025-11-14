@@ -5,6 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import Footer from '../components/Footer';
 import Logo from '../components/Logo';
 import { countryData } from '../data/countries';
+import AddressAutocomplete from '../components/AddressAutocomplete';
 import {
   Box, Typography, TextField, Button, Container, Card, CardContent, Grid,
   Stepper, Step, StepLabel, Stack, IconButton, AppBar, Toolbar, FormControl,
@@ -33,6 +34,8 @@ const BusinessSignup = () => {
     address: '',
     city: '',
     country: '',
+    latitude: null,
+    longitude: null,
     description: '',
     category: '',
     services: []
@@ -357,7 +360,22 @@ const BusinessSignup = () => {
                       <TextField fullWidth label={t.phoneNumber} value={businessData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} InputProps={{ startAdornment: <Phone sx={{ mr: 1, color: '#2d3748' }} /> }} />
                     </Grid>
                     <Grid item xs={12}>
-                      <TextField fullWidth label={t.businessAddress} value={businessData.address} onChange={(e) => handleInputChange('address', e.target.value)} InputProps={{ startAdornment: <LocationOn sx={{ mr: 1, color: '#2d3748' }} /> }} />
+                      <AddressAutocomplete
+                        value={businessData.address}
+                        onChange={(address) => handleInputChange('address', { target: { value: address } })}
+                        onLocationSelect={(locationData) => {
+                          setBusinessData(prev => ({
+                            ...prev,
+                            address: locationData.address,
+                            latitude: locationData.latitude,
+                            longitude: locationData.longitude
+                          }));
+                        }}
+                        country={businessData.country}
+                        city={businessData.city}
+                        label={t.businessAddress}
+                        placeholder={language === 'en' ? 'Start typing your address...' : language === 'tr' ? 'Adresinizi yazmaya başlayın...' : 'Начните вводить адрес...'}
+                      />
                     </Grid>
                     <Grid item xs={12} md={6}>
                       <FormControl fullWidth>
