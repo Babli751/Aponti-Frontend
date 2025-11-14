@@ -204,6 +204,10 @@ export const countryData = {
     name: { en: 'Mexico', tr: 'Meksika', ru: 'Мексика' },
     cities: ['Mexico City', 'Guadalajara', 'Monterrey', 'Puebla', 'Tijuana', 'León', 'Juárez', 'Zapopan', 'Mérida', 'San Luis Potosí']
   },
+  'Montenegro': {
+    name: { en: 'Montenegro', tr: 'Karadağ', ru: 'Черногория' },
+    cities: ['Podgorica', 'Nikšić', 'Pljevlja', 'Bijelo Polje', 'Cetinje', 'Bar', 'Herceg Novi', 'Berane', 'Budva', 'Kotor']
+  },
   'Morocco': {
     name: { en: 'Morocco', tr: 'Fas', ru: 'Марокко' },
     cities: ['Casablanca', 'Rabat', 'Fes', 'Marrakech', 'Tangier', 'Salé', 'Meknes', 'Oujda', 'Kenitra', 'Agadir']
