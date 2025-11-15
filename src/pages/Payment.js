@@ -47,6 +47,7 @@ const Payment = () => {
   // Get booking details from navigation state
   const booking = location.state?.booking;
   const servicePrice = location.state?.servicePrice || 0;
+  const businessId = location.state?.businessId || booking?.business_id;
 
   useEffect(() => {
     // Fetch payment configuration
@@ -65,10 +66,14 @@ const Payment = () => {
     // Redirect if no booking data
     if (!booking) {
       setTimeout(() => {
-        navigate('/dashboard');
+        if (businessId) {
+          navigate(`/business/${businessId}`);
+        } else {
+          navigate('/');
+        }
       }, 2000);
     }
-  }, [booking, navigate]);
+  }, [booking, navigate, businessId]);
 
   const handlePayment = async () => {
     if (!booking) {
@@ -184,11 +189,15 @@ const Payment = () => {
 
   const handleSkipPayment = () => {
     // For demo purposes, allow skipping payment
-    navigate('/dashboard', {
-      state: {
-        message: 'Booking created successfully! Payment can be made later.'
-      }
-    });
+    if (businessId) {
+      navigate(`/business/${businessId}`, {
+        state: {
+          message: 'Booking created successfully! Payment can be made later.'
+        }
+      });
+    } else {
+      navigate('/');
+    }
   };
 
   const handleCardInputChange = (field, value) => {
@@ -314,10 +323,16 @@ const Payment = () => {
         <Box sx={{ mb: 3 }}>
           <Button
             startIcon={<ArrowBack />}
-            onClick={() => navigate('/dashboard')}
+            onClick={() => {
+              if (businessId) {
+                navigate(`/business/${businessId}`);
+              } else {
+                navigate(-1); // Go back to previous page
+              }
+            }}
             sx={{ mb: 2 }}
           >
-            {language === 'en' ? 'Back to Dashboard' : language === 'tr' ? 'Panele Dön' : 'Назад к панели'}
+            {language === 'en' ? 'Back to Business' : language === 'tr' ? 'İşletmeye Dön' : 'Вернуться к бизнесу'}
           </Button>
           <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#2d3748' }}>
             {t.title}
