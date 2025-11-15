@@ -37,6 +37,7 @@ import {
   Person,
   CheckCircle,
   Favorite,
+  FavoriteBorder,
   ContentCut,
   Spa,
   FitnessCenter
@@ -65,11 +66,15 @@ const BusinessDetail = () => {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
 
+  // Favorite state - track which services are favorited
+  const [favoritedServices, setFavoritedServices] = useState(new Set());
+
   // Calendar state for Booksy-style booking
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [timeOfDay, setTimeOfDay] = useState('Morning'); // Morning, Afternoon, Evening
+  const [bookedSlots, setBookedSlots] = useState([]); // Store booked time slots
 
   // Photo gallery state
   const galleryPhotos = [
@@ -136,6 +141,39 @@ const BusinessDetail = () => {
       fetchBusinessData();
     }
   }, [id, language]);
+
+  // Fetch booked slots when day or worker changes
+  useEffect(() => {
+    const fetchBookedSlots = async () => {
+      if (!selectedDayOfWeek || !selectedWorker) {
+        setBookedSlots([]);
+        return;
+      }
+
+      try {
+        const dateStr = selectedDayOfWeek.toISOString().split('T')[0]; // YYYY-MM-DD format
+        const response = await api.get(`/bookings/worker/${selectedWorker.id}/date/${dateStr}`);
+
+        // Extract booked time slots
+        const booked = response.data.map(booking => {
+          const startTime = new Date(booking.start_time);
+          const hours = startTime.getHours();
+          const minutes = startTime.getMinutes();
+          const period = hours >= 12 ? 'PM' : 'AM';
+          const displayHours = hours % 12 || 12;
+          const displayMinutes = minutes.toString().padStart(2, '0');
+          return `${displayHours}:${displayMinutes} ${period}`;
+        });
+
+        setBookedSlots(booked);
+      } catch (err) {
+        console.error('Error fetching booked slots:', err);
+        setBookedSlots([]);
+      }
+    };
+
+    fetchBookedSlots();
+  }, [selectedDayOfWeek, selectedWorker]);
 
   // Helper functions for calendar
   const getNextWeekDays = () => {
@@ -671,40 +709,42 @@ const BusinessDetail = () => {
                               <Button
                                 variant="outlined"
                                 size="small"
-                                startIcon={<Favorite />}
+                                startIcon={favoritedServices.has(firstService.id) ? <Favorite /> : <FavoriteBorder />}
                                 fullWidth
                                 sx={{
-                                  borderColor: '#ff6b35',
-                                  color: '#ff6b35',
+                                  borderColor: favoritedServices.has(firstService.id) ? '#ff6b35' : '#d1d5db',
+                                  color: favoritedServices.has(firstService.id) ? '#ff6b35' : '#6b7280',
                                   fontWeight: 600,
                                   '&:hover': {
-                                    borderColor: '#e55a2e',
-                                    bgcolor: '#fff5f0'
+                                    borderColor: '#ff6b35',
+                                    bgcolor: '#fff5f0',
+                                    color: '#ff6b35'
                                   }
                                 }}
                                 onClick={async () => {
-                                  // Save the service to favorites
+                                  // Toggle favorite
                                   const serviceId = firstService.id;
 
                                   if (!serviceId) {
-                                    alert('Service not found');
                                     return;
                                   }
 
                                   try {
-                                    await api.post(`/users/favorites/services/${serviceId}`);
-                                    alert(language === 'en'
-                                      ? 'Added to favorites!'
-                                      : language === 'tr'
-                                      ? 'Favorilere eklendi!'
-                                      : 'Добавлено в избранное!');
+                                    if (favoritedServices.has(serviceId)) {
+                                      // Remove from favorites
+                                      await api.delete(`/users/favorites/services/${serviceId}`);
+                                      setFavoritedServices(prev => {
+                                        const newSet = new Set(prev);
+                                        newSet.delete(serviceId);
+                                        return newSet;
+                                      });
+                                    } else {
+                                      // Add to favorites
+                                      await api.post(`/users/favorites/services/${serviceId}`);
+                                      setFavoritedServices(prev => new Set(prev).add(serviceId));
+                                    }
                                   } catch (error) {
-                                    console.error('Error adding to favorites:', error);
-                                    alert(language === 'en'
-                                      ? 'Failed to add to favorites'
-                                      : language === 'tr'
-                                      ? 'Favorilere eklenemedi'
-                                      : 'Не удалось добавить в избранное');
+                                    console.error('Error toggling favorite:', error);
                                   }
                                 }}
                               >
@@ -954,29 +994,40 @@ const BusinessDetail = () => {
               {/* Time Slots - Always visible, no scrolling */}
               <Box sx={{ px: 3, py: 3 }}>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-                  {getTimeSlots().slice(0, 12).map((time, index) => (
-                    <Button
-                      key={index}
-                      onClick={() => setSelectedTimeSlot(time)}
-                      variant={selectedTimeSlot === time ? 'contained' : 'outlined'}
-                      sx={{
-                        minWidth: 100,
-                        py: 1.5,
-                        borderRadius: 2,
-                        bgcolor: selectedTimeSlot === time ? '#00BFA6' : 'white',
-                        color: selectedTimeSlot === time ? 'white' : '#2d3748',
-                        borderColor: selectedTimeSlot === time ? '#00BFA6' : '#d1d5db',
-                        fontWeight: 600,
-                        boxShadow: 'none',
-                        '&:hover': {
-                          bgcolor: selectedTimeSlot === time ? '#00A693' : '#f9fafb',
-                          boxShadow: 'none'
-                        }
-                      }}
-                    >
-                      {time}
-                    </Button>
-                  ))}
+                  {getTimeSlots().slice(0, 12).map((time, index) => {
+                    const isBooked = bookedSlots.includes(time);
+                    return (
+                      <Button
+                        key={index}
+                        onClick={() => !isBooked && setSelectedTimeSlot(time)}
+                        variant={selectedTimeSlot === time ? 'contained' : 'outlined'}
+                        disabled={isBooked}
+                        sx={{
+                          minWidth: 100,
+                          py: 1.5,
+                          borderRadius: 2,
+                          bgcolor: isBooked ? '#f3f4f6' : selectedTimeSlot === time ? '#00BFA6' : 'white',
+                          color: isBooked ? '#9ca3af' : selectedTimeSlot === time ? 'white' : '#2d3748',
+                          borderColor: isBooked ? '#e5e7eb' : selectedTimeSlot === time ? '#00BFA6' : '#d1d5db',
+                          fontWeight: 600,
+                          boxShadow: 'none',
+                          textDecoration: isBooked ? 'line-through' : 'none',
+                          cursor: isBooked ? 'not-allowed' : 'pointer',
+                          '&:hover': {
+                            bgcolor: isBooked ? '#f3f4f6' : selectedTimeSlot === time ? '#00A693' : '#f9fafb',
+                            boxShadow: 'none'
+                          },
+                          '&.Mui-disabled': {
+                            bgcolor: '#f3f4f6',
+                            color: '#9ca3af',
+                            borderColor: '#e5e7eb'
+                          }
+                        }}
+                      >
+                        {time}
+                      </Button>
+                    );
+                  })}
                 </Box>
               </Box>
 
