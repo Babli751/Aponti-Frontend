@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import api from '../services/api';
 import {
   Box,
   Container,
@@ -10,7 +11,9 @@ import {
   Button,
   Divider,
   Stack,
-  Chip
+  Chip,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import {
   CheckCircle,
@@ -24,12 +27,65 @@ const PaymentSuccess = () => {
   const location = useLocation();
   const { language } = useLanguage();
   const [paymentDetails, setPaymentDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Get payment details from navigation state
-    const details = location.state;
-    console.log('Payment success details:', details);
-    setPaymentDetails(details);
+    const completePayment = async () => {
+      try {
+        // Parse URL parameters from 2Checkout redirect
+        const params = new URLSearchParams(location.search);
+        const bookingId = params.get('booking_id');
+        const orderRef = params.get('order_ref');
+        const orderNumber = params.get('order_number'); // 2Checkout order number
+
+        console.log('2Checkout redirect params:', { bookingId, orderRef, orderNumber });
+
+        if (!bookingId || !orderRef) {
+          // Try to get from navigation state (for backward compatibility)
+          const stateDetails = location.state;
+          if (stateDetails) {
+            setPaymentDetails(stateDetails);
+            setLoading(false);
+            return;
+          }
+
+          setError('Missing payment information');
+          setLoading(false);
+          return;
+        }
+
+        // Call backend to complete payment
+        const response = await api.post('/payments/complete', {
+          booking_id: parseInt(bookingId),
+          order_reference: orderRef,
+          order_number: orderNumber
+        });
+
+        console.log('Payment completed:', response.data);
+
+        // Set payment details with breakdown
+        const totalAmount = response.data.amount || 0;
+        const platformFee = totalAmount * 0.1;
+        const businessAmount = totalAmount * 0.9;
+
+        setPaymentDetails({
+          ...response.data,
+          total_amount: totalAmount,
+          platform_fee: platformFee,
+          business_amount: businessAmount,
+          order_reference: orderRef
+        });
+
+        setLoading(false);
+      } catch (err) {
+        console.error('Payment completion error:', err);
+        setError(err.response?.data?.detail || 'Failed to complete payment');
+        setLoading(false);
+      }
+    };
+
+    completePayment();
   }, [location]);
 
   const content = {
@@ -75,6 +131,33 @@ const PaymentSuccess = () => {
   };
 
   const t = content[language];
+
+  if (loading) {
+    return (
+      <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress size={60} sx={{ color: '#00BFA6' }} />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100vh', py: 6 }}>
+        <Container maxWidth="md">
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+          <Button
+            variant="contained"
+            onClick={() => navigate('/dashboard')}
+            sx={{ bgcolor: '#00BFA6', '&:hover': { bgcolor: '#00A693' } }}
+          >
+            {t.viewBookings}
+          </Button>
+        </Container>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100vh', py: 6 }}>

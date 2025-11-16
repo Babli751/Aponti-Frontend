@@ -119,6 +119,18 @@ const BusinessDetail = () => {
           console.log('Business services:', servicesResponse.data);
           const businessServices = Array.isArray(servicesResponse.data) ? servicesResponse.data : [];
           setServices(businessServices);
+
+          // Fetch user's favorite services
+          try {
+            const favoritesResponse = await api.get('/users/favorites/services');
+            console.log('User favorites:', favoritesResponse.data);
+            const favoriteIds = new Set(favoritesResponse.data.map(fav => fav.service_id || fav.id));
+            setFavoritedServices(favoriteIds);
+          } catch (err) {
+            console.error('Error fetching favorites:', err);
+            // User might not be logged in, ignore error
+            setFavoritedServices(new Set());
+          }
         } catch (err) {
           console.error('Error fetching services:', err);
           setServices([]);
@@ -154,17 +166,28 @@ const BusinessDetail = () => {
         const dateStr = selectedDayOfWeek.toISOString().split('T')[0]; // YYYY-MM-DD format
         const response = await api.get(`/bookings/worker/${selectedWorker.id}/date/${dateStr}`);
 
-        // Extract booked time slots
-        const booked = response.data.map(booking => {
+        // Extract booked time slots - mark ALL 15-min slots between start and end as booked
+        const booked = [];
+        response.data.forEach(booking => {
           const startTime = new Date(booking.start_time);
-          const hours = startTime.getHours();
-          const minutes = startTime.getMinutes();
-          const period = hours >= 12 ? 'PM' : 'AM';
-          const displayHours = hours % 12 || 12;
-          const displayMinutes = minutes.toString().padStart(2, '0');
-          return `${displayHours}:${displayMinutes} ${period}`;
+          const endTime = new Date(booking.end_time);
+
+          // Generate all 15-minute slots between start and end
+          let currentTime = new Date(startTime);
+          while (currentTime < endTime) {
+            const hours = currentTime.getHours();
+            const minutes = currentTime.getMinutes();
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = (hours % 12 || 12).toString().padStart(2, '0');
+            const displayMinutes = minutes.toString().padStart(2, '0');
+            booked.push(`${displayHours}:${displayMinutes} ${period}`);
+
+            // Move to next 15-minute slot
+            currentTime = new Date(currentTime.getTime() + 15 * 60 * 1000);
+          }
         });
 
+        console.log('📅 Booked slots for', dateStr, ':', booked);
         setBookedSlots(booked);
       } catch (err) {
         console.error('Error fetching booked slots:', err);
@@ -289,6 +312,41 @@ const BusinessDetail = () => {
 
     } catch (err) {
       console.error('Booking error:', err);
+
+      // Check if error is about already booked slot - don't show error since we already disabled those slots
+      const errorDetail = err.response?.data?.detail || '';
+      if (errorDetail.toLowerCase().includes('already booked') ||
+          errorDetail.toLowerCase().includes('time slot')) {
+        // Slot is already booked - silently refresh booked slots
+        const dateStr = selectedDayOfWeek.toISOString().split('T')[0];
+        try {
+          const response = await api.get(`/bookings/worker/${selectedWorker.id}/date/${dateStr}`);
+          const booked = [];
+          response.data.forEach(booking => {
+            const startTime = new Date(booking.start_time);
+            const endTime = new Date(booking.end_time);
+
+            let currentTime = new Date(startTime);
+            while (currentTime < endTime) {
+              const hours = currentTime.getHours();
+              const minutes = currentTime.getMinutes();
+              const period = hours >= 12 ? 'PM' : 'AM';
+              const displayHours = (hours % 12 || 12).toString().padStart(2, '0');
+              const displayMinutes = minutes.toString().padStart(2, '0');
+              booked.push(`${displayHours}:${displayMinutes} ${period}`);
+              currentTime = new Date(currentTime.getTime() + 15 * 60 * 1000);
+            }
+          });
+          setBookedSlots(booked);
+          // Clear selected time slot since it's now booked
+          setSelectedTimeSlot(null);
+        } catch (refreshErr) {
+          console.error('Error refreshing booked slots:', refreshErr);
+        }
+        return;
+      }
+
+      // Show other errors
       setBookingError(err.response?.data?.detail || (
         language === 'en'
           ? 'Failed to create appointment'
