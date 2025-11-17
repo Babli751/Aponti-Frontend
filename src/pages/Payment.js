@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -14,12 +14,12 @@ import {
   Alert,
   Divider,
   Stack,
-  TextField,
-  Grid
+  Chip
 } from '@mui/material';
 import {
   Payment as PaymentIcon,
-  ArrowBack
+  ArrowBack,
+  CheckCircle
 } from '@mui/icons-material';
 
 const Payment = () => {
@@ -30,51 +30,35 @@ const Payment = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [paymentSession, setPaymentSession] = useState(null);
-  const [twoCheckoutLoaded, setTwoCheckoutLoaded] = useState(false);
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
-  const [cardDetails, setCardDetails] = useState({
-    ccNo: '',
-    cvv: '',
-    expMonth: '',
-    expYear: ''
-  });
+  const [paymentConfig, setPaymentConfig] = useState(null);
 
   // Get booking details from navigation state
-  const booking = location.state?.booking;
+  const bookingData = location.state?.bookingData; // Booking data to create after payment
+  const booking = location.state?.booking; // For backward compatibility
   const servicePrice = location.state?.servicePrice || 0;
+  const serviceName = location.state?.serviceName || booking?.service_name || 'Service';
+  const workerName = location.state?.workerName || 'Worker';
+  const businessName = location.state?.businessName || 'Business';
   const businessId = location.state?.businessId || booking?.business_id;
 
-  // Load 2Checkout.js library
+  // Load Stripe configuration
   useEffect(() => {
-    if (window.TwoPayClient) {
-      setTwoCheckoutLoaded(true);
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://secure.2checkout.com/checkout/client/twoCoInlineCart.js';
-    script.async = true;
-    script.onload = () => {
-      console.log('✅ 2Checkout library loaded successfully');
-      setTwoCheckoutLoaded(true);
-    };
-    script.onerror = (e) => {
-      console.error('❌ Failed to load 2Checkout library:', e);
-      setError('Failed to load payment system');
-    };
-    document.body.appendChild(script);
-
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
+    const loadConfig = async () => {
+      try {
+        const response = await api.get('/payments/config');
+        setPaymentConfig(response.data);
+        console.log('✅ Stripe configuration loaded:', response.data);
+      } catch (err) {
+        console.error('❌ Failed to load payment config:', err);
+        setError('Failed to load payment configuration');
       }
     };
+    loadConfig();
   }, []);
 
   // Redirect if no booking data
   useEffect(() => {
-    if (!booking) {
+    if (!booking && !bookingData) {
       setTimeout(() => {
         if (businessId) {
           navigate(`/business/${businessId}`);
@@ -83,112 +67,57 @@ const Payment = () => {
         }
       }, 2000);
     }
-  }, [booking, navigate, businessId]);
+  }, [booking, bookingData, navigate, businessId]);
 
   const handlePayment = async () => {
-    if (!booking) {
+    if (!bookingData && !booking) {
       setError('No booking information found');
       return;
     }
 
-    if (!twoCheckoutLoaded) {
-      setError('Payment system is still loading. Please wait...');
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
-      // Create payment session
-      const response = await api.post('/payments/create-session', {
-        booking_id: booking.id,
-        amount: servicePrice,
-        currency: 'USD'
-      });
+      // First create the booking
+      let finalBooking = booking;
 
-      console.log('Payment session created:', response.data);
-
-      if (response.data.use_inline) {
-        // Save session and show payment form
-        setPaymentSession(response.data);
-        setShowPaymentForm(true);
-        setLoading(false);
-      } else {
-        setError('Payment configuration error. Please contact support.');
-        setLoading(false);
+      if (bookingData && !booking) {
+        console.log('Creating booking before payment...');
+        const bookingResponse = await api.post('/bookings/', bookingData);
+        finalBooking = bookingResponse.data;
+        console.log('✅ Booking created:', finalBooking);
       }
 
-    } catch (err) {
-      console.error('Payment error:', err);
-      setError(err.response?.data?.detail || 'Failed to create payment session');
-      setLoading(false);
-    }
-  };
-
-  const handleSubmitPayment = async () => {
-    if (!cardDetails.ccNo || !cardDetails.cvv || !cardDetails.expMonth || !cardDetails.expYear) {
-      setError('Please fill in all card details');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Initialize 2Checkout
-      window.TwoPayClient.setup(paymentSession.merchant_code);
-
-      // Tokenize card details
-      const args = {
-        sellerId: paymentSession.merchant_code,
-        publishableKey: paymentSession.publishable_key,
-        ccNo: cardDetails.ccNo,
-        cvv: cardDetails.cvv,
-        expMonth: cardDetails.expMonth,
-        expYear: cardDetails.expYear
-      };
-
-      window.TwoPayClient.tokenize(args, (data) => {
-        console.log('2Checkout tokenization successful:', data);
-        completePayment(data.response.token.token, paymentSession.order_reference);
-      }, (data) => {
-        console.error('2Checkout tokenization failed:', data);
-        setError(data.errorMsg || 'Payment processing failed');
-        setLoading(false);
-      });
-
-    } catch (err) {
-      console.error('Payment tokenization error:', err);
-      setError('Failed to process payment');
-      setLoading(false);
-    }
-  };
-
-  const completePayment = async (token, orderReference) => {
-    try {
-      const response = await api.post('/payments/complete', {
-        booking_id: booking.id,
-        order_reference: orderReference,
-        payment_token: token
-      });
-
-      console.log('Payment completed:', response.data);
-
-      // Redirect to success page
-      navigate('/payment/success', {
-        state: {
-          payment: response.data,
-          booking: booking
+      // Store booking info in localStorage for success callback
+      localStorage.setItem('aponti_pending_booking', JSON.stringify({
+        booking: {
+          ...finalBooking,
+          service_name: serviceName,
+          business_name: businessName,
+          service_price: servicePrice
         }
+      }));
+
+      // Create Stripe Checkout session
+      console.log('🔄 Creating Stripe Checkout session...');
+      const checkoutResponse = await api.post('/payments/stripe/create-checkout-session', {
+        booking_id: finalBooking.id,
+        success_url: `${window.location.origin}/payment/success?session_id={CHECKOUT_SESSION_ID}&booking_id=${finalBooking.id}`,
+        cancel_url: `${window.location.origin}/payment?booking_id=${finalBooking.id}`
       });
+
+      console.log('✅ Stripe Checkout session created:', checkoutResponse.data);
+
+      // Redirect to Stripe Checkout
+      window.location.href = checkoutResponse.data.session_url;
+
     } catch (err) {
-      console.error('Payment completion error:', err);
-      setError(err.response?.data?.detail || 'Failed to complete payment');
+      console.error('❌ Payment initialization error:', err);
+      setError(err.response?.data?.detail || err.message || 'Failed to initialize payment');
       setLoading(false);
     }
   };
-
 
   const handleSkipPayment = () => {
     // For demo purposes, allow skipping payment
@@ -203,51 +132,75 @@ const Payment = () => {
     }
   };
 
+  // Calculate commission breakdown
+  const platformCommission = paymentConfig
+    ? servicePrice * (paymentConfig.platform_commission_percent / 100)
+    : 0;
+  const sellerAmount = servicePrice - platformCommission;
+
   const content = {
     en: {
       title: 'Complete Payment',
       bookingDetails: 'Booking Details',
       service: 'Service',
+      worker: 'Staff Member',
+      business: 'Business',
       date: 'Date',
       time: 'Time',
-      amount: 'Amount',
-      payNow: 'Pay Now',
+      amount: 'Total Amount',
+      payNow: 'Pay with Stripe',
       payLater: 'Pay Later',
-      processing: 'Redirecting to payment...',
-      securePayment: 'Secure payment powered by 2Checkout',
-      noBooking: 'No booking information found. Redirecting...'
+      processing: 'Redirecting to Stripe...',
+      securePayment: 'Secure payment powered by Stripe',
+      noBooking: 'No booking information found. Redirecting...',
+      paymentBreakdown: 'Payment Breakdown',
+      serviceAmount: 'Service Amount',
+      platformFee: 'Platform Fee',
+      providerReceives: 'Provider Receives'
     },
     tr: {
       title: 'Ödemeyi Tamamla',
       bookingDetails: 'Rezervasyon Detayları',
       service: 'Hizmet',
+      worker: 'Çalışan',
+      business: 'İşletme',
       date: 'Tarih',
       time: 'Saat',
-      amount: 'Tutar',
-      payNow: 'Şimdi Öde',
+      amount: 'Toplam Tutar',
+      payNow: 'Stripe ile Öde',
       payLater: 'Sonra Öde',
-      processing: 'Ödemeye yönlendiriliyor...',
-      securePayment: '2Checkout ile güvenli ödeme',
-      noBooking: 'Rezervasyon bilgisi bulunamadı. Yönlendiriliyor...'
+      processing: 'Stripe\'a yönlendiriliyor...',
+      securePayment: 'Stripe ile güvenli ödeme',
+      noBooking: 'Rezervasyon bilgisi bulunamadı. Yönlendiriliyor...',
+      paymentBreakdown: 'Ödeme Detayları',
+      serviceAmount: 'Hizmet Tutarı',
+      platformFee: 'Platform Ücreti',
+      providerReceives: 'Sağlayıcı Alacak'
     },
     ru: {
       title: 'Завершить оплату',
       bookingDetails: 'Детали бронирования',
       service: 'Услуга',
+      worker: 'Сотрудник',
+      business: 'Бизнес',
       date: 'Дата',
       time: 'Время',
-      amount: 'Сумма',
-      payNow: 'Оплатить сейчас',
+      amount: 'Общая сумма',
+      payNow: 'Оплатить через Stripe',
       payLater: 'Оплатить позже',
-      processing: 'Перенаправление на оплату...',
-      securePayment: 'Безопасный платеж через 2Checkout',
-      noBooking: 'Информация о бронировании не найдена. Перенаправление...'
+      processing: 'Перенаправление на Stripe...',
+      securePayment: 'Безопасный платеж через Stripe',
+      noBooking: 'Информация о бронировании не найдена. Перенаправление...',
+      paymentBreakdown: 'Детали платежа',
+      serviceAmount: 'Стоимость услуги',
+      platformFee: 'Комиссия платформы',
+      providerReceives: 'Получит поставщик'
     }
   };
 
   const t = content[language];
 
-  if (!booking) {
+  if (!booking && !bookingData) {
     return (
       <Container maxWidth="sm" sx={{ py: 8 }}>
         <Alert severity="warning">{t.noBooking}</Alert>
@@ -288,20 +241,36 @@ const Payment = () => {
             <Stack spacing={2}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography color="text.secondary">{t.service}:</Typography>
-                <Typography fontWeight={600}>{booking.service_name || 'Service'}</Typography>
+                <Typography fontWeight={600}>{serviceName}</Typography>
               </Box>
+
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography color="text.secondary">{t.business}:</Typography>
+                <Typography fontWeight={600}>{businessName}</Typography>
+              </Box>
+
+              {workerName && (
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography color="text.secondary">{t.worker}:</Typography>
+                  <Typography fontWeight={600}>{workerName}</Typography>
+                </Box>
+              )}
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography color="text.secondary">{t.date}:</Typography>
                 <Typography fontWeight={600}>
-                  {booking.start_time ? new Date(booking.start_time).toLocaleDateString() : '-'}
+                  {(booking?.start_time || bookingData?.start_time)
+                    ? new Date(booking?.start_time || bookingData?.start_time).toLocaleDateString()
+                    : '-'}
                 </Typography>
               </Box>
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography color="text.secondary">{t.time}:</Typography>
                 <Typography fontWeight={600}>
-                  {booking.start_time ? new Date(booking.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}
+                  {(booking?.start_time || bookingData?.start_time)
+                    ? new Date(booking?.start_time || bookingData?.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    : '-'}
                 </Typography>
               </Box>
 
@@ -317,6 +286,43 @@ const Payment = () => {
           </CardContent>
         </Card>
 
+        {/* Payment Breakdown Card */}
+        {paymentConfig && (
+          <Card sx={{ mb: 3, borderRadius: 2, bgcolor: '#f8f9fa' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2, color: '#6b7280' }}>
+                {t.paymentBreakdown}
+              </Typography>
+              <Stack spacing={1.5}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">{t.serviceAmount}</Typography>
+                  <Typography variant="body2" fontWeight={500}>${servicePrice.toFixed(2)}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2" color="text.secondary">{t.platformFee}</Typography>
+                    <Chip
+                      label={`${paymentConfig.platform_commission_percent}%`}
+                      size="small"
+                      sx={{ height: '20px', fontSize: '0.7rem' }}
+                    />
+                  </Box>
+                  <Typography variant="body2" fontWeight={500}>${platformCommission.toFixed(2)}</Typography>
+                </Box>
+                <Divider />
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="body2" fontWeight={600} color="success.main">
+                    {t.providerReceives}
+                  </Typography>
+                  <Typography variant="body2" fontWeight={600} color="success.main">
+                    ${sellerAmount.toFixed(2)}
+                  </Typography>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Error Alert */}
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
@@ -325,87 +331,20 @@ const Payment = () => {
         )}
 
         {/* Test Mode Alert */}
-        {paymentSession?.sandbox && (
-          <Alert severity="info" sx={{ mb: 3 }}>
-            TEST MODE - Use test card: 4111 1111 1111 1111
-          </Alert>
-        )}
-
-        {/* Payment Form - Show when payment session is created */}
-        {showPaymentForm && paymentSession && (
-          <Card sx={{ mb: 3, borderRadius: 2 }}>
-            <CardContent sx={{ p: 4 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: '#2d3748' }}>
-                Card Details
+        <Alert severity="info" sx={{ mb: 3 }}>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <CheckCircle fontSize="small" />
+            <Box>
+              <Typography variant="body2" fontWeight={600}>TEST MODE</Typography>
+              <Typography variant="caption">
+                Use test card: 4242 4242 4242 4242 (any future date, any 3-digit CVV)
               </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Card Number"
-                    placeholder="4111 1111 1111 1111"
-                    value={cardDetails.ccNo}
-                    onChange={(e) => setCardDetails({...cardDetails, ccNo: e.target.value.replace(/\s/g, '')})}
-                    inputProps={{ maxLength: 16 }}
-                  />
-                </Grid>
-                <Grid item xs={4}>
-                  <TextField
-                    fullWidth
-                    label="Month"
-                    placeholder="MM"
-                    value={cardDetails.expMonth}
-                    onChange={(e) => setCardDetails({...cardDetails, expMonth: e.target.value})}
-                    inputProps={{ maxLength: 2 }}
-                  />
-                </Grid>
-                <Grid item xs={4}>
-                  <TextField
-                    fullWidth
-                    label="Year"
-                    placeholder="YYYY"
-                    value={cardDetails.expYear}
-                    onChange={(e) => setCardDetails({...cardDetails, expYear: e.target.value})}
-                    inputProps={{ maxLength: 4 }}
-                  />
-                </Grid>
-                <Grid item xs={4}>
-                  <TextField
-                    fullWidth
-                    label="CVV"
-                    placeholder="123"
-                    value={cardDetails.cvv}
-                    onChange={(e) => setCardDetails({...cardDetails, cvv: e.target.value})}
-                    inputProps={{ maxLength: 4 }}
-                    type="password"
-                  />
-                </Grid>
-              </Grid>
-              <Button
-                fullWidth
-                variant="contained"
-                size="large"
-                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <PaymentIcon />}
-                onClick={handleSubmitPayment}
-                disabled={loading}
-                sx={{
-                  mt: 3,
-                  bgcolor: '#00BFA6',
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  fontWeight: 'bold',
-                  '&:hover': { bgcolor: '#00A693' }
-                }}
-              >
-                {loading ? 'Processing...' : 'Complete Payment'}
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+            </Box>
+          </Stack>
+        </Alert>
 
-        {/* Payment Actions - Only show before payment form */}
-        {!showPaymentForm && (
-          <Card sx={{ borderRadius: 2 }}>
+        {/* Payment Actions */}
+        <Card sx={{ borderRadius: 2 }}>
           <CardContent sx={{ p: 4 }}>
             <Stack spacing={2}>
               <Button
@@ -415,12 +354,12 @@ const Payment = () => {
                 onClick={handlePayment}
                 disabled={loading}
                 sx={{
-                  bgcolor: '#00BFA6',
+                  bgcolor: '#635BFF',
                   py: 1.5,
                   fontSize: '1.1rem',
                   fontWeight: 'bold',
                   '&:hover': {
-                    bgcolor: '#00A693'
+                    bgcolor: '#5248E6'
                   }
                 }}
               >
@@ -455,7 +394,6 @@ const Payment = () => {
             </Stack>
           </CardContent>
         </Card>
-        )}
       </Container>
     </Box>
   );

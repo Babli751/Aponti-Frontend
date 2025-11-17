@@ -33,48 +33,58 @@ const PaymentSuccess = () => {
   useEffect(() => {
     const completePayment = async () => {
       try {
-        // Parse URL parameters from 2Checkout redirect
-        const params = new URLSearchParams(location.search);
-        const bookingId = params.get('booking_id');
-        const orderRef = params.get('order_ref');
-        const orderNumber = params.get('order_number'); // 2Checkout order number
+        // Get Stripe session_id from URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+        const bookingId = urlParams.get('booking_id');
 
-        console.log('2Checkout redirect params:', { bookingId, orderRef, orderNumber });
+        console.log('Payment success - URL params:', { sessionId, bookingId });
 
-        if (!bookingId || !orderRef) {
-          // Try to get from navigation state (for backward compatibility)
-          const stateDetails = location.state;
-          if (stateDetails) {
-            setPaymentDetails(stateDetails);
-            setLoading(false);
-            return;
+        // Try to get from navigation state first, then localStorage
+        let { payment, booking } = location.state || {};
+
+        // If no state, try to recover from localStorage (Stripe redirect)
+        if (!booking) {
+          const pendingData = localStorage.getItem('aponti_pending_booking');
+          if (pendingData) {
+            const parsed = JSON.parse(pendingData);
+            booking = parsed.booking;
+            console.log('✅ Recovered booking from localStorage:', booking);
           }
+        }
 
-          setError('Missing payment information');
+        if (!sessionId || !bookingId) {
+          setError('Missing payment session information');
           setLoading(false);
           return;
         }
 
-        // Call backend to complete payment
-        const response = await api.post('/payments/complete', {
-          booking_id: parseInt(bookingId),
-          order_reference: orderRef,
-          order_number: orderNumber
+        // Complete payment with backend
+        console.log('🔄 Completing Stripe payment...');
+        const paymentResponse = await api.post('/payments/stripe/complete', {
+          session_id: sessionId,
+          booking_id: parseInt(bookingId)
         });
 
-        console.log('Payment completed:', response.data);
+        console.log('✅ Payment completed:', paymentResponse.data);
 
-        // Set payment details with breakdown
-        const totalAmount = response.data.amount || 0;
-        const platformFee = totalAmount * 0.1;
-        const businessAmount = totalAmount * 0.9;
+        // Clear localStorage
+        localStorage.removeItem('aponti_pending_booking');
+
+        // Calculate payment breakdown
+        const totalAmount = paymentResponse.data.amount || booking?.service_price || 0;
+        const platformFee = paymentResponse.data.platform_commission || totalAmount * 0.1;
+        const businessAmount = paymentResponse.data.seller_amount || totalAmount * 0.9;
 
         setPaymentDetails({
-          ...response.data,
+          booking_id: paymentResponse.data.booking_id,
+          payment_id: paymentResponse.data.payment_id,
+          invoice_number: paymentResponse.data.invoice_number,
+          service_name: booking?.service_name || 'Service',
+          business_name: booking?.business_name || 'Business',
           total_amount: totalAmount,
           platform_fee: platformFee,
-          business_amount: businessAmount,
-          order_reference: orderRef
+          business_amount: businessAmount
         });
 
         setLoading(false);
@@ -93,7 +103,7 @@ const PaymentSuccess = () => {
       title: 'Payment Successful!',
       message: 'Your booking has been confirmed and payment completed successfully.',
       viewBookings: 'View My Bookings',
-      orderNumber: 'Order Reference',
+      invoiceNumber: 'Invoice Number',
       paymentBreakdown: 'Payment Breakdown',
       totalPaid: 'Total Paid',
       platformFee: 'Platform Fee (10%)',
@@ -106,7 +116,7 @@ const PaymentSuccess = () => {
       title: 'Ödeme Başarılı!',
       message: 'Rezervasyonunuz onaylandı ve ödemeniz başarıyla tamamlandı.',
       viewBookings: 'Rezervasyonlarımı Gör',
-      orderNumber: 'Sipariş Referansı',
+      invoiceNumber: 'Fatura Numarası',
       paymentBreakdown: 'Ödeme Dağılımı',
       totalPaid: 'Toplam Ödenen',
       platformFee: 'Platform Komisyonu (%10)',
@@ -119,7 +129,7 @@ const PaymentSuccess = () => {
       title: 'Оплата успешна!',
       message: 'Ваше бронирование подтверждено, оплата успешно завершена.',
       viewBookings: 'Мои бронирования',
-      orderNumber: 'Номер заказа',
+      invoiceNumber: 'Номер счета',
       paymentBreakdown: 'Разбивка платежа',
       totalPaid: 'Всего оплачено',
       platformFee: 'Комиссия платформы (10%)',
@@ -135,7 +145,10 @@ const PaymentSuccess = () => {
   if (loading) {
     return (
       <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <CircularProgress size={60} sx={{ color: '#00BFA6' }} />
+        <Stack alignItems="center" spacing={2}>
+          <CircularProgress size={60} sx={{ color: '#635BFF' }} />
+          <Typography color="text.secondary">Processing payment...</Typography>
+        </Stack>
       </Box>
     );
   }
@@ -150,7 +163,7 @@ const PaymentSuccess = () => {
           <Button
             variant="contained"
             onClick={() => navigate('/dashboard')}
-            sx={{ bgcolor: '#00BFA6', '&:hover': { bgcolor: '#00A693' } }}
+            sx={{ bgcolor: '#635BFF', '&:hover': { bgcolor: '#5248E6' } }}
           >
             {t.viewBookings}
           </Button>
@@ -176,16 +189,17 @@ const PaymentSuccess = () => {
         {/* Payment Details Card */}
         <Card sx={{ borderRadius: 3, mb: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
           <CardContent sx={{ p: 4 }}>
-            {/* Order Reference */}
-            {paymentDetails?.order_reference && (
-              <Box sx={{ mb: 3, textAlign: 'center' }}>
+            {/* Invoice Number */}
+            <Box sx={{ mb: 3, textAlign: 'center' }}>
+              {paymentDetails?.invoice_number && (
                 <Chip
                   icon={<Receipt />}
-                  label={`${t.orderNumber}: ${paymentDetails.order_reference}`}
-                  sx={{ fontSize: '0.9rem', py: 2.5, px: 1 }}
+                  label={`${t.invoiceNumber}: ${paymentDetails.invoice_number}`}
+                  color="primary"
+                  sx={{ fontSize: '0.9rem', py: 2.5, px: 1, bgcolor: '#635BFF', '&:hover': { bgcolor: '#5248E6' } }}
                 />
-              </Box>
-            )}
+              )}
+            </Box>
 
             {/* Service & Business Info */}
             {paymentDetails && (
@@ -235,10 +249,10 @@ const PaymentSuccess = () => {
                 pl: 4
               }}>
                 <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
-                  <AccountBalance sx={{ fontSize: 20, color: '#00BFA6' }} />
+                  <AccountBalance sx={{ fontSize: 20, color: '#635BFF' }} />
                   {t.platformFee}
                 </Typography>
-                <Typography fontWeight={600} sx={{ color: '#00BFA6' }}>
+                <Typography fontWeight={600} sx={{ color: '#635BFF' }}>
                   ${paymentDetails?.platform_fee?.toFixed(2) || '0.00'}
                 </Typography>
               </Box>
@@ -251,10 +265,10 @@ const PaymentSuccess = () => {
                 pl: 4
               }}>
                 <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
-                  <Store sx={{ fontSize: 20, color: '#4299e1' }} />
+                  <Store sx={{ fontSize: 20, color: '#00BFA6' }} />
                   {t.businessReceives}
                 </Typography>
-                <Typography fontWeight={600} sx={{ color: '#4299e1' }}>
+                <Typography fontWeight={600} sx={{ color: '#00BFA6' }}>
                   ${paymentDetails?.business_amount?.toFixed(2) || '0.00'}
                 </Typography>
               </Box>
@@ -282,13 +296,13 @@ const PaymentSuccess = () => {
             size="large"
             onClick={() => navigate('/dashboard')}
             sx={{
-              bgcolor: '#00BFA6',
+              bgcolor: '#635BFF',
               px: 5,
               py: 1.5,
               fontSize: '1.1rem',
               fontWeight: 'bold',
               '&:hover': {
-                bgcolor: '#00A693'
+                bgcolor: '#5248E6'
               }
             }}
           >

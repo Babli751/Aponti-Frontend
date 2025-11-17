@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import Logo from '../components/Logo';
 import Footer from '../components/Footer';
 import MapView from '../components/MapView';
@@ -47,6 +48,7 @@ const BusinessDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { language, changeLanguage } = useLanguage();
+  const { user, isAuthenticated } = useAuth();
 
   const [business, setBusiness] = useState(null);
   const [workers, setWorkers] = useState([]);
@@ -120,15 +122,18 @@ const BusinessDetail = () => {
           const businessServices = Array.isArray(servicesResponse.data) ? servicesResponse.data : [];
           setServices(businessServices);
 
-          // Fetch user's favorite services
-          try {
-            const favoritesResponse = await api.get('/users/favorites/services');
-            console.log('User favorites:', favoritesResponse.data);
-            const favoriteIds = new Set(favoritesResponse.data.map(fav => fav.service_id || fav.id));
-            setFavoritedServices(favoriteIds);
-          } catch (err) {
-            console.error('Error fetching favorites:', err);
-            // User might not be logged in, ignore error
+          // Fetch user's favorite services only if logged in
+          if (isAuthenticated) {
+            try {
+              const favoritesResponse = await api.get('/users/favorites/services');
+              console.log('User favorites:', favoritesResponse.data);
+              const favoriteIds = new Set(favoritesResponse.data.map(fav => fav.service_id || fav.id));
+              setFavoritedServices(favoriteIds);
+            } catch (err) {
+              console.error('Error fetching favorites:', err);
+              setFavoritedServices(new Set());
+            }
+          } else {
             setFavoritedServices(new Set());
           }
         } catch (err) {
@@ -286,26 +291,26 @@ const BusinessDetail = () => {
       const serviceForWorker = selectedService.allServices?.[0] || selectedService;
       const barberId = selectedWorker?.id || serviceForWorker.barber_id || workers[0]?.id;
 
-      const appointmentData = {
+      // Don't create booking yet - only create after payment
+      // Store booking data to create after payment
+      const bookingData = {
         service_id: serviceForWorker.id,
         barber_id: barberId,
         start_time: startTime
       };
 
-      const response = await api.post('/bookings/', appointmentData);
-      const booking = response.data;
-
       setBookingSuccess(true);
       setTimeout(() => {
         setBookingDialogOpen(false);
-        // Redirect to payment page with booking details
+        // Redirect to payment page with booking data (not created yet)
         navigate('/payment', {
           state: {
-            booking: booking,
+            bookingData: bookingData, // Send data to create booking after payment
             servicePrice: serviceForWorker.price || 0,
             serviceName: serviceForWorker.name || selectedService.name,
             workerName: selectedWorker?.full_name || selectedWorker?.name || 'Unknown',
-            businessName: business?.business_name || business?.name || 'Unknown Business'
+            businessName: business?.business_name || business?.name || 'Unknown Business',
+            businessId: business?.id
           }
         });
       }, 1500);
@@ -780,6 +785,13 @@ const BusinessDetail = () => {
                                   }
                                 }}
                                 onClick={async () => {
+                                  // Check if user is logged in
+                                  if (!isAuthenticated) {
+                                    // Redirect to login
+                                    navigate('/signin', { state: { from: `/business/${id}` } });
+                                    return;
+                                  }
+
                                   // Toggle favorite
                                   const serviceId = firstService.id;
 

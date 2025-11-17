@@ -177,53 +177,8 @@ export const profileApi = {
   },
 };
 
-// Placeholder functions that return empty data (for development without backend)
-export const mockApi = {
-  // Mock functions that return empty data - used when backend is not ready
-  getUpcomingAppointments: () => Promise.resolve([]),
-  getPastAppointments: () => Promise.resolve([]),
-  getFavoriteBarbers: () => Promise.resolve([]),
-  getBusinessProfile: () => Promise.resolve({
-    name: '',
-    owner: '',
-    email: '',
-    phone: '',
-    address: '',
-    avatar: '',
-    rating: 0,
-    reviewCount: 0,
-    totalBookings: 0,
-    monthlyRevenue: 0,
-    services: []
-  }),
-  getBusinessStats: () => Promise.resolve({
-    totalBookings: 0,
-    monthlyRevenue: 0,
-    rating: 0,
-    activeServices: 0
-  }),
-  getRecentActivity: () => Promise.resolve([]),
-  getUserProfile: () => Promise.resolve({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    birthDate: '',
-    address: '',
-    memberSince: new Date().getFullYear(),
-    totalAppointments: 0,
-    favoriteBarbers: 0
-  }),
-  getUserStats: () => Promise.resolve({
-    totalAppointments: 0,
-    favoriteBarbers: 0,
-    memberSince: new Date().getFullYear()
-  })
-};
-
 export default {
   dashboardApi,
   businessApi,
-  profileApi,
-  mockApi
+  profileApi
 };
