@@ -104,34 +104,57 @@ const Home = () => {
 
   // Get user's location on mount and when authentication changes
   useEffect(() => {
-    // Only request geolocation if user is signed in
-    if (isAuthenticated && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          console.log('User location detected:', position.coords);
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.log('Geolocation error:', error.message, 'code:', error.code);
-          // Silently fallback to Istanbul if geolocation fails
-          console.log('Using default location (Istanbul)');
-          setUserLocation({ lat: 41.0082, lng: 28.9784 });
-        },
-        {
-          enableHighAccuracy: false,
-          timeout: 10000,
-          maximumAge: 300000
+    const fetchUserLocation = async () => {
+      // Try to get saved location from user profile first
+      let savedLocation = null;
+      if (isAuthenticated && user) {
+        try {
+          const response = await api.get('/users/me');
+          const userData = response.data;
+          if (userData.latitude && userData.longitude) {
+            savedLocation = {
+              lat: userData.latitude,
+              lng: userData.longitude
+            };
+            console.log('✅ User has saved location in database:', savedLocation);
+            // Set database location immediately (don't wait for GPS)
+            setUserLocation(savedLocation);
+          }
+        } catch (error) {
+          console.log('Could not fetch user location from database:', error);
         }
-      );
-    } else if (isAuthenticated) {
-      // Browser doesn't support geolocation, use default
-      console.log('Geolocation not supported, using Istanbul');
-      setUserLocation({ lat: 41.0082, lng: 28.9784 });
-    }
-  }, [isAuthenticated]);
+      }
+
+      // Try browser geolocation as secondary option (for more accurate location)
+      if (isAuthenticated && navigator.geolocation && savedLocation) {
+        console.log('🔍 Trying to get live GPS location...');
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            console.log('📍 Live GPS location detected:', position.coords);
+            setUserLocation({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            });
+          },
+          (error) => {
+            console.log('⚠️ GPS failed, using database location:', error.message);
+            // Already set savedLocation above, so just log the error
+          },
+          {
+            enableHighAccuracy: true,  // Use high accuracy
+            timeout: 5000,  // 5 second timeout
+            maximumAge: 0  // Don't use cached location
+          }
+        );
+      } else if (isAuthenticated && !savedLocation) {
+        // No saved location, use Istanbul default
+        console.log('Using default location (Istanbul) - no saved location found');
+        setUserLocation({ lat: 41.0082, lng: 28.9784 });
+      }
+    };
+
+    fetchUserLocation();
+  }, [isAuthenticated, user]);
 
   // Fetch featured businesses
   useEffect(() => {
