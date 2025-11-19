@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // 1. BASE URL CONFIGURATION
-const API_BASE_URL = window.API_BASE_URL || process.env.REACT_APP_API_URL || '/api';
+const API_BASE_URL = window.API_BASE_URL || process.env.REACT_APP_API_URL || '/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -43,17 +43,8 @@ api.interceptors.response.use(
       localStorage.removeItem('business_token');
       localStorage.removeItem('businessToken');
 
-      // Only redirect if we're not already on a login page
-      const currentPath = window.location.pathname;
-      if (!currentPath.includes('/signin') &&
-          !currentPath.includes('/signup') &&
-          !currentPath.includes('/business-signup') &&
-          !currentPath.includes('/business-dashboard')) {
-        console.log('🔄 401 error detected, redirecting to /business-signup');
-        window.location.href = '/business-signup';
-      } else {
-        console.log('🔄 401 error on login/dashboard page, not redirecting');
-      }
+      // Log the 401 error but don't redirect - let components handle their own auth logic
+      console.log('🔄 401 error detected, tokens cleared');
     }
     return Promise.reject(error);
   }

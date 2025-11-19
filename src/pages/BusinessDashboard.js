@@ -145,6 +145,96 @@ const BusinessDashboard = () => {
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Worker hours state
+  const [workerHoursDialogOpen, setWorkerHoursDialogOpen] = useState(false);
+  const [selectedWorkerForHours, setSelectedWorkerForHours] = useState(null);
+  const [workerHours, setWorkerHours] = useState([
+    { day_of_week: 0, start_time: '09:00', end_time: '17:00', is_working: true },
+    { day_of_week: 1, start_time: '09:00', end_time: '17:00', is_working: true },
+    { day_of_week: 2, start_time: '09:00', end_time: '17:00', is_working: true },
+    { day_of_week: 3, start_time: '09:00', end_time: '17:00', is_working: true },
+    { day_of_week: 4, start_time: '09:00', end_time: '17:00', is_working: true },
+    { day_of_week: 5, start_time: '10:00', end_time: '18:00', is_working: true },
+    { day_of_week: 6, start_time: '09:00', end_time: '17:00', is_working: false }
+  ]);
+
+  const dayNames = {
+    en: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    tr: ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'],
+    ru: ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+  };
+
+  // Time options for dropdown (every 30 minutes from 06:00 to 23:00)
+  const timeOptions = [
+    'Closed',
+    '06:00', '06:30', '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
+    '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
+    '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30',
+    '22:00', '22:30', '23:00'
+  ];
+
+  // Fetch worker hours
+  const fetchWorkerHours = async (workerId) => {
+    try {
+      const token = localStorage.getItem('business_token');
+      const response = await api.get(`/businesses/workers/${workerId}/hours`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data && response.data.length > 0) {
+        setWorkerHours(response.data);
+      } else {
+        // Default hours if none set
+        setWorkerHours([
+          { day_of_week: 0, start_time: '09:00', end_time: '17:00', is_working: true },
+          { day_of_week: 1, start_time: '09:00', end_time: '17:00', is_working: true },
+          { day_of_week: 2, start_time: '09:00', end_time: '17:00', is_working: true },
+          { day_of_week: 3, start_time: '09:00', end_time: '17:00', is_working: true },
+          { day_of_week: 4, start_time: '09:00', end_time: '17:00', is_working: true },
+          { day_of_week: 5, start_time: '10:00', end_time: '18:00', is_working: true },
+          { day_of_week: 6, start_time: '09:00', end_time: '17:00', is_working: false }
+        ]);
+      }
+    } catch (err) {
+      console.error('Failed to fetch worker hours:', err);
+    }
+  };
+
+  // Save worker hours
+  const saveWorkerHours = async () => {
+    if (!selectedWorkerForHours) return;
+    try {
+      const token = localStorage.getItem('business_token');
+      await api.put(`/businesses/workers/${selectedWorkerForHours.id}/hours`, workerHours, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSnackbar({
+        open: true,
+        message: language === 'en' ? 'Working hours saved successfully' :
+                 language === 'tr' ? 'Çalışma saatleri kaydedildi' :
+                 'Рабочее время сохранено',
+        severity: 'success'
+      });
+      setWorkerHoursDialogOpen(false);
+    } catch (err) {
+      console.error('Failed to save worker hours:', err);
+      setSnackbar({
+        open: true,
+        message: language === 'en' ? 'Failed to save working hours' :
+                 language === 'tr' ? 'Çalışma saatleri kaydedilemedi' :
+                 'Не удалось сохранить рабочее время',
+        severity: 'error'
+      });
+    }
+  };
+
+  // Open worker hours dialog
+  const openWorkerHoursDialog = (worker) => {
+    setSelectedWorkerForHours(worker);
+    fetchWorkerHours(worker.id);
+    setWorkerHoursDialogOpen(true);
+  };
+
   // Check authentication first
   useEffect(() => {
     const token = localStorage.getItem('business_token');
@@ -179,6 +269,14 @@ useEffect(() => {
        owner: businessDataResponse.owner_name,
        address: `${businessDataResponse.address || ''}, ${businessDataResponse.city || ''}`
      });
+
+     // Set working hours if available
+     if (businessDataResponse.workingHours) {
+       setBusinessInfo(prev => ({
+         ...prev,
+         workingHours: businessDataResponse.workingHours
+       }));
+     }
 
      // 2️⃣ Fetch appointments
      const appointmentsData = await businessAPI.getAppointments();
@@ -386,7 +484,11 @@ useEffect(() => {
       const profileData = {
         address: businessData.address,
         description: businessData.description,
-        // Add other fields as needed
+        name: businessData.name,
+        owner_name: businessData.owner_name,
+        phone: businessData.phone,
+        city: businessData.city,
+        working_hours: businessInfo.workingHours
       };
 
       await businessAPI.updateProfile(profileData);
@@ -959,19 +1061,27 @@ useEffect(() => {
                     ].map(d => d && (
                       <Box key={d.key} sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: '48%', md: '32%' } }}>
                         <Typography variant="body2" sx={{ width: 40 }}>{d.label}</Typography>
-                        <TextField
-                          size="small"
-                          value={businessInfo.workingHours[d.key].open}
-                          onChange={(e)=> setBusinessInfo(prev=> ({ ...prev, workingHours: { ...prev.workingHours, [d.key]: { ...prev.workingHours[d.key], open: e.target.value } } }))}
-                          placeholder="09:00"
-                        />
+                        <FormControl size="small" sx={{ minWidth: 90 }}>
+                          <Select
+                            value={businessInfo.workingHours[d.key].open}
+                            onChange={(e)=> setBusinessInfo(prev=> ({ ...prev, workingHours: { ...prev.workingHours, [d.key]: { ...prev.workingHours[d.key], open: e.target.value } } }))}
+                          >
+                            {timeOptions.map(time => (
+                              <MenuItem key={time} value={time}>{time}</MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
                         <Typography variant="body2">-</Typography>
-                        <TextField
-                          size="small"
-                          value={businessInfo.workingHours[d.key].close}
-                          onChange={(e)=> setBusinessInfo(prev=> ({ ...prev, workingHours: { ...prev.workingHours, [d.key]: { ...prev.workingHours[d.key], close: e.target.value } } }))}
-                          placeholder="19:00"
-                        />
+                        <FormControl size="small" sx={{ minWidth: 90 }}>
+                          <Select
+                            value={businessInfo.workingHours[d.key].close}
+                            onChange={(e)=> setBusinessInfo(prev=> ({ ...prev, workingHours: { ...prev.workingHours, [d.key]: { ...prev.workingHours[d.key], close: e.target.value } } }))}
+                          >
+                            {timeOptions.map(time => (
+                              <MenuItem key={time} value={time}>{time}</MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
                       </Box>
                     ))}
                   </Box>
@@ -1108,6 +1218,7 @@ useEffect(() => {
                     <TableRow>
                       <TableCell>{language === 'en' ? 'Name' : language === 'tr' ? 'İsim' : 'Имя'}</TableCell>
                       <TableCell>{language === 'en' ? 'Email' : language === 'tr' ? 'E-posta' : 'Эл. почта'}</TableCell>
+                      <TableCell>{language === 'en' ? 'Working Hours' : language === 'tr' ? 'Çalışma Saatleri' : 'Рабочее время'}</TableCell>
                       <TableCell align="right">{language === 'en' ? 'Actions' : language === 'tr' ? 'İşlemler' : 'Действия'}</TableCell>
                     </TableRow>
                   </TableHead>
@@ -1117,6 +1228,16 @@ useEffect(() => {
                         <TableRow key={worker.id}>
                           <TableCell>{worker.full_name || `${worker.first_name || ''} ${worker.last_name || ''}`.trim() || worker.email}</TableCell>
                           <TableCell>{worker.email}</TableCell>
+                          <TableCell>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => openWorkerHoursDialog(worker)}
+                              sx={{ textTransform: 'none' }}
+                            >
+                              {language === 'en' ? 'Set Hours' : language === 'tr' ? 'Saat Ayarla' : 'Установить часы'}
+                            </Button>
+                          </TableCell>
                           <TableCell align="right">
                             <IconButton color="error" onClick={() => removeBarber(worker.id)}>
                               <Delete />
@@ -1126,7 +1247,7 @@ useEffect(() => {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={3} align="center">
+                        <TableCell colSpan={4} align="center">
                           <Typography variant="body2" color="text.secondary">
                             {language === 'en' ? 'No workers found' : language === 'tr' ? 'İşçi bulunamadı' : 'Работники не найдены'}
                           </Typography>
@@ -1663,6 +1784,86 @@ useEffect(() => {
             sx={{ bgcolor: '#2d3748', '&:hover': { bgcolor: '#007562' } }}
           >
             {language === 'en' ? 'Save Changes' : language === 'tr' ? 'Değişiklikleri Kaydet' : 'Сохранить'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Worker Hours Dialog */}
+      <Dialog
+        open={workerHoursDialogOpen}
+        onClose={() => setWorkerHoursDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {language === 'en' ? 'Working Hours for ' : language === 'tr' ? 'Çalışma Saatleri: ' : 'Рабочее время: '}
+          {selectedWorkerForHours?.full_name || selectedWorkerForHours?.first_name || ''}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            {workerHours.map((hour, index) => (
+              <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
+                <Box sx={{ width: 100 }}>
+                  <Typography variant="body2" fontWeight="bold">
+                    {dayNames[language]?.[hour.day_of_week] || dayNames.en[hour.day_of_week]}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                  <input
+                    type="checkbox"
+                    checked={hour.is_working}
+                    onChange={(e) => {
+                      const newHours = [...workerHours];
+                      newHours[index].is_working = e.target.checked;
+                      setWorkerHours(newHours);
+                    }}
+                  />
+                  {hour.is_working ? (
+                    <>
+                      <TextField
+                        size="small"
+                        type="time"
+                        value={hour.start_time}
+                        onChange={(e) => {
+                          const newHours = [...workerHours];
+                          newHours[index].start_time = e.target.value;
+                          setWorkerHours(newHours);
+                        }}
+                        sx={{ width: 120 }}
+                      />
+                      <Typography>-</Typography>
+                      <TextField
+                        size="small"
+                        type="time"
+                        value={hour.end_time}
+                        onChange={(e) => {
+                          const newHours = [...workerHours];
+                          newHours[index].end_time = e.target.value;
+                          setWorkerHours(newHours);
+                        }}
+                        sx={{ width: 120 }}
+                      />
+                    </>
+                  ) : (
+                    <Typography color="text.secondary">
+                      {language === 'en' ? 'Day Off' : language === 'tr' ? 'Tatil' : 'Выходной'}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setWorkerHoursDialogOpen(false)}>
+            {language === 'en' ? 'Cancel' : language === 'tr' ? 'İptal' : 'Отмена'}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={saveWorkerHours}
+            sx={{ bgcolor: '#00BFA6', '&:hover': { bgcolor: '#00A693' } }}
+          >
+            {language === 'en' ? 'Save Hours' : language === 'tr' ? 'Saatleri Kaydet' : 'Сохранить'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -28,7 +28,9 @@ import {
   AppBar,
   Toolbar,
   FormControl,
-  Select
+  Select,
+  Modal,
+  IconButton
 } from '@mui/material';
 import {
   ArrowBack,
@@ -41,7 +43,8 @@ import {
   FavoriteBorder,
   ContentCut,
   Spa,
-  FitnessCenter
+  FitnessCenter,
+  Close
 } from '@mui/icons-material';
 
 const BusinessDetail = () => {
@@ -67,6 +70,7 @@ const BusinessDetail = () => {
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
+  const [reviews, setReviews] = useState([]);
 
   // Favorite state - track which services are favorited
   const [favoritedServices, setFavoritedServices] = useState(new Set());
@@ -77,6 +81,7 @@ const BusinessDetail = () => {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [timeOfDay, setTimeOfDay] = useState('Morning'); // Morning, Afternoon, Evening
   const [bookedSlots, setBookedSlots] = useState([]); // Store booked time slots
+  const [workerHours, setWorkerHours] = useState([]); // Worker's working hours
 
   // Photo gallery state
   const galleryPhotos = [
@@ -141,6 +146,16 @@ const BusinessDetail = () => {
           setServices([]);
         }
 
+        // Fetch reviews for this business
+        try {
+          const reviewsResponse = await api.get(`/reviews/business/${id}`);
+          console.log('Business reviews:', reviewsResponse.data);
+          setReviews(Array.isArray(reviewsResponse.data) ? reviewsResponse.data : []);
+        } catch (err) {
+          console.error('Error fetching reviews:', err);
+          setReviews([]);
+        }
+
       } catch (err) {
         console.error('Error fetching business data:', err);
         setError(language === 'en'
@@ -171,25 +186,18 @@ const BusinessDetail = () => {
         const dateStr = selectedDayOfWeek.toISOString().split('T')[0]; // YYYY-MM-DD format
         const response = await api.get(`/bookings/worker/${selectedWorker.id}/date/${dateStr}`);
 
-        // Extract booked time slots - mark ALL 15-min slots between start and end as booked
+        // Extract booked time slots - only mark the START time as booked
         const booked = [];
         response.data.forEach(booking => {
           const startTime = new Date(booking.start_time);
-          const endTime = new Date(booking.end_time);
 
-          // Generate all 15-minute slots between start and end
-          let currentTime = new Date(startTime);
-          while (currentTime < endTime) {
-            const hours = currentTime.getHours();
-            const minutes = currentTime.getMinutes();
-            const period = hours >= 12 ? 'PM' : 'AM';
-            const displayHours = (hours % 12 || 12).toString().padStart(2, '0');
-            const displayMinutes = minutes.toString().padStart(2, '0');
-            booked.push(`${displayHours}:${displayMinutes} ${period}`);
-
-            // Move to next 15-minute slot
-            currentTime = new Date(currentTime.getTime() + 15 * 60 * 1000);
-          }
+          // Only mark the start time slot as booked
+          const hours = startTime.getHours();
+          const minutes = startTime.getMinutes();
+          const period = hours >= 12 ? 'PM' : 'AM';
+          const displayHours = (hours % 12 || 12).toString().padStart(2, '0');
+          const displayMinutes = minutes.toString().padStart(2, '0');
+          booked.push(`${displayHours}:${displayMinutes} ${period}`);
         });
 
         console.log('📅 Booked slots for', dateStr, ':', booked);
@@ -218,34 +226,98 @@ const BusinessDetail = () => {
   const getTimeSlots = () => {
     const slots = [];
     if (timeOfDay === 'Morning') {
-      for (let hour = 9; hour <= 11; hour++) {
+      // 9:00 AM - 12:45 PM (4 hours = 16 slots)
+      for (let hour = 9; hour <= 12; hour++) {
         for (let min = 0; min < 60; min += 15) {
-          slots.push(`${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')} AM`);
+          if (hour === 12) {
+            slots.push(`${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')} PM`);
+          } else {
+            slots.push(`${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')} AM`);
+          }
         }
       }
     } else if (timeOfDay === 'Afternoon') {
-      for (let hour = 12; hour <= 17; hour++) {
+      // 1:00 PM - 4:45 PM (4 hours = 16 slots)
+      for (let hour = 13; hour <= 16; hour++) {
         for (let min = 0; min < 60; min += 15) {
-          const displayHour = hour > 12 ? hour - 12 : hour;
+          const displayHour = hour - 12;
           slots.push(`${displayHour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')} PM`);
         }
       }
     } else { // Evening
-      for (let hour = 18; hour <= 21; hour++) {
+      // 5:00 PM - 8:45 PM (4 hours = 16 slots)
+      for (let hour = 17; hour <= 20; hour++) {
         for (let min = 0; min < 60; min += 15) {
-          slots.push(`${(hour - 12).toString().padStart(2, '0')}:${min.toString().padStart(2, '0')} PM`);
+          const displayHour = hour - 12;
+          slots.push(`${displayHour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')} PM`);
         }
       }
     }
     return slots;
   };
 
+  // Fetch worker hours when worker is selected
+  const fetchWorkerHours = async (workerId) => {
+    try {
+      const response = await api.get(`/businesses/public/workers/${workerId}/hours`);
+      setWorkerHours(response.data || []);
+    } catch (err) {
+      console.error('Failed to fetch worker hours:', err);
+      setWorkerHours([]);
+    }
+  };
+
+  // Check if a time slot is within worker's working hours
+  const isSlotWithinWorkerHours = (timeSlot) => {
+    if (!selectedWorker || !selectedDayOfWeek || workerHours.length === 0) {
+      return true; // If no worker selected or no hours set, allow all slots
+    }
+
+    // Get day of week (0=Monday in our system, but JS Date uses 0=Sunday)
+    const jsDay = selectedDayOfWeek.getDay();
+    const dayOfWeek = jsDay === 0 ? 6 : jsDay - 1; // Convert to 0=Monday format
+
+    // Find worker's hours for this day
+    const dayHours = workerHours.find(h => h.day_of_week === dayOfWeek);
+
+    if (!dayHours || !dayHours.is_working) {
+      return false; // Worker doesn't work this day
+    }
+
+    // Convert time slot to 24-hour format for comparison
+    const timeStr = timeSlot.replace(' AM', '').replace(' PM', '');
+    const [hours, minutes] = timeStr.split(':');
+    let hour24 = parseInt(hours);
+
+    if (timeSlot.includes('PM') && hour24 !== 12) {
+      hour24 += 12;
+    } else if (timeSlot.includes('AM') && hour24 === 12) {
+      hour24 = 0;
+    }
+
+    const slotTime = hour24 * 60 + parseInt(minutes);
+
+    // Parse worker's start and end times
+    const [startH, startM] = dayHours.start_time.split(':');
+    const [endH, endM] = dayHours.end_time.split(':');
+    const startTime = parseInt(startH) * 60 + parseInt(startM);
+    const endTime = parseInt(endH) * 60 + parseInt(endM);
+
+    return slotTime >= startTime && slotTime < endTime;
+  };
+
+  // Handle worker selection
+  const handleWorkerSelect = (worker) => {
+    setSelectedWorker(worker);
+    fetchWorkerHours(worker.id);
+  };
+
   const handleBooking = (service) => {
     // Open booking dialog instead of navigating
     setSelectedService(service);
-    // Set first worker as default
-    const firstWorker = service.workers?.[0] || workers[0];
-    setSelectedWorker(firstWorker);
+    // Don't auto-select worker - let user choose
+    setSelectedWorker(null);
+    setWorkerHours([]); // Reset worker hours
     setBookingDialogOpen(true);
     setBookingSuccess(false);
     setSelectedDayOfWeek(null);
@@ -865,42 +937,56 @@ const BusinessDetail = () => {
               </Box>
 
               <Stack spacing={3}>
-                {/* Sample Reviews */}
-                {[
-                  { name: 'John Doe', rating: 5, date: '2 days ago', text: language === 'en' ? 'Excellent service! The barber was very professional and the atmosphere was great.' : language === 'tr' ? 'Mükemmel hizmet! Berber çok profesyoneldi ve atmosfer harikaydı.' : 'Отличный сервис!' },
-                  { name: 'Jane Smith', rating: 5, date: '1 week ago', text: language === 'en' ? 'Best haircut I\'ve had in years. Highly recommend!' : language === 'tr' ? 'Yıllardır aldığım en iyi saç kesimi. Kesinlikle tavsiye ederim!' : 'Лучшая стрижка!' },
-                  { name: 'Mike Johnson', rating: 4, date: '2 weeks ago', text: language === 'en' ? 'Good service, friendly staff. Will come back again.' : language === 'tr' ? 'İyi hizmet, güler yüzlü personel. Tekrar geleceğim.' : 'Хороший сервис!' }
-                ].map((review, index) => (
-                  <Card key={index}>
+                {/* Real Reviews from API */}
+                {reviews.length === 0 ? (
+                  <Card>
                     <CardContent>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                        <Box sx={{ display: 'flex', gap: 2 }}>
-                          <Avatar sx={{ bgcolor: '#2d3748', width: 48, height: 48 }}>
-                            {review.name[0]}
-                          </Avatar>
-                          <Box>
-                            <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
-                              {review.name}
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 0.5, my: 0.5 }}>
-                              {[...Array(5)].map((_, i) => (
-                                <Box key={i} sx={{ color: i < review.rating ? '#fbbf24' : '#d1d5db', fontSize: '1.2rem' }}>
-                                  ★
-                                </Box>
-                              ))}
-                            </Box>
-                            <Typography variant="caption" color="text.secondary">
-                              {review.date}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </Box>
-                      <Typography variant="body1" sx={{ color: '#4b5563' }}>
-                        {review.text}
+                      <Typography variant="body1" sx={{ color: '#6b7280', textAlign: 'center', py: 2 }}>
+                        {language === 'en' ? 'No reviews yet. Be the first to review!' : language === 'tr' ? 'Henüz yorum yok. İlk yorumu siz yapın!' : 'Пока нет отзывов'}
                       </Typography>
                     </CardContent>
                   </Card>
-                ))}
+                ) : (
+                  reviews.map((review) => (
+                    <Card key={review.id}>
+                      <CardContent>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                          <Box sx={{ display: 'flex', gap: 2 }}>
+                            <Avatar
+                              src={review.user_avatar}
+                              sx={{ bgcolor: '#2d3748', width: 48, height: 48 }}
+                            >
+                              {review.user_name[0]}
+                            </Avatar>
+                            <Box>
+                              <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
+                                {review.user_name}
+                              </Typography>
+                              <Box sx={{ display: 'flex', gap: 0.5, my: 0.5 }}>
+                                {[...Array(5)].map((_, i) => (
+                                  <Box key={i} sx={{ color: i < review.rating ? '#fbbf24' : '#d1d5db', fontSize: '1.2rem' }}>
+                                    ★
+                                  </Box>
+                                ))}
+                              </Box>
+                              <Typography variant="caption" color="text.secondary">
+                                {new Date(review.created_at).toLocaleDateString(
+                                  language === 'tr' ? 'tr-TR' : language === 'ru' ? 'ru-RU' : 'en-US',
+                                  { year: 'numeric', month: 'long', day: 'numeric' }
+                                )}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+                        {review.comment && (
+                          <Typography variant="body1" sx={{ color: '#4b5563' }}>
+                            {review.comment}
+                          </Typography>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
               </Stack>
             </Box>
       </Container>
@@ -961,37 +1047,45 @@ const BusinessDetail = () => {
                 </Typography>
               </Box>
 
-              {/* Worker Selection */}
-              {selectedService?.workers && selectedService.workers.length > 0 && (
-                <Box sx={{ px: 3, pb: 2 }}>
-                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#4b5563' }}>
+              {/* Worker Selection - Always show available workers */}
+              {workers && workers.length > 0 && (
+                <Box sx={{ px: 3, pb: 2, borderBottom: '1px solid #e5e7eb' }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600, color: '#4b5563' }}>
                     {language === 'en' ? 'Select Worker' : language === 'tr' ? 'Çalışan Seçin' : 'Выберите работника'}
+                    <Typography component="span" sx={{ color: '#ef4444', ml: 0.5 }}>*</Typography>
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-                    {selectedService.workers.map((worker) => (
+                  <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 1.5 }}>
+                    {workers.map((worker) => (
                       <Box
                         key={worker.id}
-                        onClick={() => setSelectedWorker(worker)}
+                        onClick={() => handleWorkerSelect(worker)}
                         sx={{
-                          flex: '0 0 auto',
-                          minWidth: 120,
-                          py: 1.5,
+                          py: 2,
                           px: 2,
                           textAlign: 'center',
                           borderRadius: 2,
                           cursor: 'pointer',
                           bgcolor: selectedWorker?.id === worker.id ? '#00BFA6' : 'white',
                           color: selectedWorker?.id === worker.id ? 'white' : 'inherit',
-                          border: '1px solid',
+                          border: '2px solid',
                           borderColor: selectedWorker?.id === worker.id ? '#00BFA6' : '#e5e7eb',
+                          transition: 'all 0.2s',
                           '&:hover': {
-                            bgcolor: selectedWorker?.id === worker.id ? '#00A693' : '#f9fafb'
+                            bgcolor: selectedWorker?.id === worker.id ? '#00A693' : '#f9fafb',
+                            borderColor: selectedWorker?.id === worker.id ? '#00A693' : '#00BFA6',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                           }
                         }}
                       >
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
                           {worker.full_name || `${worker.first_name || ''} ${worker.last_name || ''}`.trim() || 'Worker'}
                         </Typography>
+                        {selectedWorker?.id === worker.id && (
+                          <Typography variant="caption" sx={{ color: 'inherit', opacity: 0.9 }}>
+                            ✓ {language === 'en' ? 'Selected' : language === 'tr' ? 'Seçildi' : 'Выбрано'}
+                          </Typography>
+                        )}
                       </Box>
                     ))}
                   </Box>
@@ -1061,36 +1155,37 @@ const BusinessDetail = () => {
                 </Box>
               </Box>
 
-              {/* Time Slots - Always visible, no scrolling */}
-              <Box sx={{ px: 3, py: 3 }}>
+              {/* Time Slots - Show all available slots */}
+              <Box sx={{ px: 3, py: 3, maxHeight: '300px', overflowY: 'auto' }}>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-                  {getTimeSlots().slice(0, 12).map((time, index) => {
+                  {getTimeSlots().map((time, index) => {
                     const isBooked = bookedSlots.includes(time);
+                    const isOutsideWorkerHours = !isSlotWithinWorkerHours(time);
+                    const isDisabled = isBooked || isOutsideWorkerHours;
                     return (
                       <Button
                         key={index}
-                        onClick={() => !isBooked && setSelectedTimeSlot(time)}
+                        onClick={() => !isDisabled && setSelectedTimeSlot(time)}
                         variant={selectedTimeSlot === time ? 'contained' : 'outlined'}
-                        disabled={isBooked}
+                        disabled={isDisabled}
                         sx={{
                           minWidth: 100,
                           py: 1.5,
                           borderRadius: 2,
-                          bgcolor: isBooked ? '#f3f4f6' : selectedTimeSlot === time ? '#00BFA6' : 'white',
-                          color: isBooked ? '#9ca3af' : selectedTimeSlot === time ? 'white' : '#2d3748',
-                          borderColor: isBooked ? '#e5e7eb' : selectedTimeSlot === time ? '#00BFA6' : '#d1d5db',
+                          bgcolor: isDisabled ? '#fee2e2' : selectedTimeSlot === time ? '#00BFA6' : 'white',
+                          color: isDisabled ? '#dc2626' : selectedTimeSlot === time ? 'white' : '#2d3748',
+                          borderColor: isDisabled ? '#fecaca' : selectedTimeSlot === time ? '#00BFA6' : '#d1d5db',
                           fontWeight: 600,
                           boxShadow: 'none',
-                          textDecoration: isBooked ? 'line-through' : 'none',
-                          cursor: isBooked ? 'not-allowed' : 'pointer',
+                          cursor: isDisabled ? 'not-allowed' : 'pointer',
                           '&:hover': {
-                            bgcolor: isBooked ? '#f3f4f6' : selectedTimeSlot === time ? '#00A693' : '#f9fafb',
+                            bgcolor: isDisabled ? '#fee2e2' : selectedTimeSlot === time ? '#00A693' : '#f9fafb',
                             boxShadow: 'none'
                           },
                           '&.Mui-disabled': {
-                            bgcolor: '#f3f4f6',
-                            color: '#9ca3af',
-                            borderColor: '#e5e7eb'
+                            bgcolor: '#fee2e2',
+                            color: '#dc2626',
+                            borderColor: '#fecaca'
                           }
                         }}
                       >
@@ -1107,9 +1202,14 @@ const BusinessDetail = () => {
                   <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
                     {selectedService?.name || 'Service'}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                     {selectedDayOfWeek?.toLocaleDateString()} • {selectedTimeSlot}
                   </Typography>
+                  {selectedWorker && (
+                    <Typography variant="body2" sx={{ color: '#00BFA6', fontWeight: 500 }}>
+                      👤 {selectedWorker.full_name || selectedWorker.name || 'Worker'}
+                    </Typography>
+                  )}
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
                     <Box>
                       <Typography variant="caption" color="text.secondary">Total:</Typography>
@@ -1179,68 +1279,156 @@ const BusinessDetail = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Review Dialog */}
-      <Dialog open={reviewDialogOpen} onClose={() => setReviewDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {language === 'en' ? 'Write a Review' : language === 'tr' ? 'Yorum Yaz' : 'Написать отзыв'}
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 2 }}>
-            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-              {language === 'en' ? 'Rating' : language === 'tr' ? 'Değerlendirme' : 'Рейтинг'}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Box
-                  key={star}
-                  onClick={() => setReviewRating(star)}
-                  sx={{
-                    fontSize: '2rem',
-                    cursor: 'pointer',
-                    color: star <= reviewRating ? '#fbbf24' : '#d1d5db',
-                    '&:hover': { color: '#fbbf24' }
-                  }}
-                >
-                  ★
-                </Box>
-              ))}
+      {/* Review Modal - Custom overlay without MUI Modal to avoid aria-hidden issues */}
+      {reviewDialogOpen && (
+        <Box
+          onClick={() => setReviewDialogOpen(false)}
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            bgcolor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999
+          }}
+        >
+          <Box
+            onClick={(e) => e.stopPropagation()}
+            sx={{
+              position: 'relative',
+              width: '90%',
+              maxWidth: '600px',
+              bgcolor: 'white',
+              borderRadius: '8px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+              outline: 'none',
+              maxHeight: '90vh',
+              overflow: 'auto'
+            }}
+          >
+            {/* Header */}
+            <Box sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              p: 2,
+              borderBottom: '1px solid #e5e7eb'
+            }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: '#000' }}>
+                {language === 'en' ? 'Write a Review' : language === 'tr' ? 'Yorum Yaz' : 'Написать отзыв'}
+              </Typography>
+              <IconButton
+                onClick={() => setReviewDialogOpen(false)}
+                sx={{ color: '#666' }}
+              >
+                <Close />
+              </IconButton>
             </Box>
 
-            <TextField
-              label={language === 'en' ? 'Your Review' : language === 'tr' ? 'Yorumunuz' : 'Ваш отзыв'}
-              multiline
-              rows={4}
-              fullWidth
-              value={reviewText}
-              onChange={(e) => setReviewText(e.target.value)}
-              placeholder={language === 'en'
-                ? 'Share your experience with this business...'
-                : language === 'tr'
-                ? 'Bu işletme hakkındaki deneyiminizi paylaşın...'
-                : 'Поделитесь своим опытом...'}
-            />
+            {/* Content */}
+            <Box sx={{ p: 3 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#000' }}>
+                {language === 'en' ? 'Rating' : language === 'tr' ? 'Değerlendirme' : 'Рейтинг'}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Box
+                    key={star}
+                    onClick={() => setReviewRating(star)}
+                    sx={{
+                      fontSize: '2rem',
+                      cursor: 'pointer',
+                      color: star <= reviewRating ? '#fbbf24' : '#d1d5db',
+                      '&:hover': { color: '#fbbf24' },
+                      userSelect: 'none'
+                    }}
+                  >
+                    ★
+                  </Box>
+                ))}
+              </Box>
+
+              <TextField
+                label={language === 'en' ? 'Your Review' : language === 'tr' ? 'Yorumunuz' : 'Ваш отзыв'}
+                multiline
+                rows={4}
+                fullWidth
+                value={reviewText}
+                onChange={(e) => setReviewText(e.target.value)}
+                placeholder={language === 'en'
+                  ? 'Share your experience with this business...'
+                  : language === 'tr'
+                  ? 'Bu işletme hakkındaki deneyiminizi paylaşın...'
+                  : 'Поделитесь своим опытом...'}
+                sx={{
+                  '& .MuiInputBase-root': {
+                    bgcolor: 'white',
+                    color: '#000'
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: '#666'
+                  },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: '#d1d5db'
+                    }
+                  }
+                }}
+              />
+            </Box>
+
+            {/* Actions */}
+            <Box sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: 2,
+              p: 2,
+              borderTop: '1px solid #e5e7eb'
+            }}>
+              <Button onClick={() => setReviewDialogOpen(false)}>
+                {language === 'en' ? 'Cancel' : language === 'tr' ? 'İptal' : 'Отмена'}
+              </Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    if (!isAuthenticated) {
+                      alert(language === 'en' ? 'Please sign in to submit a review' : language === 'tr' ? 'Yorum yapmak için giriş yapın' : 'Войдите, чтобы оставить отзыв');
+                      return;
+                    }
+
+                    await api.post('/reviews/', {
+                      business_id: parseInt(id),
+                      rating: reviewRating,
+                      comment: reviewText.trim()
+                    });
+
+                    // Refresh reviews after submission
+                    const reviewsResponse = await api.get(`/reviews/business/${id}`);
+                    setReviews(Array.isArray(reviewsResponse.data) ? reviewsResponse.data : []);
+
+                    alert(language === 'en' ? 'Review submitted successfully!' : language === 'tr' ? 'Yorum başarıyla gönderildi!' : 'Отзыв отправлен!');
+                    setReviewDialogOpen(false);
+                    setReviewText('');
+                    setReviewRating(5);
+                  } catch (error) {
+                    console.error('Error submitting review:', error);
+                    alert(language === 'en' ? 'Failed to submit review' : language === 'tr' ? 'Yorum gönderilemedi' : 'Не удалось отправить отзыв');
+                  }
+                }}
+                variant="contained"
+                sx={{ bgcolor: '#2d3748', '&:hover': { bgcolor: '#1a202c' } }}
+                disabled={!reviewText.trim()}
+              >
+                {language === 'en' ? 'Submit Review' : language === 'tr' ? 'Gönder' : 'Отправить'}
+              </Button>
+            </Box>
           </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setReviewDialogOpen(false)}>
-            {language === 'en' ? 'Cancel' : language === 'tr' ? 'İptal' : 'Отмена'}
-          </Button>
-          <Button
-            onClick={() => {
-              // TODO: Submit review to API
-              alert(language === 'en' ? 'Review submitted!' : language === 'tr' ? 'Yorum gönderildi!' : 'Отзыв отправлен!');
-              setReviewDialogOpen(false);
-              setReviewText('');
-              setReviewRating(5);
-            }}
-            variant="contained"
-            sx={{ bgcolor: '#2d3748', '&:hover': { bgcolor: '#1a202c' } }}
-            disabled={!reviewText.trim()}
-          >
-            {language === 'en' ? 'Submit Review' : language === 'tr' ? 'Gönder' : 'Отправить'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </Box>
+      )}
 
       <Footer />
     </Box>

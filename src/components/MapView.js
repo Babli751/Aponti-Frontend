@@ -22,24 +22,8 @@ const MapView = ({ businesses, userLocation, onBusinessClick, height = '500px' }
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (userLocation) {
-      // Center on user location
-      setCenter({
-        lat: userLocation.lat,
-        lng: userLocation.lng || userLocation.lon
-      });
-      setZoom(13);
-    } else if (businesses && businesses.length > 0) {
-      // Center on first business
-      const firstBusiness = businesses.find(b => b.latitude && b.longitude);
-      if (firstBusiness) {
-        setCenter({
-          lat: firstBusiness.latitude,
-          lng: firstBusiness.longitude
-        });
-        setZoom(12);
-      }
-    }
+    // Don't set center here - let onLoad handle fitBounds
+    // This prevents the map from centering on user location and ignoring businesses
   }, [userLocation, businesses]);
 
   const onLoad = useCallback(function callback(map) {
@@ -47,9 +31,11 @@ const MapView = ({ businesses, userLocation, onBusinessClick, height = '500px' }
 
     // Fit bounds to show all markers
     if (businesses && businesses.length > 0) {
+      console.log('🗺️ MapView onLoad - businesses:', businesses);
       const bounds = new window.google.maps.LatLngBounds();
 
       if (userLocation) {
+        console.log('📍 MapView - User location:', userLocation);
         bounds.extend({
           lat: userLocation.lat,
           lng: userLocation.lng || userLocation.lon
@@ -57,6 +43,11 @@ const MapView = ({ businesses, userLocation, onBusinessClick, height = '500px' }
       }
 
       businesses.forEach(business => {
+        console.log('🏢 MapView - Business location:', {
+          name: business.name || business.business_name,
+          lat: business.latitude,
+          lng: business.longitude
+        });
         if (business.latitude && business.longitude) {
           bounds.extend({
             lat: business.latitude,

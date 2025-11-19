@@ -169,6 +169,7 @@ const Home = () => {
         const businesses = businessesResponse.data || [];
         console.log('✅ Fetched businesses from database:', businesses.length, 'items');
         console.log('📊 Businesses data:', businesses);
+        console.log('🗺️ FULL BUSINESS OBJECT:', JSON.stringify(businesses, null, 2));
         setFeaturedBusinesses(businesses);
         console.log('✅ Featured businesses set successfully');
       } catch (error) {

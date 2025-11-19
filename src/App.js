@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Container, Typography, Card, CardContent, Box, Button, Stack } from '@mui/material';
@@ -22,6 +22,25 @@ import BusinessDetail from './pages/BusinessDetail';
 import ContactUs from './pages/ContactUs';
 import Payment from './pages/Payment';
 import PaymentSuccess from './pages/PaymentSuccess';
+import AdminPanel from './pages/AdminPanel';
+import analyticsService from './services/analytics';
+
+// Analytics tracker component
+const AnalyticsTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Initialize analytics on first load
+    analyticsService.initAnalytics();
+  }, []);
+
+  useEffect(() => {
+    // Track page view on route change
+    analyticsService.trackPageView(location.pathname);
+  }, [location]);
+
+  return null;
+};
 
 // Favorites redirect component
 const FavoritesRedirect = () => {
@@ -237,6 +256,7 @@ function App() {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Router>
+            <AnalyticsTracker />
             <AuthAwareRoutes />
           </Router>
         </ThemeProvider>
@@ -310,6 +330,9 @@ function AuthAwareRoutes() {
       <Route path="/company" element={<Company />} />
       <Route path="/support" element={<Support />} />
       <Route path="/contact" element={<ContactUs />} />
+
+      {/* Admin Panel */}
+      <Route path="/admin" element={<AdminPanel />} />
 
       {/* Fallback route */}
       <Route path="*" element={<Navigate to="/" replace />} />
