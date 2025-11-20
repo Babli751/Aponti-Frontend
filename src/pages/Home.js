@@ -379,71 +379,62 @@ const Home = () => {
   };
 
   const handleMapSearch = async () => {
-    // Search using OpenStreetMap Nominatim - free geocoding service
-    console.log('Searching:', { query: mapSearchQuery, category: mapCategory });
+    console.log('🔍 Searching:', { query: mapSearchQuery, category: mapCategory });
 
     if (!mapSearchQuery.trim()) {
       // If empty, reload all businesses
-      const businessesResponse = await api.get('/businesses/');
-      setFeaturedBusinesses(businessesResponse.data);
+      try {
+        const businessesResponse = await api.get('/businesses/');
+        setFeaturedBusinesses(businessesResponse.data);
+        console.log('✅ Loaded all businesses:', businessesResponse.data.length);
+      } catch (error) {
+        console.error('❌ Failed to load businesses:', error);
+      }
       return;
     }
 
     const searchTerm = mapSearchQuery.trim();
 
-    // Use Nominatim (OpenStreetMap) geocoding API - completely free!
     try {
-      const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchTerm)}&limit=1`;
-      const response = await fetch(geocodeUrl, {
-        headers: {
-          'User-Agent': 'Booksy-App/1.0' // Required by Nominatim
-        }
+      // Get all businesses first
+      const businessesResponse = await api.get('/businesses/');
+      const allBusinesses = businessesResponse.data;
+      console.log('📊 Total businesses:', allBusinesses.length);
+
+      // Search in businesses by name, city, address, category
+      const searchLower = searchTerm.toLowerCase();
+      const filtered = allBusinesses.filter(business => {
+        return (
+          business.business_name?.toLowerCase().includes(searchLower) ||
+          business.name?.toLowerCase().includes(searchLower) ||
+          business.city?.toLowerCase().includes(searchLower) ||
+          business.address?.toLowerCase().includes(searchLower) ||
+          business.category?.toLowerCase().includes(searchLower) ||
+          business.business_type?.toLowerCase().includes(searchLower)
+        );
       });
-      const data = await response.json();
 
-      if (data && data.length > 0) {
-        const location = data[0];
-        const lat = parseFloat(location.lat);
-        const lon = parseFloat(location.lon);
+      console.log(`🎯 Found ${filtered.length} businesses matching "${searchTerm}"`);
 
-        console.log(`Found location: ${location.display_name}`, { lat, lon });
-
-        // Update user location to zoom map to this place
-        setUserLocation({ lat, lng: lon });
-
-        // Keep all businesses visible, but map will zoom to searched location
-        const businessesResponse = await api.get('/businesses/');
-        setFeaturedBusinesses(businessesResponse.data);
-
-        return;
+      if (filtered.length > 0) {
+        setFeaturedBusinesses(filtered);
+        // Zoom to first matching business location
+        const firstBusiness = filtered[0];
+        if (firstBusiness.latitude && firstBusiness.longitude) {
+          setUserLocation({
+            lat: firstBusiness.latitude,
+            lng: firstBusiness.longitude
+          });
+          console.log('📍 Zooming to:', firstBusiness.business_name || firstBusiness.name);
+        }
+      } else {
+        // No matches found, show all businesses
+        setFeaturedBusinesses(allBusinesses);
+        console.log('⚠️ No matches, showing all businesses');
       }
     } catch (error) {
-      console.error('Geocoding error:', error);
+      console.error('❌ Search error:', error);
     }
-
-    // Fallback: Search in businesses if geocoding fails
-    const currentBusinesses = featuredBusinesses.length > 0 ? featuredBusinesses : [];
-
-    if (currentBusinesses.length === 0) {
-      const businessesResponse = await api.get('/businesses/');
-      setFeaturedBusinesses(businessesResponse.data);
-      return;
-    }
-
-    const searchLower = searchTerm.toLowerCase();
-    const filtered = currentBusinesses.filter(business => {
-      return (
-        business.business_name?.toLowerCase().includes(searchLower) ||
-        business.name?.toLowerCase().includes(searchLower) ||
-        business.city?.toLowerCase().includes(searchLower) ||
-        business.address?.toLowerCase().includes(searchLower) ||
-        business.category?.toLowerCase().includes(searchLower) ||
-        business.business_type?.toLowerCase().includes(searchLower)
-      );
-    });
-
-    console.log(`Found ${filtered.length} businesses matching "${searchTerm}"`);
-    setFeaturedBusinesses(filtered.length > 0 ? filtered : currentBusinesses);
   };
 
   // Showcase categories for beauty salons and barber shops

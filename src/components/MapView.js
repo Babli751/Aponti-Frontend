@@ -22,9 +22,35 @@ const MapView = ({ businesses, userLocation, onBusinessClick, height = '500px' }
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Don't set center here - let onLoad handle fitBounds
-    // This prevents the map from centering on user location and ignoring businesses
-  }, [userLocation, businesses]);
+    if (map && userLocation) {
+      // When user location changes, pan and zoom to it
+      map.panTo({ lat: userLocation.lat, lng: userLocation.lng || userLocation.lon });
+      map.setZoom(14);
+      console.log('📍 Map zoomed to user location:', userLocation);
+    }
+  }, [userLocation, map]);
+
+  useEffect(() => {
+    // When businesses change, fit bounds to show all
+    if (map && businesses && businesses.length > 0) {
+      const bounds = new window.google.maps.LatLngBounds();
+
+      businesses.forEach(business => {
+        if (business.latitude && business.longitude) {
+          bounds.extend({
+            lat: business.latitude,
+            lng: business.longitude
+          });
+        }
+      });
+
+      // Only fit bounds if we have valid businesses
+      if (!bounds.isEmpty()) {
+        map.fitBounds(bounds);
+        console.log('🗺️ Map fitted to businesses bounds');
+      }
+    }
+  }, [businesses, map]);
 
   const onLoad = useCallback(function callback(map) {
     setMap(map);
