@@ -357,88 +357,24 @@ const Home = () => {
 
   // Map section handlers
   const handleFindMyLocation = () => {
-    // Try geolocation directly, fallback to Istanbul if not available
-
-    // First, show an informational prompt
-    const confirmMessage = language === 'en'
-      ? 'To find businesses near you, we need access to your location. Click OK to allow location access in the next prompt.'
-      : language === 'tr'
-      ? 'Size yakın işletmeleri bulmak için konumunuza erişmemiz gerekiyor. Sonraki uyarıda konum erişimine izin vermek için Tamam\'a tıklayın.'
-      : 'Чтобы найти предприятия рядом с вами, нам нужен доступ к вашему местоположению. Нажмите OK, чтобы разрешить доступ к местоположению.';
-
-    const userConfirmed = window.confirm(confirmMessage);
-
-    if (!userConfirmed) {
-      // User cancelled, use default location
-      setUserLocation({ lat: 41.0082, lng: 28.9784 });
-      alert(language === 'en'
-        ? 'Location access cancelled. Showing Istanbul as default location.'
-        : language === 'tr'
-        ? 'Konum erişimi iptal edildi. Varsayılan olarak İstanbul gösteriliyor.'
-        : 'Доступ к мест��положению отменен. Показываем Стамбул по умол��анию.');
-      return;
-    }
-
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setUserLocation({
+          const newLocation = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
-          });
-          alert(language === 'en'
-            ? 'Location found! Showing nearby businesses...'
-            : language === 'tr'
-            ? 'Konum bulundu! Yakındaki işletmeler gösteriliyor...'
-            : 'Местоположение найдено! Показываем ближайшие предприятия...');
+          };
+          setUserLocation(newLocation);
+          console.log('📍 Location found:', newLocation);
         },
         (error) => {
           console.error('Geolocation error:', error);
-
-          // Fallback to default location (Istanbul)
-          const defaultLocation = { lat: 41.0082, lng: 28.9784 };
-          setUserLocation(defaultLocation);
-
-          let errorMessage = '';
-          if (error.code === 1) {
-            // PERMISSION_DENIED
-            errorMessage = language === 'en'
-              ? 'Location access denied. Showing Istanbul as default location. To enable location access, please check your browser settings (usually in the address bar or browser settings).'
-              : language === 'tr'
-              ? 'Konum erişimi reddedildi. Varsayılan olarak İstanbul gösteriliyor. Konum erişimini açmak için tarayıcı ayarlarınızı kontrol edin (genellikle adres çubuğunda veya tarayıcı ayarlarında).'
-              : 'Д��ступ к местоположению за����реще��. Показываем Стамбул по умолчанию. Включите доступ к местоположению в настройках браузера.';
-          } else if (error.code === 2) {
-            // POSITION_UNAVAILABLE
-            errorMessage = language === 'en'
-              ? 'Location unavailable. Showing Istanbul as default location.'
-              : language === 'tr'
-              ? 'Konum bilgisi bulunamadı. Varsayılan olarak İstanbul gösteriliyor.'
-              : 'Местоположение недоступно. Показываем Стамбул по умолчанию.';
-          } else {
-            // TIMEOUT
-            errorMessage = language === 'en'
-              ? 'Location request timed out. Showing Istanbul as default location.'
-              : language === 'tr'
-              ? 'Konum isteği zaman aşımına uğradı. Varsayılan olarak İstanbul gösteriliyor.'
-              : 'Истекло время запроса местоположения. Показываем Стамбул по умолчанию.';
-          }
-
-          // Silently use Istanbul as fallback
+          setUserLocation({ lat: 41.0082, lng: 28.9784 });
         },
-        {
-          enableHighAccuracy: false,
-          timeout: 10000,
-          maximumAge: 300000
-        }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
-      // Fallback to default location
       setUserLocation({ lat: 41.0082, lng: 28.9784 });
-      alert(language === 'en'
-        ? 'Geolocation is not supported by your browser. Showing Istanbul as default location.'
-        : language === 'tr'
-        ? 'Taray��cınız konum özelliğini desteklemiyor.'
-        : 'Ваш браузер не поддерживает геолокацию.');
     }
   };
 
