@@ -546,9 +546,14 @@ const BusinessDetail = () => {
 
       <Container sx={{ mt: 4, mb: 6 }}>
         {/* Photo Gallery with Map/Contact/About on Right */}
-        <Grid container spacing={3} sx={{ mb: 6 }}>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 3,
+          mb: 6
+        }}>
           {/* Left Side - Photos */}
-          <Grid item xs={12} md={7}>
+          <Box sx={{ flex: { xs: '1', md: '0 0 58%' } }}>
             {/* Main large photo */}
             <Box
               component="img"
@@ -591,14 +596,14 @@ const BusinessDetail = () => {
                 />
               ))}
             </Box>
-          </Grid>
+          </Box>
 
           {/* Right Side - Map, About Us, Contact */}
-          <Grid item xs={12} md={5}>
-            <Stack spacing={2} sx={{ height: '100%' }}>
+          <Box sx={{ flex: { xs: '1', md: '0 0 38%' } }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
               {/* Location Map */}
               {displayBusiness && (
-                <Card sx={{ overflow: 'hidden', borderRadius: 2, position: 'relative' }}>
+                <Card sx={{ overflow: 'hidden', borderRadius: 2, position: 'relative', flexShrink: 0 }}>
                   <MapView
                     businesses={[{
                       id: displayBusiness.id,
@@ -610,7 +615,7 @@ const BusinessDetail = () => {
                     }]}
                     userLocation={null}
                     onBusinessClick={() => {}}
-                    height="250px"
+                    height="200px"
                 />
                 <Chip
                   label={language === 'en' ? '1 businesses nearby' : language === 'tr' ? '1 işletme yakında' : '1 предприятие рядом'}
@@ -628,12 +633,12 @@ const BusinessDetail = () => {
 
               {/* About Us Card */}
               {displayBusiness && (
-                <Card sx={{ flex: 1 }}>
-                  <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <Card sx={{ flexShrink: 0 }}>
+                  <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1.5 }}>
                       {language === 'en' ? 'About Us' : language === 'tr' ? 'Hakkımızda' : 'О нас'}
                     </Typography>
-                    <Typography variant="body2" sx={{ lineHeight: 1.6, color: '#4b5563', flex: 1 }}>
+                    <Typography variant="body2" sx={{ lineHeight: 1.6, color: '#4b5563' }}>
                       {displayBusiness.description || (language === 'en' ? 'Welcome to our business! We are dedicated to providing the highest quality services.' : language === 'tr' ? 'İşletmemize hoş geldiniz! En yüksek kalitede hizmet sunmaya dediktir.' : 'Добро пожаловать в наш бизнес!')}
                     </Typography>
                   </CardContent>
@@ -642,7 +647,7 @@ const BusinessDetail = () => {
 
               {/* Contact Info Card */}
               {displayBusiness && (
-                <Card>
+                <Card sx={{ flexShrink: 0 }}>
                   <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                     <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
@@ -706,9 +711,9 @@ const BusinessDetail = () => {
                 </CardContent>
               </Card>
               )}
-            </Stack>
-          </Grid>
-        </Grid>
+            </Box>
+          </Box>
+        </Box>
 
         {/* Services Section */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
