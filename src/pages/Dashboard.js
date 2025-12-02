@@ -206,6 +206,17 @@ const Dashboard = () => {
     if (user?.avatar_url) {
       setProfilePhotoUrl(user.avatar_url);
     }
+    // Initialize profileInfo from user data
+    if (user) {
+      setProfileInfo({
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        phone_number: user.phone_number,
+        avatar_url: user.avatar_url,
+        membership_tier: user.membership_tier
+      });
+    }
   }, [user]);
 
   useEffect(() => {
@@ -303,13 +314,19 @@ const Dashboard = () => {
   }, [language]);
 
   const getUserFullName = () => {
+    // Prioritize profileInfo since it gets updated immediately when user edits profile
+    if (profileInfo?.first_name && profileInfo?.last_name) {
+      return `${profileInfo.first_name} ${profileInfo.last_name}`;
+    }
+    if (profileInfo?.first_name) return profileInfo.first_name;
+
+    // Fallback to user from AuthContext
     if (user?.full_name) return user.full_name;
     if (user?.first_name && user?.last_name) {
       return `${user.first_name} ${user.last_name}`;
     }
-    if (profileInfo?.first_name && profileInfo?.last_name) {
-      return `${profileInfo.first_name} ${profileInfo.last_name}`;
-    }
+    if (user?.first_name) return user.first_name;
+
     return profileInfo?.email?.split('@')[0] || user?.email?.split('@')[0] || 'User';
   };
 
@@ -854,6 +871,16 @@ const Dashboard = () => {
               try {
                 // Update user in AuthContext and localStorage (this also calls API)
                 await updateUser(editFormData);
+
+                // Update local profileInfo state to reflect changes immediately
+                setProfileInfo(prev => ({
+                  ...prev,
+                  first_name: editFormData.first_name,
+                  last_name: editFormData.last_name,
+                  email: editFormData.email,
+                  phone_number: editFormData.phone_number
+                }));
+
                 setProfileEditOpen(false);
                 alert(language === 'en' ? 'Profile updated!' : language === 'tr' ? 'Profil güncellendi!' : 'Профиль обновлен!');
               } catch (err) {

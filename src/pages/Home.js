@@ -814,7 +814,7 @@ const Home = () => {
 
                 {/* Category Selection System - Side by Side with Arrows */}
                 <Box sx={{
-                  bgcolor: 'rgba(255,255,255,0.95)',
+                  border: '2px solid white',
                   borderRadius: 3,
                   p: { xs: 2, md: 3 },
                   maxWidth: { xs: '100%', md: '100%' },
@@ -841,12 +841,23 @@ const Home = () => {
                             bgcolor: 'white',
                             fontSize: { xs: '0.85rem', md: '0.95rem' },
                             minHeight: { xs: '48px', md: '56px' },
+                            borderRadius: 2,
                             '& .MuiSelect-select': {
                               py: { xs: 1.5, md: 2 },
                               display: 'flex',
                               alignItems: 'center'
                             },
-                            '& .MuiOutlinedInput-notchedOutline': { borderWidth: 2, borderColor: '#2d3748' }
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderWidth: 1.5,
+                              borderColor: '#d1d5db'
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#9ca3af'
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderWidth: 2,
+                              borderColor: '#6b7280'
+                            }
                           }}
                         >
                           {categories.map(cat => (
@@ -883,12 +894,23 @@ const Home = () => {
                             bgcolor: 'white',
                             fontSize: { xs: '0.85rem', md: '0.95rem' },
                             minHeight: { xs: '48px', md: '56px' },
+                            borderRadius: 2,
                             '& .MuiSelect-select': {
                               py: { xs: 1.5, md: 2 },
                               display: 'flex',
                               alignItems: 'center'
                             },
-                            '& .MuiOutlinedInput-notchedOutline': { borderWidth: 2 }
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderWidth: 1.5,
+                              borderColor: '#d1d5db'
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#9ca3af'
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderWidth: 2,
+                              borderColor: '#6b7280'
+                            }
                           }}
                         >
                           {categoryBusinesses.map(business => (
@@ -925,12 +947,23 @@ const Home = () => {
                             bgcolor: 'white',
                             fontSize: { xs: '0.85rem', md: '0.95rem' },
                             minHeight: { xs: '48px', md: '56px' },
+                            borderRadius: 2,
                             '& .MuiSelect-select': {
                               py: { xs: 1.5, md: 2 },
                               display: 'flex',
                               alignItems: 'center'
                             },
-                            '& .MuiOutlinedInput-notchedOutline': { borderWidth: 2 }
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderWidth: 1.5,
+                              borderColor: '#d1d5db'
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#9ca3af'
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderWidth: 2,
+                              borderColor: '#6b7280'
+                            }
                           }}
                         >
                           {businessWorkers.map(worker => (
@@ -967,12 +1000,23 @@ const Home = () => {
                             bgcolor: 'white',
                             fontSize: { xs: '0.85rem', md: '0.95rem' },
                             minHeight: { xs: '48px', md: '56px' },
+                            borderRadius: 2,
                             '& .MuiSelect-select': {
                               py: { xs: 1.5, md: 2 },
                               display: 'flex',
                               alignItems: 'center'
                             },
-                            '& .MuiOutlinedInput-notchedOutline': { borderWidth: 2 }
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderWidth: 1.5,
+                              borderColor: '#d1d5db'
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#9ca3af'
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderWidth: 2,
+                              borderColor: '#6b7280'
+                            }
                           }}
                         >
                           {workerServices.map(service => (
@@ -998,9 +1042,21 @@ const Home = () => {
                         }}
                         sx={{
                           bgcolor: 'white',
+                          borderRadius: 2,
                           '& .MuiOutlinedInput-root': {
                             minHeight: { xs: '48px', md: '56px' },
-                            '& fieldset': { borderWidth: 2 }
+                            borderRadius: 2,
+                            '& fieldset': {
+                              borderWidth: 1.5,
+                              borderColor: '#d1d5db'
+                            },
+                            '&:hover fieldset': {
+                              borderColor: '#9ca3af'
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderWidth: 2,
+                              borderColor: '#6b7280'
+                            }
                           }
                         }}
                       />
@@ -1017,9 +1073,21 @@ const Home = () => {
                         InputLabelProps={{ shrink: true }}
                         sx={{
                           bgcolor: 'white',
+                          borderRadius: 2,
                           '& .MuiOutlinedInput-root': {
                             minHeight: { xs: '48px', md: '56px' },
-                            '& fieldset': { borderWidth: 2 }
+                            borderRadius: 2,
+                            '& fieldset': {
+                              borderWidth: 1.5,
+                              borderColor: '#d1d5db'
+                            },
+                            '&:hover fieldset': {
+                              borderColor: '#9ca3af'
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderWidth: 2,
+                              borderColor: '#6b7280'
+                            }
                           }
                         }}
                       />
@@ -1033,21 +1101,33 @@ const Home = () => {
                         size="large"
                         onClick={handleBookNow}
                         disabled={!selectedBusiness || !selectedWorker || !selectedService || !selectedDate || !selectedTime}
+                        style={{
+                          backgroundColor: '#2d3748',
+                          color: 'white'
+                        }}
                         sx={{
-                          bgcolor: '#374151',
-                          color: 'white',
+                          background: '#2d3748 !important',
+                          backgroundColor: '#2d3748 !important',
+                          bgcolor: '#2d3748 !important',
+                          color: 'white !important',
                           fontWeight: 'bold',
                           py: 1.5,
                           mt: 1,
                           fontSize: '1.1rem',
+                          borderRadius: 2,
                           '&:hover': {
-                            bgcolor: '#1f2937',
+                            background: '#1a202c !important',
+                            backgroundColor: '#1a202c !important',
+                            bgcolor: '#1a202c !important',
                             transform: 'translateY(-2px)',
-                            boxShadow: '0 4px 12px rgba(55, 65, 81, 0.4)'
+                            boxShadow: '0 4px 12px rgba(45, 55, 72, 0.4)'
                           },
                           '&:disabled': {
-                            bgcolor: '#d1d5db',
-                            color: 'white'
+                            background: '#2d3748 !important',
+                            backgroundColor: '#2d3748 !important',
+                            bgcolor: '#2d3748 !important',
+                            color: 'white !important',
+                            opacity: 0.6
                           },
                           transition: 'all 0.2s'
                         }}
@@ -1386,7 +1466,7 @@ const Home = () => {
                         <CardMedia
                           component="img"
                           height="240"
-                          image={business.image_url || getBusinessImage(business.category || business.business_type, business.id)}
+                          image={business.cover_photo_url || business.avatar_url || getBusinessImage(business.category || business.business_type, business.id)}
                           alt={business.business_name || business.name}
                           sx={{ objectFit: 'cover' }}
                         />
