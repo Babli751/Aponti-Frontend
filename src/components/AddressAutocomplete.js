@@ -7,10 +7,6 @@ import {
   Typography
 } from '@mui/material';
 import { LocationOn } from '@mui/icons-material';
-import { LoadScript } from '@react-google-maps/api';
-
-const GOOGLE_MAPS_API_KEY = 'AIzaSyCYk2T45BQ5J2T07MiTiGaHMI2FBnRQVro';
-const libraries = ['places'];
 
 const AddressAutocomplete = ({
   value,
@@ -27,16 +23,34 @@ const AddressAutocomplete = ({
   const [loading, setLoading] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const autocompleteService = useRef(null);
-  const geocoder = useRef(null);
+  const placesService = useRef(null);
   const debounceTimer = useRef(null);
 
   useEffect(() => {
-    if (window.google && window.google.maps) {
-      autocompleteService.current = new window.google.maps.places.AutocompleteService();
-      geocoder.current = new window.google.maps.Geocoder();
-      setIsLoaded(true);
-    }
+    // Wait for Google Maps to load
+    const checkGoogleMaps = () => {
+      if (window.google && window.google.maps && window.google.maps.places) {
+        autocompleteService.current = new window.google.maps.places.AutocompleteService();
+        // Create a dummy div for PlacesService (it requires a DOM element)
+        const dummyDiv = document.createElement('div');
+        placesService.current = new window.google.maps.places.PlacesService(dummyDiv);
+        setIsLoaded(true);
+        console.log('✅ Google Maps API loaded successfully');
+      } else {
+        // Check again after a delay
+        setTimeout(checkGoogleMaps, 100);
+      }
+    };
+
+    checkGoogleMaps();
   }, []);
+
+  // Sync inputValue with external value prop
+  useEffect(() => {
+    if (value !== inputValue) {
+      setInputValue(value || '');
+    }
+  }, [value]);
 
   useEffect(() => {
     // Clear options when country or city changes
@@ -94,6 +108,8 @@ const AddressAutocomplete = ({
 
   const handleInputChange = (event, newInputValue) => {
     setInputValue(newInputValue);
+    // Also call onChange for typing to save the input
+    onChange(newInputValue);
 
     // Debounce search
     if (debounceTimer.current) {
@@ -106,46 +122,48 @@ const AddressAutocomplete = ({
   };
 
   const handleChange = (event, newValue) => {
-    if (newValue && newValue.placeId && geocoder.current) {
-      // Get detailed location data using Geocoder
-      geocoder.current.geocode({ placeId: newValue.placeId }, (results, status) => {
-        if (status === 'OK' && results[0]) {
-          const place = results[0];
-          const addressComponents = {};
+    console.log('🔄 AddressAutocomplete handleChange called:', newValue);
 
-          // Parse address components
-          place.address_components.forEach((component) => {
-            const types = component.types;
-            if (types.includes('street_number')) {
-              addressComponents.house_number = component.long_name;
-            }
-            if (types.includes('route')) {
-              addressComponents.street = component.long_name;
-            }
-            if (types.includes('locality')) {
-              addressComponents.city = component.long_name;
-            }
-            if (types.includes('administrative_area_level_1')) {
-              addressComponents.state = component.long_name;
-            }
-            if (types.includes('country')) {
-              addressComponents.country = component.long_name;
-              addressComponents.country_code = component.short_name;
-            }
-            if (types.includes('postal_code')) {
-              addressComponents.postcode = component.long_name;
-            }
-            if (types.includes('sublocality') || types.includes('neighborhood')) {
-              addressComponents.suburb = component.long_name;
-            }
-          });
+    if (newValue && newValue.placeId && placesService.current) {
+      console.log('📍 Getting place details:', newValue.placeId);
+      // Get detailed location data using PlacesService (no Geocoding API needed)
+      placesService.current.getDetails(
+        {
+          placeId: newValue.placeId,
+          fields: ['formatted_address', 'geometry', 'address_components', 'place_id']
+        },
+        (place, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
+            const addressComponents = {};
 
-          // Set the full address
-          onChange(place.formatted_address);
+            // Parse address components
+            place.address_components.forEach((component) => {
+              const types = component.types;
+              if (types.includes('street_number')) {
+                addressComponents.house_number = component.long_name;
+              }
+              if (types.includes('route')) {
+                addressComponents.street = component.long_name;
+              }
+              if (types.includes('locality')) {
+                addressComponents.city = component.long_name;
+              }
+              if (types.includes('administrative_area_level_1')) {
+                addressComponents.state = component.long_name;
+              }
+              if (types.includes('country')) {
+                addressComponents.country = component.long_name;
+                addressComponents.country_code = component.short_name;
+              }
+              if (types.includes('postal_code')) {
+                addressComponents.postcode = component.long_name;
+              }
+              if (types.includes('sublocality') || types.includes('neighborhood')) {
+                addressComponents.suburb = component.long_name;
+              }
+            });
 
-          // If callback provided, send location data
-          if (onLocationSelect) {
-            onLocationSelect({
+            const locationData = {
               address: place.formatted_address,
               latitude: place.geometry.location.lat(),
               longitude: place.geometry.location.lng(),
@@ -158,38 +176,55 @@ const AddressAutocomplete = ({
               country: addressComponents.country || '',
               country_code: addressComponents.country_code || '',
               place_id: newValue.placeId
-            });
+            };
+
+            console.log('✅ Place details retrieved:', locationData);
+
+            // Set the full address
+            onChange(place.formatted_address);
+
+            // If callback provided, send location data
+            if (onLocationSelect) {
+              console.log('📤 Calling onLocationSelect callback');
+              onLocationSelect(locationData);
+            } else {
+              console.warn('⚠️ onLocationSelect callback not provided!');
+            }
+          } else {
+            console.error('❌ Place details failed:', status);
           }
         }
-      });
+      );
     } else if (typeof newValue === 'string') {
+      console.log('📝 String value entered (freeSolo):', newValue);
       onChange(newValue);
     } else {
+      console.log('🗑️ Clearing value');
       onChange('');
     }
   };
 
   return (
-    <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY} libraries={libraries}>
-      <Autocomplete
-        freeSolo
-        options={options}
-        getOptionLabel={(option) => {
-          if (typeof option === 'string') return option;
-          return option.label || '';
-        }}
-        inputValue={inputValue}
-        onInputChange={handleInputChange}
-        onChange={handleChange}
-        loading={loading}
-        disabled={!isLoaded}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label={label}
-            placeholder={isLoaded ? placeholder : "Loading Google Maps..."}
-            required={required}
-            InputProps={{
+    <Autocomplete
+      freeSolo
+      options={options}
+      getOptionLabel={(option) => {
+        if (typeof option === 'string') return option;
+        return option.label || '';
+      }}
+      inputValue={inputValue}
+      onInputChange={handleInputChange}
+      onChange={handleChange}
+      loading={loading}
+      disabled={!isLoaded}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={label}
+          placeholder={isLoaded ? placeholder : "Google Maps yükleniyor..."}
+          required={required}
+          slotProps={{
+            input: {
               ...params.InputProps,
               startAdornment: (
                 <>
@@ -203,33 +238,33 @@ const AddressAutocomplete = ({
                   {params.InputProps.endAdornment}
                 </>
               ),
-            }}
-          />
-        )}
-        renderOption={(props, option) => (
-          <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, py: 1 }}>
-            <LocationOn sx={{ color: '#EA4335', mt: 0.5, fontSize: 20 }} />
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {option.mainText || option.label}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
-                {option.secondaryText || ''}
-              </Typography>
-            </Box>
+            }
+          }}
+        />
+      )}
+      renderOption={(props, option) => (
+        <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, py: 1 }}>
+          <LocationOn sx={{ color: '#EA4335', mt: 0.5, fontSize: 20 }} />
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              {option.mainText || option.label}
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+              {option.secondaryText || ''}
+            </Typography>
           </Box>
-        )}
-        noOptionsText={
-          !isLoaded
-            ? "Loading Google Maps..."
-            : inputValue.length < 3
-              ? "Type at least 3 characters to search..."
-              : loading
-                ? "Searching..."
-                : "No addresses found"
-        }
-      />
-    </LoadScript>
+        </Box>
+      )}
+      noOptionsText={
+        !isLoaded
+          ? "Google Maps yükleniyor..."
+          : inputValue.length < 3
+            ? "Aramak için en az 3 karakter yazın..."
+            : loading
+              ? "Aranıyor..."
+              : "Adres bulunamadı"
+      }
+    />
   );
 };
 

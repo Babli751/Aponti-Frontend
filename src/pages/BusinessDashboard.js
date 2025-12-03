@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import WeeklySchedule from '../components/WeeklySchedule';
+import ImageCropDialog from '../components/ImageCropDialog';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -45,7 +46,8 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
-  Checkbox
+  Checkbox,
+  CardMedia
 } from '@mui/material';
 import {
   Business,
@@ -63,7 +65,8 @@ import {
   Cancel,
   Pending,
   Logout,
-  ExpandMore
+  ExpandMore,
+  AddPhotoAlternate
 } from '@mui/icons-material';
 
 const BusinessDashboard = () => {
@@ -138,6 +141,13 @@ const BusinessDashboard = () => {
   const [profileEditOpen, setProfileEditOpen] = useState(false);
   const [photoUploadOpen, setPhotoUploadOpen] = useState(false);
   const [uploadType, setUploadType] = useState('avatar'); // 'avatar' or 'cover'
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState(null);
+
+  // Gallery state
+  const [galleryPhotos, setGalleryPhotos] = useState([]);
+  const [galleryUploadOpen, setGalleryUploadOpen] = useState(false);
+  const [selectedGalleryFile, setSelectedGalleryFile] = useState(null);
 
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
@@ -264,11 +274,34 @@ useEffect(() => {
 
      // 1️⃣ Fetch business profile
      const businessDataResponse = await businessAPI.getProfile();
+     console.log('🔍 Raw profile response:', businessDataResponse);
+
+     // Convert avatar_url and cover_photo_url to full URLs if they're relative paths
+     const getFullImageUrl = (url) => {
+       if (!url) return '';
+       if (url.startsWith('http')) return url;
+       return `${window.API_BASE_URL.replace('/api/v1', '')}${url}`;
+     };
+
+     // Backend returns 'avatar' and 'coverPhoto', not 'avatar_url' and 'cover_photo_url'
+     const avatarUrl = getFullImageUrl(businessDataResponse.avatar || '');
+     const coverUrl = getFullImageUrl(businessDataResponse.coverPhoto || '');
+
+     console.log('✅ Avatar URL from backend:', businessDataResponse.avatar);
+     console.log('✅ Cover URL from backend:', businessDataResponse.coverPhoto);
+     console.log('✅ Final avatar URL:', avatarUrl);
+     console.log('✅ Final cover URL:', coverUrl);
+
      setBusinessData({
        ...businessDataResponse,
        owner: businessDataResponse.owner_name,
-       address: `${businessDataResponse.address || ''}, ${businessDataResponse.city || ''}`
+       address: `${businessDataResponse.address || ''}, ${businessDataResponse.city || ''}`,
+       avatar: avatarUrl,
+       coverPhoto: coverUrl
      });
+
+     // Set gallery photos
+     setGalleryPhotos(businessDataResponse.galleryPhotos || []);
 
      // Set working hours if available
      if (businessDataResponse.workingHours) {
@@ -310,7 +343,24 @@ useEffect(() => {
 
   // Debug için businessData değiştiğinde loglama
   useEffect(() => {
-    console.log('Business data updated:', businessData);
+    console.log('🖼️ Business data updated:', businessData);
+    console.log('🎭 Avatar URL:', businessData.avatar);
+    console.log('📸 Cover Photo URL:', businessData.coverPhoto);
+
+    // Resim yüklenme testleri
+    if (businessData.avatar) {
+      const avatarImg = new Image();
+      avatarImg.onload = () => console.log('✅ Avatar resmi başarıyla yüklendi:', businessData.avatar);
+      avatarImg.onerror = (e) => console.error('❌ Avatar resmi yüklenemedi:', businessData.avatar, e);
+      avatarImg.src = businessData.avatar;
+    }
+
+    if (businessData.coverPhoto) {
+      const coverImg = new Image();
+      coverImg.onload = () => console.log('✅ Cover photo başarıyla yüklendi:', businessData.coverPhoto);
+      coverImg.onerror = (e) => console.error('❌ Cover photo yüklenemedi:', businessData.coverPhoto, e);
+      coverImg.src = businessData.coverPhoto;
+    }
   }, [businessData]);
 
   // Debug için appointments değiştiğinde loglama
@@ -511,6 +561,72 @@ useEffect(() => {
     }
   };
 
+  // Gallery handlers
+  const handleGalleryUpload = async () => {
+    if (!selectedGalleryFile) return;
+
+    const formData = new FormData();
+    formData.append('file', selectedGalleryFile);
+
+    try {
+      const response = await api.post('/businesses/upload-gallery-photo', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      setGalleryPhotos(response.data.gallery_photos || []);
+      setGalleryUploadOpen(false);
+      setSelectedGalleryFile(null);
+      setSnackbar({
+        open: true,
+        message: language === 'en' ? 'Photo uploaded successfully!' :
+                 language === 'tr' ? 'Fotoğraf başarıyla yüklendi!' :
+                 'Фото успешно загружено!',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Gallery upload error:', error);
+      setSnackbar({
+        open: true,
+        message: language === 'en' ? 'Failed to upload photo' :
+                 language === 'tr' ? 'Fotoğraf yüklenemedi' :
+                 'Не удалось загрузить фото',
+        severity: 'error'
+      });
+    }
+  };
+
+  const handleDeleteGalleryPhoto = async (photoUrl) => {
+    if (!window.confirm(
+      language === 'en' ? 'Are you sure you want to delete this photo?' :
+      language === 'tr' ? 'Bu fotoğrafı silmek istediğinizden emin misiniz?' :
+      'Вы уверены, что хотите удалить это фото?'
+    )) return;
+
+    try {
+      const response = await api.delete(`/businesses/gallery-photo?photo_url=${encodeURIComponent(photoUrl)}`);
+
+      setGalleryPhotos(response.data.gallery_photos || []);
+      setSnackbar({
+        open: true,
+        message: language === 'en' ? 'Photo deleted successfully!' :
+                 language === 'tr' ? 'Fotoğraf başarıyla silindi!' :
+                 'Фото успешно удалено!',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Gallery delete error:', error);
+      setSnackbar({
+        open: true,
+        message: language === 'en' ? 'Failed to delete photo' :
+                 language === 'tr' ? 'Fotoğraf silinemedi' :
+                 'Не удалось удалить фото',
+        severity: 'error'
+      });
+    }
+  };
+
   const addBarber = async () => {
     try {
       // Validate inputs
@@ -701,17 +817,32 @@ useEffect(() => {
         <Container maxWidth="xl">
           {/* Cover Photo */}
           <Box sx={{
-            height: 200,
-            background: businessData.coverPhoto
-              ? `url(${businessData.coverPhoto}) center/cover`
-              : 'linear-gradient(135deg, #2d3748 0%, #4fd5c7 100%)',
+            height: 320,
+            ...(businessData.coverPhoto ? {
+              backgroundImage: `url('${businessData.coverPhoto}')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            } : {
+              background: 'linear-gradient(135deg, #2d3748 0%, #4fd5c7 100%)'
+            }),
             borderRadius: '0 0 16px 16px',
             position: 'relative',
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'flex-end',
             p: 2
-          }}>
+          }}
+          ref={(el) => {
+            if (el && businessData.coverPhoto) {
+              const styles = window.getComputedStyle(el);
+              console.log('📐 Cover Photo Box styles:', {
+                backgroundImage: styles.backgroundImage,
+                height: styles.height,
+                url: businessData.coverPhoto
+              });
+            }
+          }}
+          >
             <IconButton
               onClick={() => { setUploadType('cover'); setPhotoUploadOpen(true); }}
               sx={{
@@ -736,7 +867,26 @@ useEffect(() => {
                   height: 120,
                   border: '4px solid white',
                   fontSize: '2.5rem',
-                  bgcolor: '#2d3748'
+                  bgcolor: '#2d3748',
+                  '& img': {
+                    objectFit: 'cover'
+                  }
+                }}
+                ref={(el) => {
+                  if (el && businessData.avatar) {
+                    console.log('👤 Avatar component rendered with src:', businessData.avatar);
+                    const img = el.querySelector('img');
+                    if (img) {
+                      console.log('📷 Avatar img element:', {
+                        src: img.src,
+                        naturalWidth: img.naturalWidth,
+                        naturalHeight: img.naturalHeight,
+                        complete: img.complete
+                      });
+                    } else {
+                      console.log('⚠️ Avatar img element bulunamadı!');
+                    }
+                  }
                 }}
               >
                 {businessData.name ? businessData.name.charAt(0) : 'B'}
@@ -1423,6 +1573,87 @@ useEffect(() => {
           </Grid>
         )}
 
+        {/* Gallery Section */}
+        <Card sx={{ mb: 4 }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                {language === 'en' ? 'Photo Gallery' : language === 'tr' ? 'Fotoğraf Galerisi' : 'Фотогалерея'}
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<AddPhotoAlternate />}
+                onClick={() => setGalleryUploadOpen(true)}
+              >
+                {language === 'en' ? 'Add Photo' : language === 'tr' ? 'Fotoğraf Ekle' : 'Добавить фото'}
+              </Button>
+            </Box>
+
+            {galleryPhotos && galleryPhotos.length > 0 ? (
+              <Grid container spacing={2}>
+                {galleryPhotos.map((photoUrl, index) => {
+                  const fullPhotoUrl = photoUrl.startsWith('http')
+                    ? photoUrl
+                    : `${window.API_BASE_URL.replace('/api/v1', '')}${photoUrl}`;
+
+                  return (
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                      <Card sx={{ position: 'relative', '&:hover .delete-btn': { opacity: 1 } }}>
+                        <CardMedia
+                          component="img"
+                          height="200"
+                          image={fullPhotoUrl}
+                          alt={`Gallery photo ${index + 1}`}
+                          sx={{ objectFit: 'cover' }}
+                        />
+                        <IconButton
+                          className="delete-btn"
+                          onClick={() => handleDeleteGalleryPhoto(photoUrl)}
+                          sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            bgcolor: 'rgba(255,255,255,0.9)',
+                            opacity: 0,
+                            transition: 'opacity 0.3s',
+                            '&:hover': {
+                              bgcolor: 'rgba(255,255,255,1)',
+                              color: 'error.main'
+                            }
+                          }}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Card>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 8 }}>
+                <AddPhotoAlternate sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+                <Typography variant="h6" color="text.secondary">
+                  {language === 'en' ? 'No photos yet' : language === 'tr' ? 'Henüz fotoğraf yok' : 'Фото пока нет'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {language === 'en'
+                    ? 'Add photos to showcase your business'
+                    : language === 'tr'
+                      ? 'İşletmenizi sergilemek için fotoğraflar ekleyin'
+                      : 'Добавьте фотографии, чтобы продемонстрировать свой бизнес'}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  startIcon={<AddPhotoAlternate />}
+                  onClick={() => setGalleryUploadOpen(true)}
+                >
+                  {language === 'en' ? 'Add First Photo' : language === 'tr' ? 'İlk Fotoğrafı Ekle' : 'Добавить первое фото'}
+                </Button>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+
       </Container>
 
       {/* Add Service Dialog */}
@@ -1610,42 +1841,17 @@ useEffect(() => {
               style={{ display: 'none' }}
               id="photo-upload-input"
               type="file"
-              onChange={async (e) => {
+              onChange={(e) => {
                 const file = e.target.files[0];
                 if (file) {
-                  try {
-                    // Upload to backend
-                    const formData = new FormData();
-                    formData.append('file', file);
-
-                    const endpoint = uploadType === 'avatar' ? '/businesses/avatar' : '/businesses/cover-photo';
-                    const response = await api.post(endpoint, formData, {
-                      headers: {
-                        'Content-Type': 'multipart/form-data'
-                      }
-                    });
-
-                    // Update local state with the URL from backend
-                    if (uploadType === 'avatar') {
-                      setBusinessData({ ...businessData, avatar: response.data.avatar_url });
-                    } else {
-                      setBusinessData({ ...businessData, coverPhoto: response.data.cover_photo_url });
-                    }
-
-                    setSnackbar({
-                      open: true,
-                      message: language === 'en' ? 'Photo uploaded successfully!' : language === 'tr' ? 'Fotoğraf başarıyla yüklendi!' : 'Фото загружено!',
-                      severity: 'success'
-                    });
+                  // Read file and open crop dialog
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    setImageToCrop(reader.result);
+                    setCropDialogOpen(true);
                     setPhotoUploadOpen(false);
-                  } catch (error) {
-                    console.error('Error uploading photo:', error);
-                    setSnackbar({
-                      open: true,
-                      message: language === 'en' ? 'Failed to upload photo' : language === 'tr' ? 'Fotoğraf yüklenemedi' : 'Ошибка загрузки',
-                      severity: 'error'
-                    });
-                  }
+                  };
+                  reader.readAsDataURL(file);
                 }
               }}
             />
@@ -1669,6 +1875,61 @@ useEffect(() => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Image Crop Dialog */}
+      <ImageCropDialog
+        open={cropDialogOpen}
+        image={imageToCrop}
+        onClose={() => {
+          setCropDialogOpen(false);
+          setImageToCrop(null);
+        }}
+        onCropComplete={async (croppedBlob) => {
+          try {
+            // Upload cropped image to backend
+            const formData = new FormData();
+            formData.append('file', croppedBlob, 'cropped-image.jpg');
+
+            const endpoint = uploadType === 'avatar' ? '/businesses/avatar' : '/businesses/cover-photo';
+            const response = await api.post(endpoint, formData, {
+              headers: {
+                'Content-Type': 'multipart/form-data'
+              }
+            });
+
+            // Update local state with the URL from backend
+            const getFullImageUrl = (url) => {
+              if (!url) return '';
+              if (url.startsWith('http')) return url;
+              return `${window.API_BASE_URL.replace('/api/v1', '')}${url}`;
+            };
+
+            if (uploadType === 'avatar') {
+              setBusinessData({ ...businessData, avatar: getFullImageUrl(response.data.avatar_url) });
+            } else {
+              setBusinessData({ ...businessData, coverPhoto: getFullImageUrl(response.data.cover_photo_url) });
+            }
+
+            setSnackbar({
+              open: true,
+              message: language === 'en' ? 'Photo uploaded successfully!' : language === 'tr' ? 'Fotoğraf başarıyla yüklendi!' : 'Фото загружено!',
+              severity: 'success'
+            });
+          } catch (error) {
+            console.error('Error uploading photo:', error);
+            setSnackbar({
+              open: true,
+              message: language === 'en' ? 'Failed to upload photo' : language === 'tr' ? 'Fotoğraf yüklenemedi' : 'Ошибка загрузки',
+              severity: 'error'
+            });
+          }
+        }}
+        aspectRatio={uploadType === 'avatar' ? 1 : 16 / 9}
+        title={uploadType === 'avatar'
+          ? (language === 'en' ? 'Crop Profile Photo' : language === 'tr' ? 'Profil Fotoğrafını Kırp' : 'Обрезать фото профиля')
+          : (language === 'en' ? 'Crop Cover Photo' : language === 'tr' ? 'Kapak Fotoğrafını Kırp' : 'Обрезать обложку')
+        }
+      />
 
       {/* Profile Edit Dialog */}
       <Dialog open={profileEditOpen} onClose={() => setProfileEditOpen(false)} maxWidth="md" fullWidth>
@@ -1864,6 +2125,55 @@ useEffect(() => {
             sx={{ bgcolor: '#00BFA6', '&:hover': { bgcolor: '#00A693' } }}
           >
             {language === 'en' ? 'Save Hours' : language === 'tr' ? 'Saatleri Kaydet' : 'Сохранить'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Gallery Photo Upload Dialog */}
+      <Dialog open={galleryUploadOpen} onClose={() => setGalleryUploadOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {language === 'en' ? 'Add Gallery Photo' : language === 'tr' ? 'Galeri Fotoğrafı Ekle' : 'Добавить фото в галерею'}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <input
+              accept="image/*"
+              type="file"
+              onChange={(e) => setSelectedGalleryFile(e.target.files[0])}
+              style={{ display: 'none' }}
+              id="gallery-photo-input"
+            />
+            <label htmlFor="gallery-photo-input">
+              <Button variant="outlined" component="span" fullWidth>
+                {selectedGalleryFile ? selectedGalleryFile.name : (
+                  language === 'en' ? 'Choose Photo' : language === 'tr' ? 'Fotoğraf Seç' : 'Выбрать фото'
+                )}
+              </Button>
+            </label>
+            {selectedGalleryFile && (
+              <Box sx={{ mt: 2, textAlign: 'center' }}>
+                <img
+                  src={URL.createObjectURL(selectedGalleryFile)}
+                  alt="Preview"
+                  style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: '8px' }}
+                />
+              </Box>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setGalleryUploadOpen(false);
+            setSelectedGalleryFile(null);
+          }}>
+            {language === 'en' ? 'Cancel' : language === 'tr' ? 'İptal' : 'Отмена'}
+          </Button>
+          <Button
+            onClick={handleGalleryUpload}
+            variant="contained"
+            disabled={!selectedGalleryFile}
+          >
+            {language === 'en' ? 'Upload' : language === 'tr' ? 'Yükle' : 'Загрузить'}
           </Button>
         </DialogActions>
       </Dialog>

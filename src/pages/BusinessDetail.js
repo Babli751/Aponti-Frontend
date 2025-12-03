@@ -83,15 +83,9 @@ const BusinessDetail = () => {
   const [bookedSlots, setBookedSlots] = useState([]); // Store booked time slots
   const [workerHours, setWorkerHours] = useState([]); // Worker's working hours
 
-  // Photo gallery state
-  const galleryPhotos = [
-    'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=1200&q=80',
-    'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1200&q=80',
-    'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=1200&q=80',
-    'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=1200&q=80',
-    'https://images.unsplash.com/photo-1493256338651-d82f7acb2b38?w=1200&q=80'
-  ];
-  const [mainPhoto, setMainPhoto] = useState(galleryPhotos[0]);
+  // Photo gallery state - will be populated from business data
+  const [galleryPhotos, setGalleryPhotos] = useState([]);
+  const [mainPhoto, setMainPhoto] = useState(null);
 
   useEffect(() => {
     const fetchBusinessData = async () => {
@@ -103,7 +97,49 @@ const BusinessDetail = () => {
         try {
           const businessResponse = await api.get(`/businesses/${id}`);
           console.log('Business details:', businessResponse.data);
-          setBusiness(businessResponse.data);
+          const businessData = businessResponse.data;
+          setBusiness(businessData);
+
+          // Build gallery from business photos
+          const photos = [];
+
+          // Special case: Test Barbershop (ID 1) gets mock photos
+          if (businessData.id === 1) {
+            const mockPhotos = [
+              'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=1200&q=80',
+              'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1200&q=80',
+              'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=1200&q=80',
+              'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=1200&q=80',
+              'https://images.unsplash.com/photo-1493256338651-d82f7acb2b38?w=1200&q=80'
+            ];
+            setGalleryPhotos(mockPhotos);
+            setMainPhoto(mockPhotos[0]);
+          } else {
+            // For other businesses, use real photos from database
+            const getFullImageUrl = (url) => {
+              if (!url) return null;
+              if (url.startsWith('http')) return url;
+              return `${window.API_BASE_URL.replace('/api/v1', '')}${url}`;
+            };
+
+            // Only use gallery_photos from database - no fallback to cover/avatar
+            if (businessData.gallery_photos && businessData.gallery_photos.length > 0) {
+              businessData.gallery_photos.forEach(photoUrl => {
+                const fullUrl = getFullImageUrl(photoUrl);
+                if (fullUrl) photos.push(fullUrl);
+              });
+            }
+
+            // Set gallery photos and main photo
+            if (photos.length > 0) {
+              setGalleryPhotos(photos);
+              setMainPhoto(photos[0]);
+            } else {
+              // If no photos, keep empty
+              setGalleryPhotos([]);
+              setMainPhoto(null);
+            }
+          }
         } catch (err) {
           console.error('Error fetching business:', err);
           setBusiness(null);
@@ -554,48 +590,92 @@ const BusinessDetail = () => {
         }}>
           {/* Left Side - Photos */}
           <Box sx={{ flex: { xs: '1', md: '0 0 58%' } }}>
-            {/* Main large photo */}
-            <Box
-              component="img"
-              src={mainPhoto}
-              alt="Business main"
-              sx={{
-                width: '100%',
-                height: { xs: 320, sm: 380, md: 480 },
-                objectFit: 'cover',
-                borderRadius: 2,
-                mb: 2,
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-              }}
-            />
-
-            {/* Larger thumbnail photos below */}
-            <Box sx={{ display: 'flex', gap: 1.5, overflow: 'auto', scrollBehavior: 'smooth', pb: 1 }}>
-              {galleryPhotos.map((photo, index) => (
+            {mainPhoto ? (
+              <>
+                {/* Main large photo */}
                 <Box
-                  key={index}
                   component="img"
-                  src={photo}
-                  alt={`Business photo ${index + 1}`}
-                  onClick={() => setMainPhoto(photo)}
+                  src={mainPhoto}
+                  alt="Business main"
                   sx={{
-                    width: 130,
-                    height: 100,
+                    width: '100%',
+                    height: { xs: 320, sm: 380, md: 480 },
                     objectFit: 'cover',
-                    borderRadius: 1.5,
-                    cursor: 'pointer',
-                    border: mainPhoto === photo ? '3px solid #2d3748' : '2px solid #e5e7eb',
-                    transition: 'all 0.3s ease-in-out',
-                    flexShrink: 0,
-                    '&:hover': {
-                      opacity: 0.85,
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)'
-                    }
+                    borderRadius: 2,
+                    mb: 2,
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                   }}
                 />
-              ))}
-            </Box>
+
+                {/* Larger thumbnail photos below */}
+                <Box sx={{ display: 'flex', gap: 1.5, overflow: 'auto', scrollBehavior: 'smooth', pb: 1 }}>
+                  {galleryPhotos.map((photo, index) => (
+                    <Box
+                      key={index}
+                      component="img"
+                      src={photo}
+                      alt={`Business photo ${index + 1}`}
+                      onClick={() => setMainPhoto(photo)}
+                      sx={{
+                        width: 130,
+                        height: 100,
+                        objectFit: 'cover',
+                        borderRadius: 1.5,
+                        cursor: 'pointer',
+                        border: mainPhoto === photo ? '3px solid #2d3748' : '2px solid #e5e7eb',
+                        transition: 'all 0.3s ease-in-out',
+                        flexShrink: 0,
+                        '&:hover': {
+                          opacity: 0.85,
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)'
+                        }
+                      }}
+                    />
+                  ))}
+                </Box>
+              </>
+            ) : (
+              <Box
+                sx={{
+                  width: '100%',
+                  height: { xs: 320, sm: 380, md: 480 },
+                  borderRadius: 2,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mb: 2,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'radial-gradient(circle at 30% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+                  }
+                }}
+              >
+                <Box
+                  component="svg"
+                  sx={{ width: 80, height: 80, mb: 2, opacity: 0.9 }}
+                  viewBox="0 0 24 24"
+                  fill="white"
+                >
+                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                </Box>
+                <Typography variant="h6" sx={{ color: 'white', fontWeight: 600, textAlign: 'center', px: 2 }}>
+                  {language === 'en' ? 'No Photos Yet' : language === 'tr' ? 'Henüz Fotoğraf Yok' : 'Фото пока нет'}
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', textAlign: 'center', mt: 1, px: 2 }}>
+                  {language === 'en' ? 'Photos will appear here once uploaded' : language === 'tr' ? 'Yüklendiğinde fotoğraflar burada görünecek' : 'Фото появятся здесь после загрузки'}
+                </Typography>
+              </Box>
+            )}
           </Box>
 
           {/* Right Side - Map, About Us, Contact */}

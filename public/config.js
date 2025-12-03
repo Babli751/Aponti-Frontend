@@ -20,9 +20,9 @@ window.API_BASE_URL = (() => {
   }
 
   if (isLocal) {
-    // Local development: Use production backend for testing
-    console.log('🔗 Local development: Using production backend');
-    return 'https://aponti.org/api/v1';
+    // Local development: Use proxy (setupProxy.js will forward to production)
+    console.log('🔗 Local development: Using proxy to production backend');
+    return '/api/v1';
   }
 
   // Production: Use same origin - server will proxy /api requests to backend

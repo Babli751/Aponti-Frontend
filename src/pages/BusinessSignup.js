@@ -45,6 +45,7 @@ const BusinessSignup = () => {
 
   const [loginData, setLoginData] = useState({ email: '', password: '', rememberMe: false });
   const [showBusinessPassword, setShowBusinessPassword] = useState(false);
+  const [validationError, setValidationError] = useState('');
 
   const [newService, setNewService] = useState({ name: '', price: '', duration: '' });
 
@@ -135,6 +136,29 @@ const BusinessSignup = () => {
   // ------------------------------
 
   const handleSubmit = async () => {
+    // Validate all required fields
+    setValidationError('');
+
+    const missingFields = [];
+    if (!businessData.businessName) missingFields.push(language === 'tr' ? 'İşletme Adı' : 'Business Name');
+    if (!businessData.ownerName) missingFields.push(language === 'tr' ? 'Sahip Adı' : 'Owner Name');
+    if (!businessData.email) missingFields.push('Email');
+    if (!businessData.password) missingFields.push(language === 'tr' ? 'Şifre' : 'Password');
+    if (!businessData.phone) missingFields.push(language === 'tr' ? 'Telefon' : 'Phone');
+    if (!businessData.address) missingFields.push(language === 'tr' ? 'Adres' : 'Business Location');
+    if (!businessData.city) missingFields.push(language === 'tr' ? 'Şehir' : 'City');
+    if (!businessData.country) missingFields.push(language === 'tr' ? 'Ülke' : 'Country');
+    if (!businessData.category) missingFields.push(language === 'tr' ? 'Kategori' : 'Category');
+
+    if (missingFields.length > 0) {
+      const errorMsg = language === 'tr'
+        ? `Lütfen şu alanları doldurun: ${missingFields.join(', ')}`
+        : `Please fill in the following fields: ${missingFields.join(', ')}`;
+      setValidationError(errorMsg);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     try {
       const payload = {
         name: businessData.businessName,
@@ -147,8 +171,11 @@ const BusinessSignup = () => {
         country: businessData.country,
         description: businessData.description,
         category: businessData.category,
+        latitude: businessData.latitude,
+        longitude: businessData.longitude,
         services: []  // Services will be added later in dashboard
       };
+      console.log('📍 Business signup payload:', payload);
       const result = await businessAPI.signup(payload);
 
       // Show success message and redirect to login
@@ -164,7 +191,11 @@ const BusinessSignup = () => {
       // Pre-fill login email
       setLoginData(prev => ({ ...prev, email: businessData.email }));
     } catch (err) {
-      alert('Business signup error: ' + (err.response?.data?.message || err.message));
+      const errorMsg = err.response?.data?.message || err.message;
+      setValidationError(language === 'tr'
+        ? 'Kayıt hatası: ' + errorMsg
+        : 'Signup error: ' + errorMsg);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -182,22 +213,31 @@ const BusinessSignup = () => {
 
   useEffect(() => {
     const initGoogle = () => {
-      if (window.google) {
-        window.google.accounts.id.initialize({
-          client_id: 'replace-with-your-google-client-id', // Replace with actual client ID from Google Cloud Console for project intense-runner-463211-r4
-          callback: handleGoogleCallback
-        });
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: 'replace-with-your-google-client-id', // Replace with actual client ID from Google Cloud Console for project intense-runner-463211-r4
+            callback: handleGoogleCallback
+          });
+        } catch (err) {
+          console.log('Google Sign-In initialization skipped:', err.message);
+        }
       }
     };
 
-    if (window.google) {
-      initGoogle();
-    } else {
-      window.addEventListener('load', initGoogle);
-    }
+    // Check multiple times in case Google API loads slowly
+    const checkGoogle = setInterval(() => {
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        initGoogle();
+        clearInterval(checkGoogle);
+      }
+    }, 500);
+
+    // Clear after 10 seconds to prevent infinite checking
+    setTimeout(() => clearInterval(checkGoogle), 10000);
 
     return () => {
-      window.removeEventListener('load', initGoogle);
+      clearInterval(checkGoogle);
     };
   }, []);
 
@@ -310,6 +350,13 @@ const BusinessSignup = () => {
             {/* BUSINESS SIGNUP */}
             {activeTab === 1 && (
               <Box sx={{ p: { xs: 3, md: 4 } }}>
+                {/* Validation Error Alert */}
+                {validationError && (
+                  <Alert severity="error" sx={{ mb: 3 }} onClose={() => setValidationError('')}>
+                    {validationError}
+                  </Alert>
+                )}
+
                 {/* Business Information Form */}
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={6}>
@@ -330,7 +377,7 @@ const BusinessSignup = () => {
                     <Grid item xs={12}>
                       <AddressAutocomplete
                         value={businessData.address}
-                        onChange={(address) => handleInputChange('address', { target: { value: address } })}
+                        onChange={(address) => handleInputChange('address', address)}
                         onLocationSelect={(locationData) => {
                           setBusinessData(prev => ({
                             ...prev,
@@ -431,7 +478,6 @@ const BusinessSignup = () => {
                     variant="contained"
                     size="large"
                     onClick={handleSubmit}
-                    disabled={!canProceed()}
                     sx={{
                       bgcolor: '#2d3748',
                       px: 6,
