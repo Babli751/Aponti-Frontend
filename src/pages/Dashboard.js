@@ -203,7 +203,9 @@ const Dashboard = () => {
 
   // Update profile photo when user changes
   useEffect(() => {
+    console.log('📸 Dashboard: user changed', { avatar_url: user?.avatar_url });
     if (user?.avatar_url) {
+      console.log('📸 Dashboard: Setting profilePhotoUrl to', user.avatar_url);
       setProfilePhotoUrl(user.avatar_url);
     }
     // Initialize profileInfo from user data
@@ -392,6 +394,7 @@ const Dashboard = () => {
       </AppBar>
 
       <Container maxWidth="xl" sx={{ py: 4 }}>
+        {console.log('🖼️ Dashboard render: profilePhotoUrl =', profilePhotoUrl, 'user.avatar_url =', user?.avatar_url)}
         {/* Profile Card - Top */}
         <Card id="profile-card" sx={{
           mb: 4,

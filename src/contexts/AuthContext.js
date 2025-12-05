@@ -51,6 +51,7 @@ export const AuthProvider = ({ children }) => {
         lastName: userProfile.last_name || '',
         phone_number: userProfile.phone_number || '',
         avatar: userProfile.avatar || null, // Only set avatar if it actually exists
+        avatar_url: userProfile.avatar_url || null,
         isActive: userProfile.is_active,
         memberSince: userProfile.created_at ? new Date(userProfile.created_at).getFullYear().toString() : '2024',
         totalAppointments: userProfile.total_appointments || 0,
@@ -105,6 +106,7 @@ export const AuthProvider = ({ children }) => {
         firstName: updatedProfile.first_name || userData.first_name || user?.first_name || '',
         lastName: updatedProfile.last_name || userData.last_name || user?.last_name || '',
         phone_number: updatedProfile.phone_number || userData.phone_number || user?.phone_number || '',
+        avatar_url: updatedProfile.avatar_url || userData.avatar_url || user?.avatar_url || null,
         name: `${updatedProfile.first_name || userData.first_name || ''} ${updatedProfile.last_name || userData.last_name || ''}`.trim() || updatedProfile.email || user?.email
       };
 
