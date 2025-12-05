@@ -65,7 +65,9 @@ import {
   Settings,
   Work,
   People,
-  ExpandMore
+  ExpandMore,
+  ArrowBackIos,
+  ArrowForwardIos
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -97,6 +99,8 @@ const Home = () => {
   const [userLocation, setUserLocation] = useState({ lat: 41.0082, lng: 28.9784, city: 'istanbul' }); // Default: Istanbul
   const [featuredBusinesses, setFeaturedBusinesses] = useState([]);
   const [loadingBusinesses, setLoadingBusinesses] = useState(true);
+  const [carouselScroll, setCarouselScroll] = useState(0);
+  const carouselRef = React.useRef(null);
 
   // Map section states
   const [mapSearchQuery, setMapSearchQuery] = useState('');
@@ -354,6 +358,28 @@ const Home = () => {
         : 'Пожалуйста, выберите все поля!');
     }
   };
+
+  // Auto-scroll carousel effect
+  useEffect(() => {
+    if (!carouselRef.current || featuredBusinesses.length <= 2) return;
+
+    const scrollInterval = setInterval(() => {
+      if (carouselRef.current) {
+        const container = carouselRef.current;
+        const maxScroll = container.scrollWidth - container.clientWidth;
+
+        // If at the end, scroll back to start
+        if (container.scrollLeft >= maxScroll - 10) {
+          container.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          // Scroll forward by one card width (350px + gap)
+          container.scrollBy({ left: 374, behavior: 'smooth' });
+        }
+      }
+    }, 3000); // Auto-scroll every 3 seconds
+
+    return () => clearInterval(scrollInterval);
+  }, [featuredBusinesses.length]);
 
   // Map section handlers
   const handleFindMyLocation = () => {
@@ -1390,7 +1416,34 @@ const Home = () => {
               </Typography>
             </Box>
           ) : (
-            <Grid container spacing={3}>
+            <Box
+              ref={carouselRef}
+              sx={{
+                display: 'flex',
+                gap: 3,
+                overflowX: 'auto',
+                scrollBehavior: 'smooth',
+                pb: 2,
+                mx: -3,
+                px: 3,
+                '&::-webkit-scrollbar': {
+                  height: 8
+                },
+                '&::-webkit-scrollbar-track': {
+                  bgcolor: 'transparent'
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  bgcolor: 'transparent',
+                  borderRadius: 4
+                },
+                '&:hover::-webkit-scrollbar-thumb': {
+                  bgcolor: '#d1d5db'
+                },
+                '&::-webkit-scrollbar-thumb:hover': {
+                  bgcolor: '#9ca3af'
+                }
+              }}
+            >
               {featuredBusinesses.map((business) => {
                 // Get category icon and color based on business category
                 const getCategoryInfo = (category) => {
@@ -1444,9 +1497,13 @@ const Home = () => {
                 };
 
                 return (
-                  <Grid item xs={12} sm={6} md={6} lg={4} key={business.id}>
+                  <Box key={business.id} sx={{ minWidth: 350, maxWidth: 350, flexShrink: 0 }}>
                     <Card sx={{
+                      width: '100%',
                       height: '100%',
+                      minHeight: 550,
+                      display: 'flex',
+                      flexDirection: 'column',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                       borderRadius: 3,
                       transition: 'all 0.3s',
@@ -1462,13 +1519,13 @@ const Home = () => {
                     onClick={() => navigate(`/business/${business.id}`)}
                     >
                       {/* Hero Image with Overlay */}
-                      <Box sx={{ position: 'relative', height: 240 }}>
+                      <Box sx={{ position: 'relative', height: 240, flexShrink: 0, width: '100%' }}>
                         <CardMedia
                           component="img"
                           height="240"
                           image={business.cover_photo_url || business.avatar_url || getBusinessImage(business.category || business.business_type, business.id)}
                           alt={business.business_name || business.name}
-                          sx={{ objectFit: 'cover' }}
+                          sx={{ objectFit: 'cover', width: '100%', height: '100%' }}
                         />
 
                         {/* Gradient Overlay */}
@@ -1519,7 +1576,7 @@ const Home = () => {
                       </Box>
 
                       {/* Card Content Below Image */}
-                      <CardContent sx={{ p: 2.5 }}>
+                      <CardContent sx={{ p: 2.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
 
                         <Divider sx={{ my: 2 }} />
 
@@ -1643,7 +1700,7 @@ const Home = () => {
                           variant="contained"
                           fullWidth
                           sx={{
-                            mt: 2,
+                            mt: 'auto',
                             bgcolor: categoryInfo.color,
                             color: 'white',
                             fontWeight: 'bold',
@@ -1667,10 +1724,10 @@ const Home = () => {
                         </Button>
                       </CardContent>
                     </Card>
-                  </Grid>
+                  </Box>
                 );
               })}
-            </Grid>
+            </Box>
           )}
         </Container>
       </Box>
