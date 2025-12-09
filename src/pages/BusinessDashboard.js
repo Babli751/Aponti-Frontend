@@ -1044,7 +1044,13 @@ useEffect(() => {
 
         {/* Tabs */}
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-          <Tabs value={currentTab} onChange={(e, newValue) => setCurrentTab(newValue)}>
+          <Tabs
+            value={currentTab}
+            onChange={(e, newValue) => setCurrentTab(newValue)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+          >
             {(tabLabels || []).map((label, index) => (
               <Tab key={index} label={label} />
             ))}

@@ -90,13 +90,17 @@ const Home = () => {
   const [categoryBusinesses, setCategoryBusinesses] = useState([]);
   const [businessWorkers, setBusinessWorkers] = useState([]);
   const [workerServices, setWorkerServices] = useState([]);
+  const [availableDates, setAvailableDates] = useState([]);
+  const [availableTimes, setAvailableTimes] = useState([]);
+  const [loadingDates, setLoadingDates] = useState(false);
+  const [loadingTimes, setLoadingTimes] = useState(false);
 
   const { language, changeLanguage, t: translations } = useLanguage();
   const { isAuthenticated, user, logout } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [bottomNavValue, setBottomNavValue] = useState(0);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
-  const [userLocation, setUserLocation] = useState({ lat: 41.0082, lng: 28.9784, city: 'istanbul' }); // Default: Istanbul
+  const [userLocation, setUserLocation] = useState({ lat: 42.4304, lng: 19.2594, city: 'podgorica' }); // Default: Podgorica, Montenegro
   const [featuredBusinesses, setFeaturedBusinesses] = useState([]);
   const [loadingBusinesses, setLoadingBusinesses] = useState(true);
   const [carouselScroll, setCarouselScroll] = useState(0);
@@ -150,10 +154,14 @@ const Home = () => {
             maximumAge: 0  // Don't use cached location
           }
         );
+      } else if (!isAuthenticated) {
+        // Not logged in - use Podgorica, Montenegro as default
+        console.log('Using default location (Podgorica, Montenegro) - not authenticated');
+        setUserLocation({ lat: 42.4304, lng: 19.2594 });
       } else if (isAuthenticated && !savedLocation) {
-        // No saved location, use Istanbul default
-        console.log('Using default location (Istanbul) - no saved location found');
-        setUserLocation({ lat: 41.0082, lng: 28.9784 });
+        // Logged in but no saved location, use Podgorica default
+        console.log('Using default location (Podgorica, Montenegro) - no saved location found');
+        setUserLocation({ lat: 42.4304, lng: 19.2594 });
       }
     };
 
@@ -268,6 +276,10 @@ const Home = () => {
   const handleWorkerSelect = async (workerId) => {
     setSelectedWorker(workerId);
     setSelectedService('');
+    setSelectedDate('');
+    setSelectedTime('');
+    setAvailableDates([]);
+    setAvailableTimes([]);
 
     console.log('Fetching services for worker:', workerId);
 
@@ -290,6 +302,114 @@ const Home = () => {
     } catch (error) {
       console.error('Error fetching services:', error);
       setWorkerServices([]);
+    }
+  };
+
+  // Handle service selection and fetch available dates
+  const handleServiceSelect = async (serviceId) => {
+    setSelectedService(serviceId);
+    setSelectedDate('');
+    setSelectedTime('');
+    setAvailableTimes([]);
+
+    if (!selectedWorker || !serviceId) {
+      return;
+    }
+
+    console.log('Fetching available dates for worker:', selectedWorker, 'service:', serviceId);
+    setLoadingDates(true);
+
+    try {
+      // Fetch available dates from API
+      const response = await api.get(`/bookings/available-dates`, {
+        params: {
+          barber_id: selectedWorker,
+          service_id: serviceId
+        }
+      });
+
+      console.log('Available dates API response:', response.data);
+
+      let dates = [];
+      if (Array.isArray(response.data)) {
+        dates = response.data;
+      } else if (Array.isArray(response.data?.dates)) {
+        dates = response.data.dates;
+      } else if (response.data && typeof response.data === 'object') {
+        dates = Object.values(response.data);
+      }
+
+      // If API doesn't return dates, generate next 30 days
+      if (dates.length === 0) {
+        console.log('No dates from API, generating default dates...');
+        const today = new Date();
+        for (let i = 0; i < 30; i++) {
+          const date = new Date(today);
+          date.setDate(today.getDate() + i);
+          dates.push(date.toISOString().split('T')[0]);
+        }
+      }
+
+      console.log('Processed available dates:', dates);
+      setAvailableDates(dates);
+    } catch (error) {
+      console.error('Error fetching available dates:', error);
+      // Generate default dates on error
+      const today = new Date();
+      const defaultDates = [];
+      for (let i = 0; i < 30; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        defaultDates.push(date.toISOString().split('T')[0]);
+      }
+      setAvailableDates(defaultDates);
+    } finally {
+      setLoadingDates(false);
+    }
+  };
+
+  // Handle date selection and fetch available times
+  const handleDateSelect = async (date) => {
+    setSelectedDate(date);
+    setSelectedTime('');
+
+    if (!selectedWorker || !selectedService || !date) {
+      return;
+    }
+
+    console.log('Fetching available times for worker:', selectedWorker, 'service:', selectedService, 'date:', date);
+    setLoadingTimes(true);
+
+    try {
+      // Fetch available times from API
+      const response = await api.get(`/bookings/available-times`, {
+        params: {
+          barber_id: selectedWorker,
+          service_id: selectedService,
+          date: date
+        }
+      });
+
+      console.log('Available times API response:', response.data);
+
+      let times = [];
+      if (Array.isArray(response.data)) {
+        times = response.data;
+      } else if (Array.isArray(response.data?.times)) {
+        times = response.data.times;
+      } else if (response.data && typeof response.data === 'object') {
+        times = Object.values(response.data);
+      }
+
+      // Don't generate fake times - if API returns empty array, there are no available times
+      console.log('Processed available times:', times);
+      setAvailableTimes(times);
+    } catch (error) {
+      console.error('Error fetching available times:', error);
+      // On error, set empty array - don't generate fake times
+      setAvailableTimes([]);
+    } finally {
+      setLoadingTimes(false);
     }
   };
 
@@ -383,6 +503,15 @@ const Home = () => {
 
   // Map section handlers
   const handleFindMyLocation = () => {
+    if (!isAuthenticated) {
+      // Not logged in - use Podgorica, Montenegro
+      const mockLocation = { lat: 42.4304, lng: 19.2594 };
+      setUserLocation(mockLocation);
+      console.log('🌍 Default location: Podgorica, Montenegro (not logged in)');
+      return;
+    }
+
+    // Logged in - use real GPS
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -391,16 +520,16 @@ const Home = () => {
             lng: position.coords.longitude
           };
           setUserLocation(newLocation);
-          console.log('📍 Location found:', newLocation);
+          console.log('📍 Real GPS location found:', newLocation);
         },
         (error) => {
           console.error('Geolocation error:', error);
-          setUserLocation({ lat: 41.0082, lng: 28.9784 });
+          setUserLocation({ lat: 42.4304, lng: 19.2594 });
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
-      setUserLocation({ lat: 41.0082, lng: 28.9784 });
+      setUserLocation({ lat: 42.4304, lng: 19.2594 });
     }
   };
 
@@ -839,7 +968,7 @@ const Home = () => {
                 </Typography>
 
                 {/* Category Selection System - Side by Side with Arrows */}
-                <Box sx={{
+                <Box id="booking-form" sx={{
                   border: '2px solid white',
                   borderRadius: 3,
                   p: { xs: 2, md: 3 },
@@ -1011,7 +1140,7 @@ const Home = () => {
                       <FormControl fullWidth disabled={!selectedWorker || workerServices.length === 0}>
                         <Select
                           value={selectedService}
-                          onChange={(e) => setSelectedService(e.target.value)}
+                          onChange={(e) => handleServiceSelect(e.target.value)}
                           displayEmpty
                           renderValue={(selected) => {
                             if (!selected) {
@@ -1056,67 +1185,127 @@ const Home = () => {
 
                     {/* Date Picker */}
                     <Grid item xs={12} sm={6} md={2.7}>
-                      <TextField
-                        fullWidth
-                        type="date"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        disabled={!selectedService}
-                        InputLabelProps={{ shrink: true }}
-                        inputProps={{
-                          min: new Date().toISOString().split('T')[0]
-                        }}
-                        sx={{
-                          bgcolor: 'white',
-                          borderRadius: 2,
-                          '& .MuiOutlinedInput-root': {
+                      <FormControl fullWidth disabled={!selectedService || loadingDates}>
+                        <Select
+                          value={selectedDate}
+                          onChange={(e) => handleDateSelect(e.target.value)}
+                          displayEmpty
+                          renderValue={(selected) => {
+                            if (!selected) {
+                              return <em style={{ color: '#9ca3af' }}>
+                                {language === 'en' ? 'Date' : language === 'tr' ? 'Tarih' : 'Дата'}
+                              </em>;
+                            }
+                            // Format date for display
+                            const date = new Date(selected);
+                            return date.toLocaleDateString(language === 'tr' ? 'tr-TR' : language === 'ru' ? 'ru-RU' : 'en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric'
+                            });
+                          }}
+                          sx={{
+                            bgcolor: 'white',
+                            fontSize: { xs: '0.85rem', md: '0.95rem' },
                             minHeight: { xs: '48px', md: '56px' },
                             borderRadius: 2,
-                            '& fieldset': {
+                            '& .MuiSelect-select': {
+                              py: { xs: 1.5, md: 2 },
+                              display: 'flex',
+                              alignItems: 'center'
+                            },
+                            '& .MuiOutlinedInput-notchedOutline': {
                               borderWidth: 1.5,
                               borderColor: '#d1d5db'
                             },
-                            '&:hover fieldset': {
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
                               borderColor: '#9ca3af'
                             },
-                            '&.Mui-focused fieldset': {
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                               borderWidth: 2,
                               borderColor: '#6b7280'
                             }
-                          }
-                        }}
-                      />
+                          }}
+                        >
+                          {loadingDates ? (
+                            <MenuItem disabled>
+                              {language === 'en' ? 'Loading dates...' : language === 'tr' ? 'Tarihler yükleniyor...' : 'Загрузка дат...'}
+                            </MenuItem>
+                          ) : availableDates.length === 0 ? (
+                            <MenuItem disabled>
+                              {language === 'en' ? 'No dates available' : language === 'tr' ? 'Uygun tarih yok' : 'Нет доступных дат'}
+                            </MenuItem>
+                          ) : (
+                            availableDates.map(date => (
+                              <MenuItem key={date} value={date}>
+                                {new Date(date).toLocaleDateString(language === 'tr' ? 'tr-TR' : language === 'ru' ? 'ru-RU' : 'en-US', {
+                                  weekday: 'short',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </MenuItem>
+                            ))
+                          )}
+                        </Select>
+                      </FormControl>
                     </Grid>
 
                     {/* Time Picker */}
                     <Grid item xs={12} sm={6} md={2.7}>
-                      <TextField
-                        fullWidth
-                        type="time"
-                        value={selectedTime}
-                        onChange={(e) => setSelectedTime(e.target.value)}
-                        disabled={!selectedDate}
-                        InputLabelProps={{ shrink: true }}
-                        sx={{
-                          bgcolor: 'white',
-                          borderRadius: 2,
-                          '& .MuiOutlinedInput-root': {
+                      <FormControl fullWidth disabled={!selectedDate || loadingTimes}>
+                        <Select
+                          value={selectedTime}
+                          onChange={(e) => setSelectedTime(e.target.value)}
+                          displayEmpty
+                          renderValue={(selected) => {
+                            if (!selected) {
+                              return <em style={{ color: '#9ca3af' }}>
+                                {language === 'en' ? 'Time' : language === 'tr' ? 'Saat' : 'Время'}
+                              </em>;
+                            }
+                            return selected;
+                          }}
+                          sx={{
+                            bgcolor: 'white',
+                            fontSize: { xs: '0.85rem', md: '0.95rem' },
                             minHeight: { xs: '48px', md: '56px' },
                             borderRadius: 2,
-                            '& fieldset': {
+                            '& .MuiSelect-select': {
+                              py: { xs: 1.5, md: 2 },
+                              display: 'flex',
+                              alignItems: 'center'
+                            },
+                            '& .MuiOutlinedInput-notchedOutline': {
                               borderWidth: 1.5,
                               borderColor: '#d1d5db'
                             },
-                            '&:hover fieldset': {
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
                               borderColor: '#9ca3af'
                             },
-                            '&.Mui-focused fieldset': {
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                               borderWidth: 2,
                               borderColor: '#6b7280'
                             }
-                          }
-                        }}
-                      />
+                          }}
+                        >
+                          {loadingTimes ? (
+                            <MenuItem disabled>
+                              {language === 'en' ? 'Loading times...' : language === 'tr' ? 'Saatler yükleniyor...' : 'Загрузка времени...'}
+                            </MenuItem>
+                          ) : availableTimes.length === 0 ? (
+                            <MenuItem disabled>
+                              {language === 'en' ? 'No times available' : language === 'tr' ? 'Uygun saat yok' : 'Нет доступного времени'}
+                            </MenuItem>
+                          ) : (
+                            availableTimes.map(time => (
+                              <MenuItem key={time} value={time}>
+                                {time}
+                              </MenuItem>
+                            ))
+                          )}
+                        </Select>
+                      </FormControl>
                     </Grid>
 
                     {/* Book Now Button */}
@@ -1189,15 +1378,354 @@ const Home = () => {
         </Container>
       </Box>
 
-      {/* Map Section - Find Businesses Near You */}
-      <Box sx={{ py: { xs: 6, md: 8 }, bgcolor: '#f9fafb' }}>
+      {/* How It Works Section - Compact with Images */}
+      <Box sx={{ py: { xs: 2, md: 3 }, bgcolor: 'white' }}>
         <Container maxWidth="xl">
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Box sx={{ textAlign: 'center', mb: { xs: 2, md: 2.5 } }}>
+            <Typography variant="h4" sx={{
+              fontWeight: 'bold',
+              color: '#1f2937',
+              fontSize: { xs: '1.5rem', md: '1.8rem' },
+              mb: 1
+            }}>
+              {language === 'en' ? '💡 How to Book Your Appointment' :
+                language === 'tr' ? '💡 Randevu Nasıl Alınır' :
+                '💡 Как забронировать'}
+            </Typography>
+            <Typography variant="body2" sx={{
+              color: '#6b7280',
+              fontSize: { xs: '0.9rem', md: '1rem' }
+            }}>
+              {language === 'en' ? 'Quick guide to using our platform' :
+                language === 'tr' ? 'Platformumuzu kullanma rehberi' :
+                'Руководство по использованию'}
+            </Typography>
+          </Box>
+
+          <Grid container spacing={{ xs: 2, md: 2.5 }} alignItems="center">
+            {/* Steps with visual guides */}
+            <Grid item xs={12}>
+              <Grid container spacing={{ xs: 2, md: 2.5 }}>
+                {/* Step 1 */}
+                <Grid item xs={12} sm={6}>
+                  <Box sx={{
+                    bgcolor: '#f9fafb',
+                    p: { xs: 1.5, md: 2 },
+                    borderRadius: 2,
+                    height: '100%',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                    transition: 'transform 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                      <Box sx={{
+                        minWidth: 36,
+                        width: 36,
+                        height: 36,
+                        borderRadius: '50%',
+                        bgcolor: 'rgba(99, 102, 241, 0.15)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        color: '#6366f1'
+                      }}>
+                        1
+                      </Box>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="subtitle2" sx={{
+                          fontWeight: 'bold',
+                          color: '#1f2937',
+                          mb: 0.5,
+                          fontSize: { xs: '0.9rem', md: '1rem' }
+                        }}>
+                          {language === 'en' ? 'Use Booking Form at Top' :
+                            language === 'tr' ? 'Üstteki Rezervasyon Formunu Kullanın' :
+                            'Используйте форму бронирования'}
+                        </Typography>
+                        <Typography variant="body2" sx={{
+                          color: '#6b7280',
+                          fontSize: { xs: '0.8rem', md: '0.85rem' },
+                          lineHeight: 1.5,
+                          mb: 1.5
+                        }}>
+                          {language === 'en' ? 'Select category, business, worker, service, date & time in the white box at the page top' :
+                            language === 'tr' ? 'Sayfanın üstündeki beyaz kutuda kategori, işletme, çalışan, hizmet, tarih ve saat seçin' :
+                            'Выберите категорию, бизнес, работника, услугу, дату и время в верхней части страницы'}
+                        </Typography>
+                        {/* Visual indicator */}
+                        <Box sx={{
+                          bgcolor: 'white',
+                          p: 1,
+                          borderRadius: 1.5,
+                          border: '2px solid #6366f1',
+                          boxShadow: '0 0 0 3px rgba(99, 102, 241, 0.1)'
+                        }}>
+                          <Box sx={{
+                            height: 35,
+                            bgcolor: '#eef2ff',
+                            borderRadius: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px dashed #6366f1'
+                          }}>
+                            <Typography variant="caption" sx={{ color: '#6366f1', fontWeight: 600, fontSize: '0.7rem' }}>
+                              🔍 {language === 'en' ? 'Search Form ↑' : language === 'tr' ? 'Arama Formu ↑' : 'Форма поиска ↑'}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Grid>
+
+                {/* Step 2 */}
+                <Grid item xs={12} sm={6}>
+                  <Box sx={{
+                    bgcolor: '#f9fafb',
+                    p: { xs: 1.5, md: 2 },
+                    borderRadius: 2,
+                    height: '100%',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                    transition: 'transform 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                      <Box sx={{
+                        minWidth: 36,
+                        width: 36,
+                        height: 36,
+                        borderRadius: '50%',
+                        bgcolor: 'rgba(16, 185, 129, 0.15)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        color: '#10b981'
+                      }}>
+                        2
+                      </Box>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="subtitle2" sx={{
+                          fontWeight: 'bold',
+                          color: '#1f2937',
+                          mb: 0.5,
+                          fontSize: { xs: '0.9rem', md: '1rem' }
+                        }}>
+                          {language === 'en' ? 'Or Browse on Map Below' :
+                            language === 'tr' ? 'Veya Aşağıdaki Haritada Gezin' :
+                            'Или просмотрите на карте'}
+                        </Typography>
+                        <Typography variant="body2" sx={{
+                          color: '#6b7280',
+                          fontSize: { xs: '0.8rem', md: '0.85rem' },
+                          lineHeight: 1.5,
+                          mb: 1.5
+                        }}>
+                          {language === 'en' ? 'Scroll down to find businesses on the interactive map and click on them for details' :
+                            language === 'tr' ? 'Aşağıya kaydırın, interaktif haritada işletmeleri bulun ve detaylar için tıklayın' :
+                            'Прокрутите вниз, найдите бизнес на интерактивной карте и нажмите для деталей'}
+                        </Typography>
+                        {/* Visual indicator */}
+                        <Box sx={{
+                          bgcolor: 'white',
+                          p: 1,
+                          borderRadius: 1.5,
+                          border: '2px solid #10b981',
+                          boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.1)'
+                        }}>
+                          <Box sx={{
+                            height: 35,
+                            bgcolor: '#ecfdf5',
+                            borderRadius: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px dashed #10b981'
+                          }}>
+                            <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 600, fontSize: '0.7rem' }}>
+                              🗺️ {language === 'en' ? 'Map Below ↓' : language === 'tr' ? 'Aşağıdaki Harita ↓' : 'Карта ниже ↓'}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Grid>
+
+                {/* Step 3 */}
+                <Grid item xs={12} sm={6}>
+                  <Box sx={{
+                    bgcolor: '#f9fafb',
+                    p: { xs: 1.5, md: 2 },
+                    borderRadius: 2,
+                    height: '100%',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                    transition: 'transform 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                      <Box sx={{
+                        minWidth: 36,
+                        width: 36,
+                        height: 36,
+                        borderRadius: '50%',
+                        bgcolor: 'rgba(249, 115, 22, 0.15)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        color: '#f97316'
+                      }}>
+                        3
+                      </Box>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="subtitle2" sx={{
+                          fontWeight: 'bold',
+                          color: '#1f2937',
+                          mb: 0.5,
+                          fontSize: { xs: '0.9rem', md: '1rem' }
+                        }}>
+                          {language === 'en' ? 'View Featured Businesses' :
+                            language === 'tr' ? 'Öne Çıkan İşletmeleri İnceleyin' :
+                            'Просмотрите избранные'}
+                        </Typography>
+                        <Typography variant="body2" sx={{
+                          color: '#6b7280',
+                          fontSize: { xs: '0.8rem', md: '0.85rem' },
+                          lineHeight: 1.5,
+                          mb: 1.5
+                        }}>
+                          {language === 'en' ? 'Check out featured businesses section below with photos, ratings & services' :
+                            language === 'tr' ? 'Aşağıda fotoğraf, puan ve hizmetlerle öne çıkan işletmelere göz atın' :
+                            'Посмотрите раздел избранных предприятий с фото, рейтингами и услугами'}
+                        </Typography>
+                        {/* Visual indicator */}
+                        <Box sx={{
+                          bgcolor: 'white',
+                          p: 1,
+                          borderRadius: 1.5,
+                          border: '2px solid #f97316',
+                          boxShadow: '0 0 0 3px rgba(249, 115, 22, 0.1)'
+                        }}>
+                          <Box sx={{
+                            height: 35,
+                            bgcolor: '#fff7ed',
+                            borderRadius: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px dashed #f97316'
+                          }}>
+                            <Typography variant="caption" sx={{ color: '#f97316', fontWeight: 600, fontSize: '0.7rem' }}>
+                              💼 {language === 'en' ? 'Business Cards ↓' : language === 'tr' ? 'İşletme Kartları ↓' : 'Карточки ↓'}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Grid>
+
+                {/* Step 4 */}
+                <Grid item xs={12} sm={6}>
+                  <Box sx={{
+                    bgcolor: '#f9fafb',
+                    p: { xs: 1.5, md: 2 },
+                    borderRadius: 2,
+                    height: '100%',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                    transition: 'transform 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                      <Box sx={{
+                        minWidth: 36,
+                        width: 36,
+                        height: 36,
+                        borderRadius: '50%',
+                        bgcolor: 'rgba(239, 68, 68, 0.15)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        color: '#ef4444'
+                      }}>
+                        4
+                      </Box>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="subtitle2" sx={{
+                          fontWeight: 'bold',
+                          color: '#1f2937',
+                          mb: 0.5,
+                          fontSize: { xs: '0.9rem', md: '1rem' }
+                        }}>
+                          {language === 'en' ? 'Click "Book Now" to Confirm' :
+                            language === 'tr' ? '"Book Now"a Tıklayıp Onaylayın' :
+                            'Нажмите "Book Now"'}
+                        </Typography>
+                        <Typography variant="body2" sx={{
+                          color: '#6b7280',
+                          fontSize: { xs: '0.8rem', md: '0.85rem' },
+                          lineHeight: 1.5,
+                          mb: 1.5
+                        }}>
+                          {language === 'en' ? 'After selecting all details in the form, click the dark "Book Now" button to confirm your appointment' :
+                            language === 'tr' ? 'Formda tüm detayları seçtikten sonra, randevunuzu onaylamak için koyu "Book Now" butonuna tıklayın' :
+                            'После выбора всех деталей в форме, нажмите темную кнопку "Book Now" для подтверждения'}
+                        </Typography>
+                        {/* Visual indicator */}
+                        <Box sx={{
+                          bgcolor: '#2d3748',
+                          p: 1.2,
+                          borderRadius: 1.5,
+                          border: '3px solid #ef4444',
+                          boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.15)',
+                          textAlign: 'center'
+                        }}>
+                          <Typography variant="body2" sx={{ color: 'white', fontWeight: 700, fontSize: '0.75rem' }}>
+                            {language === 'en' ? 'BOOK NOW' : language === 'tr' ? 'REZERVASYON' : 'ЗАБРОНИРОВАТЬ'}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: '#d1d5db', fontSize: '0.6rem', display: 'block', mt: 0.3 }}>
+                            {language === 'en' ? 'Dark button ↑' : language === 'tr' ? 'Koyu buton ↑' : 'Темная кнопка ↑'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* Map Section - Find Businesses Near You */}
+      <Box sx={{ py: { xs: 3, md: 4 }, bgcolor: '#f9fafb' }}>
+        <Container maxWidth="xl">
+          <Box sx={{ textAlign: 'center', mb: 2 }}>
             <Typography variant="h3" sx={{
               fontWeight: 'bold',
               color: '#1f2937',
-              fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.5rem' },
-              mb: 2
+              fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' },
+              mb: 1
             }}>
               {language === 'en' ? '🗺️ Find Businesses Near You' :
                 language === 'tr' ? '🗺️ Yakınınızdaki İşletmeleri Bulun' :
@@ -1205,7 +1733,7 @@ const Home = () => {
             </Typography>
             <Typography variant="h6" sx={{
               color: '#6b7280',
-              fontSize: { xs: '1rem', md: '1.25rem' },
+              fontSize: { xs: '0.9rem', md: '1.1rem' },
               maxWidth: 600,
               mx: 'auto'
             }}>
@@ -1217,7 +1745,7 @@ const Home = () => {
 
           {/* Search Controls Above Map */}
           <Card sx={{
-            mb: 3,
+            mb: 2,
             borderRadius: 2,
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           }}>
@@ -1416,34 +1944,49 @@ const Home = () => {
               </Typography>
             </Box>
           ) : (
-            <Box
-              ref={carouselRef}
-              sx={{
-                display: 'flex',
-                gap: 3,
-                overflowX: 'auto',
-                scrollBehavior: 'smooth',
-                pb: 2,
-                mx: -3,
-                px: 3,
-                '&::-webkit-scrollbar': {
-                  height: 8
-                },
-                '&::-webkit-scrollbar-track': {
-                  bgcolor: 'transparent'
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  bgcolor: 'transparent',
-                  borderRadius: 4
-                },
-                '&:hover::-webkit-scrollbar-thumb': {
-                  bgcolor: '#d1d5db'
-                },
-                '&::-webkit-scrollbar-thumb:hover': {
-                  bgcolor: '#9ca3af'
-                }
-              }}
-            >
+            <>
+              {/* Swipe indicator for mobile */}
+              <Typography variant="body2" sx={{
+                textAlign: 'center',
+                color: '#9ca3af',
+                mb: 2,
+                fontSize: '0.85rem',
+                display: { xs: 'block', md: 'none' }
+              }}>
+                {language === 'en' ? '← Swipe to explore →' :
+                 language === 'tr' ? '← Keşfetmek için kaydır →' :
+                 '← Проведите для просмотра →'}
+              </Typography>
+
+              <Box sx={{ position: 'relative' }}>
+                <Box
+                  ref={carouselRef}
+                  sx={{
+                    display: 'flex',
+                    gap: 3,
+                    overflowX: 'auto',
+                    scrollBehavior: 'smooth',
+                    pb: 2,
+                    mx: -3,
+                    px: 3,
+                    '&::-webkit-scrollbar': {
+                      height: 8
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      bgcolor: { xs: 'transparent', md: '#f3f4f6' }
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      bgcolor: { xs: 'transparent', md: '#d1d5db' },
+                      borderRadius: 4
+                    },
+                    '&:hover::-webkit-scrollbar-thumb': {
+                      bgcolor: '#9ca3af'
+                    },
+                    '&::-webkit-scrollbar-thumb:hover': {
+                      bgcolor: '#9ca3af'
+                    }
+                  }}
+                >
               {featuredBusinesses.map((business) => {
                 // Get category icon and color based on business category
                 const getCategoryInfo = (category) => {
@@ -1497,11 +2040,11 @@ const Home = () => {
                 };
 
                 return (
-                  <Box key={business.id} sx={{ minWidth: 350, maxWidth: 350, flexShrink: 0 }}>
+                  <Box key={business.id} sx={{ minWidth: { xs: 280, md: 350 }, maxWidth: { xs: 280, md: 350 }, flexShrink: 0 }}>
                     <Card sx={{
                       width: '100%',
                       height: '100%',
-                      minHeight: 550,
+                      minHeight: { xs: 420, md: 550 },
                       display: 'flex',
                       flexDirection: 'column',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
@@ -1519,10 +2062,10 @@ const Home = () => {
                     onClick={() => navigate(`/business/${business.id}`)}
                     >
                       {/* Hero Image with Overlay */}
-                      <Box sx={{ position: 'relative', height: 240, flexShrink: 0, width: '100%' }}>
+                      <Box sx={{ position: 'relative', height: { xs: 180, md: 240 }, flexShrink: 0, width: '100%' }}>
                         <CardMedia
                           component="img"
-                          height="240"
+                          height="100%"
                           image={business.cover_photo_url || business.avatar_url || getBusinessImage(business.category || business.business_type, business.id)}
                           alt={business.business_name || business.name}
                           sx={{ objectFit: 'cover', width: '100%', height: '100%' }}
@@ -1727,7 +2270,21 @@ const Home = () => {
                   </Box>
                 );
               })}
-            </Box>
+                </Box>
+
+                {/* Gradient fade indicator on right for mobile */}
+                <Box sx={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  bottom: 0,
+                  width: 60,
+                  background: 'linear-gradient(to left, white, transparent)',
+                  pointerEvents: 'none',
+                  display: { xs: 'block', md: 'none' }
+                }} />
+              </Box>
+            </>
           )}
         </Container>
       </Box>
@@ -2115,7 +2672,7 @@ const Home = () => {
               </Typography>
             </Box>
             <Typography variant="body2" sx={{ opacity: 0.6, fontSize: { xs: '0.8rem', md: '0.875rem' }, textAlign: { xs: 'center', md: 'right' } }}>
-              {language === 'en' ? 'Made for Europe' : language === 'tr' ? 'Avrupa için yapıldı' : 'Сделано для Европы'} 🇪🇺
+              {language === 'en' ? 'Made for World' : language === 'tr' ? 'Dünya için yapıldı' : 'Сделано для мира'} 🌍
             </Typography>
           </Box>
         </Container>
@@ -2141,18 +2698,49 @@ const Home = () => {
           </Box>
 
           {/* User Profile Section in Drawer */}
+          {isAuthenticated && (() => {
+            console.log('🖼️ Drawer Avatar - User object:', user);
+            console.log('🖼️ Drawer Avatar - avatar_url:', user?.avatar_url);
+            console.log('🖼️ Drawer Avatar - avatar:', user?.avatar);
+            console.log('🖼️ Drawer Avatar - profile_picture:', user?.profile_picture);
+            const avatarSrc = user?.avatar_url || user?.avatar || user?.profile_picture;
+            console.log('🖼️ Drawer Avatar - Final src:', avatarSrc);
+            return null;
+          })()}
           {isAuthenticated && (
-            <Box sx={{ mb: 2, p: 2, bgcolor: '#f3f4f6', borderRadius: 2 }}>
+            <Box
+              sx={{
+                mb: 2,
+                p: 2,
+                bgcolor: '#f3f4f6',
+                borderRadius: 2,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                '&:hover': {
+                  bgcolor: '#e5e7eb',
+                  transform: 'translateX(4px)'
+                }
+              }}
+              onClick={() => { navigate('/profile'); setDrawerOpen(false); }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Avatar
-                  src={user?.avatar_url || user?.avatar}
-                  sx={{ width: 40, height: 40 }}
-                />
+                  src={user?.avatar_url || user?.avatar || user?.profile_picture || undefined}
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    bgcolor: '#4b5563',
+                    fontSize: '1.2rem',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {(!user?.avatar_url && !user?.avatar && !user?.profile_picture) && (user?.first_name?.[0] || user?.name?.[0] || user?.email?.[0] || 'U')}
+                </Avatar>
                 <Box>
                   <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    {user?.name || 'User'}
+                    {user?.first_name ? `${user.first_name} ${user?.last_name || ''}`.trim() : user?.name || 'User'}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
                     {user?.email || ''}
                   </Typography>
                 </Box>
@@ -2307,7 +2895,15 @@ const Home = () => {
             <BottomNavigationAction
               label={t.profile}
               icon={<AccountCircle />}
-              onClick={() => setBottomNavValue(3)}
+              onClick={() => {
+                if (isAuthenticated) {
+                  navigate('/profile');
+                  setBottomNavValue(3);
+                } else {
+                  navigate('/signin');
+                  setBottomNavValue(3);
+                }
+              }}
             />
           </BottomNavigation>
         </Box>

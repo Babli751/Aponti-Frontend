@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Logo from '../components/Logo';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getServicesCatalog } from '../data/servicesCatalog';
 import api, { bookingAPI } from '../services/api';
@@ -38,7 +40,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Badge
+  Badge,
+  Drawer,
+  ListItemButton,
+  ListItemIcon,
+  BottomNavigation,
+  BottomNavigationAction
 } from '@mui/material';
 import {
    ArrowBack,
@@ -53,7 +60,16 @@ import {
    Edit,
    CalendarToday,
    TrendingUp,
-   Person
+   Person,
+   Menu as MenuIcon,
+   Close,
+   Home as HomeIcon,
+   ContentCut,
+   Business,
+   Support as SupportIcon,
+   Settings,
+   Logout,
+   AccountCircle
  } from '@mui/icons-material';
 
 const Dashboard = () => {
@@ -61,8 +77,10 @@ const Dashboard = () => {
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, isAuthenticated, logout } = useAuth();
   const { language, changeLanguage } = useLanguage();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [bottomNavValue, setBottomNavValue] = useState(2); // Dashboard is at index 2
 
   const [tabValue, setTabValue] = useState(() => {
     if (location.pathname === '/favorites') {
@@ -90,7 +108,7 @@ const Dashboard = () => {
     email: '',
     phone_number: ''
   });
-  const [profilePhotoUrl, setProfilePhotoUrl] = useState(user?.avatar_url || '');
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState(user?.avatar_url || user?.avatar || user?.profile_picture || '');
 
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [pastAppointments, setPastAppointments] = useState([]);
@@ -102,6 +120,15 @@ const Dashboard = () => {
   const [searchCity, setSearchCity] = useState('');
   const [availableServices, setAvailableServices] = useState([]);
   const [favoriteServices, setFavoriteServices] = useState([]);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   const content = {
     en: {
@@ -133,7 +160,19 @@ const Dashboard = () => {
       userType: 'User Type',
       memberSince: 'Member Since',
       editProfile: 'Edit Profile',
-      uploadPhoto: 'Upload Photo'
+      uploadPhoto: 'Upload Photo',
+      brand: 'Aponti',
+      home: 'Home',
+      services: 'Services',
+      about: 'About',
+      company: 'Company',
+      support: 'Support',
+      appointments: 'Appointments',
+      favorites: 'Favorites',
+      profile: 'Profile',
+      login: 'Login',
+      signup: 'Sign Up',
+      tryBusiness: 'Try Business'
     },
     tr: {
       dashboard: 'Kontrol Panelim',
@@ -164,7 +203,19 @@ const Dashboard = () => {
       userType: 'Kullanıcı Tipi',
       memberSince: 'Üye Olma Tarihi',
       editProfile: 'Profili Düzenle',
-      uploadPhoto: 'Fotoğraf Yükle'
+      uploadPhoto: 'Fotoğraf Yükle',
+      brand: 'Aponti',
+      home: 'Ana Sayfa',
+      services: 'Hizmetler',
+      about: 'Hakkımızda',
+      company: 'Şirket',
+      support: 'Destek',
+      appointments: 'Randevularım',
+      favorites: 'Favoriler',
+      profile: 'Profil',
+      login: 'Giriş',
+      signup: 'Kayıt Ol',
+      tryBusiness: 'İşletme Kayıt'
     },
     ru: {
       dashboard: 'Моя панель',
@@ -195,7 +246,19 @@ const Dashboard = () => {
       userType: 'Тип пользователя',
       memberSince: 'Дата регистрации',
       editProfile: 'Редактировать',
-      uploadPhoto: 'Загрузить фото'
+      uploadPhoto: 'Загрузить фото',
+      brand: 'Aponti',
+      home: 'Главная',
+      services: 'Услуги',
+      about: 'О нас',
+      company: 'Компания',
+      support: 'Поддержка',
+      appointments: 'Записи',
+      favorites: 'Избранное',
+      profile: 'Профиль',
+      login: 'Войти',
+      signup: 'Регистрация',
+      tryBusiness: 'Бизнес регистрация'
     }
   };
 
@@ -203,11 +266,8 @@ const Dashboard = () => {
 
   // Update profile photo when user changes
   useEffect(() => {
-    console.log('📸 Dashboard: user changed', { avatar_url: user?.avatar_url });
-    if (user?.avatar_url) {
-      console.log('📸 Dashboard: Setting profilePhotoUrl to', user.avatar_url);
-      setProfilePhotoUrl(user.avatar_url);
-    }
+    const avatarUrl = user?.avatar_url || user?.avatar || user?.profile_picture || '';
+    setProfilePhotoUrl(avatarUrl);
     // Initialize profileInfo from user data
     if (user) {
       setProfileInfo({
@@ -380,18 +440,9 @@ const Dashboard = () => {
   }
 
   return (
-    <Box sx={{ bgcolor: '#f0f4f8', minHeight: '100vh' }}>
-      {/* Modern Header */}
-      <AppBar position="sticky" elevation={0} sx={{
-        background: 'linear-gradient(135deg, #2d3748 0%, #4a5568 100%)',
-        borderBottom: '1px solid #1a202c'
-      }}>
-        <Toolbar sx={{ px: { xs: 2, md: 4 } }}>
-          <Box sx={{ flexGrow: 1 }}>
-            <Logo size="small" variant="white" />
-          </Box>
-        </Toolbar>
-      </AppBar>
+    <Box sx={{ bgcolor: '#f0f4f8', minHeight: '100vh', pb: { xs: '70px', md: 0 } }}>
+      {/* Navbar Component */}
+      <Navbar onMenuClick={() => setDrawerOpen(true)} />
 
       <Container maxWidth="xl" sx={{ py: 4 }}>
         {console.log('🖼️ Dashboard render: profilePhotoUrl =', profilePhotoUrl, 'user.avatar_url =', user?.avatar_url)}
@@ -656,7 +707,16 @@ const Dashboard = () => {
                 </Typography>
                 <Button
                   variant="contained"
-                  onClick={() => navigate('/')}
+                  onClick={() => {
+                    navigate('/');
+                    // Scroll to booking form after navigation
+                    setTimeout(() => {
+                      const bookingForm = document.getElementById('booking-form');
+                      if (bookingForm) {
+                        bookingForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }
+                    }, 100);
+                  }}
                   sx={{
                     mt: 3,
                     bgcolor: '#2d3748',
@@ -897,6 +957,334 @@ const Dashboard = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Mobile Quick Action Buttons */}
+      {isMobile && (
+        <Box sx={{
+          px: 2,
+          pb: 10,  // Extra padding to account for bottom navigation
+          mt: 3
+        }}>
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Button
+                variant="contained"
+                fullWidth
+                startIcon={<Schedule />}
+                onClick={() => {
+                  navigate('/');
+                  // Scroll to booking form after navigation
+                  setTimeout(() => {
+                    const bookingForm = document.getElementById('booking-form');
+                    if (bookingForm) {
+                      bookingForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                  }, 100);
+                }}
+                sx={{
+                  bgcolor: '#2d3748',
+                  color: 'white',
+                  py: 2,
+                  borderRadius: 3,
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(45, 55, 72, 0.3)',
+                  '&:hover': {
+                    bgcolor: '#1a202c',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 16px rgba(45, 55, 72, 0.4)'
+                  },
+                  transition: 'all 0.3s'
+                }}
+              >
+                {language === 'en' ? 'Book Now' : language === 'tr' ? 'Randevu Al' : 'Записаться'}
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button
+                variant="contained"
+                fullWidth
+                startIcon={<Favorite />}
+                onClick={() => setTabValue(1)}
+                sx={{
+                  bgcolor: '#4a5568',
+                  color: 'white',
+                  py: 2,
+                  borderRadius: 3,
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(74, 85, 104, 0.3)',
+                  '&:hover': {
+                    bgcolor: '#2d3748',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 16px rgba(74, 85, 104, 0.4)'
+                  },
+                  transition: 'all 0.3s'
+                }}
+              >
+                {language === 'en' ? 'My Favorites' : language === 'tr' ? 'Favorilerim' : 'Избранное'}
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button
+                variant="contained"
+                fullWidth
+                startIcon={<History />}
+                onClick={() => setTabValue(2)}
+                sx={{
+                  bgcolor: '#718096',
+                  color: 'white',
+                  py: 2,
+                  borderRadius: 3,
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(113, 128, 150, 0.3)',
+                  '&:hover': {
+                    bgcolor: '#4a5568',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 16px rgba(113, 128, 150, 0.4)'
+                  },
+                  transition: 'all 0.3s'
+                }}
+              >
+                {language === 'en' ? 'History' : language === 'tr' ? 'Geçmiş' : 'История'}
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button
+                variant="contained"
+                fullWidth
+                startIcon={<Edit />}
+                onClick={() => {
+                  setEditFormData({
+                    first_name: user?.first_name || '',
+                    last_name: user?.last_name || '',
+                    email: user?.email || '',
+                    phone_number: user?.phone_number || ''
+                  });
+                  setProfileEditOpen(true);
+                }}
+                sx={{
+                  bgcolor: '#a0aec0',
+                  color: 'white',
+                  py: 2,
+                  borderRadius: 3,
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(160, 174, 192, 0.3)',
+                  '&:hover': {
+                    bgcolor: '#718096',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 16px rgba(160, 174, 192, 0.4)'
+                  },
+                  transition: 'all 0.3s'
+                }}
+              >
+                {language === 'en' ? 'Edit Profile' : language === 'tr' ? 'Profili Düzenle' : 'Редактировать'}
+              </Button>
+            </Grid>
+          </Grid>
+        </Box>
+      )}
+
+      {/* Footer Component */}
+      <Footer />
+
+      {/* Mobile Drawer */}
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        PaperProps={{
+          sx: { width: { xs: 260, sm: 280 } }
+        }}
+      >
+        <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#2d3748', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+              {t.brand}
+            </Typography>
+            <IconButton onClick={() => setDrawerOpen(false)}>
+              <Close />
+            </IconButton>
+          </Box>
+
+          {/* User Profile Section in Drawer */}
+          {isAuthenticated && (
+            <Box sx={{ mb: 2, p: 2, bgcolor: '#f3f4f6', borderRadius: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Avatar
+                  src={user?.avatar_url || user?.avatar}
+                  sx={{ width: 40, height: 40 }}
+                />
+                <Box>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    {user?.name || 'User'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {user?.email || ''}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          )}
+
+          <Divider sx={{ mb: 2 }} />
+          <List>
+            <ListItemButton onClick={() => { navigate('/'); setDrawerOpen(false); }}>
+              <ListItemIcon><HomeIcon /></ListItemIcon>
+              <ListItemText primary={t.home} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/services'); setDrawerOpen(false); }}>
+              <ListItemIcon><ContentCut /></ListItemIcon>
+              <ListItemText primary={t.services} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/about'); setDrawerOpen(false); }}>
+              <ListItemIcon><Person /></ListItemIcon>
+              <ListItemText primary={t.about} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/company'); setDrawerOpen(false); }}>
+              <ListItemIcon><Business /></ListItemIcon>
+              <ListItemText primary={t.company} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/support'); setDrawerOpen(false); }}>
+              <ListItemIcon><SupportIcon /></ListItemIcon>
+              <ListItemText primary={t.support} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/contact'); setDrawerOpen(false); }}>
+              <ListItemIcon><Schedule /></ListItemIcon>
+              <ListItemText primary={language === 'en' ? 'Appoint' : language === 'tr' ? 'Randevu Al' : 'Записаться'} />
+            </ListItemButton>
+            <Divider sx={{ my: 1 }} />
+            <ListItemButton
+              onClick={() => { navigate('/business-signup'); setDrawerOpen(false); }}
+              sx={{
+                bgcolor: 'rgba(255, 107, 53, 0.08)',
+                '&:hover': { bgcolor: 'rgba(255, 107, 53, 0.15)' },
+                mb: 1,
+                borderRadius: 1,
+                mx: 1
+              }}
+            >
+              <ListItemIcon><Business sx={{ color: '#ff6b35' }} /></ListItemIcon>
+              <ListItemText
+                primary={t.tryBusiness}
+                sx={{ '& .MuiTypography-root': { color: '#ff6b35', fontWeight: 600 } }}
+              />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/dashboard'); setDrawerOpen(false); }}>
+              <ListItemIcon><Schedule /></ListItemIcon>
+              <ListItemText primary={t.appointments} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/favorites'); setDrawerOpen(false); }}>
+              <ListItemIcon><Favorite /></ListItemIcon>
+              <ListItemText primary={t.favorites} />
+            </ListItemButton>
+            <Divider sx={{ my: 2 }} />
+            {isAuthenticated ? (
+              <>
+                <ListItemButton onClick={() => { navigate('/profile'); setDrawerOpen(false); }}>
+                  <ListItemIcon><Person /></ListItemIcon>
+                  <ListItemText primary={t.profile} />
+                </ListItemButton>
+                <ListItemButton onClick={() => { navigate('/dashboard'); setDrawerOpen(false); }}>
+                  <ListItemIcon><Schedule /></ListItemIcon>
+                  <ListItemText primary={t.appointments} />
+                </ListItemButton>
+                <ListItemButton onClick={() => { navigate('/settings'); setDrawerOpen(false); }}>
+                  <ListItemIcon><Settings /></ListItemIcon>
+                  <ListItemText primary={language === 'en' ? 'Settings' : language === 'tr' ? 'Ayarlar' : 'Настройки'} />
+                </ListItemButton>
+                <ListItemButton onClick={() => { handleLogout(); setDrawerOpen(false); }}>
+                  <ListItemIcon><Logout /></ListItemIcon>
+                  <ListItemText primary={language === 'en' ? 'Sign Out' : language === 'tr' ? 'Çıkış Yap' : 'Выйти'} />
+                </ListItemButton>
+              </>
+            ) : (
+              <>
+                <ListItem>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      bgcolor: '#2d3748',
+                      color: 'white',
+                      fontWeight: 600,
+                      mr: 1,
+                      '&:hover': { bgcolor: '#1a202c' }
+                    }}
+                    onClick={() => { navigate('/signin'); setDrawerOpen(false); }}
+                  >
+                    {t.login}
+                  </Button>
+                </ListItem>
+                <ListItem>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      bgcolor: '#2d3748',
+                      color: 'white',
+                      fontWeight: 600,
+                      '&:hover': { bgcolor: '#1a202c' }
+                    }}
+                    onClick={() => { navigate('/signup'); setDrawerOpen(false); }}
+                  >
+                    {t.signup}
+                  </Button>
+                </ListItem>
+              </>
+            )}
+          </List>
+        </Box>
+      </Drawer>
+
+      {/* Bottom Navigation for Mobile */}
+      {isMobile && (
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+            bgcolor: 'white',
+            borderTop: '1px solid #e5e7eb',
+            display: { xs: 'block', md: 'none' }
+          }}
+        >
+          <BottomNavigation
+            value={bottomNavValue}
+            onChange={(event, newValue) => setBottomNavValue(newValue)}
+            sx={{ height: { xs: 56, sm: 60 } }}
+          >
+            <BottomNavigationAction
+              label={language === 'en' ? 'Home' : language === 'tr' ? 'Ana Sayfa' : 'Главная'}
+              icon={<HomeIcon />}
+              onClick={() => { navigate('/'); setBottomNavValue(0); }}
+            />
+            <BottomNavigationAction
+              label={language === 'en' ? 'Services' : language === 'tr' ? 'Hizmetler' : 'Услуги'}
+              icon={<ContentCut />}
+              onClick={() => { navigate('/services'); setBottomNavValue(1); }}
+            />
+            <BottomNavigationAction
+              label={language === 'en' ? 'Appointments' : language === 'tr' ? 'Randevular' : 'Записи'}
+              icon={<Schedule />}
+              onClick={() => { navigate('/dashboard'); setBottomNavValue(2); }}
+            />
+            <BottomNavigationAction
+              label={language === 'en' ? 'Profile' : language === 'tr' ? 'Profil' : 'Профиль'}
+              icon={<AccountCircle />}
+              onClick={() => {
+                if (isAuthenticated) {
+                  navigate('/profile');
+                  setBottomNavValue(3);
+                } else {
+                  navigate('/signin');
+                  setBottomNavValue(3);
+                }
+              }}
+            />
+          </BottomNavigation>
+        </Box>
+      )}
     </Box>
   );
 };

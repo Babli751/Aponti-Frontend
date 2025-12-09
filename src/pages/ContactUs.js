@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import {
   Box,
   Container,
@@ -15,7 +17,17 @@ import {
   FormControl,
   Select,
   MenuItem,
-  Divider
+  Divider,
+  IconButton,
+  useTheme,
+  useMediaQuery,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Avatar
 } from '@mui/material';
 import {
   Email,
@@ -24,13 +36,39 @@ import {
   Send,
   Verified,
   CheckCircle,
-  AccessTime
+  AccessTime,
+  Menu as MenuIcon,
+  Close,
+  Home as HomeIcon,
+  ContentCut,
+  Person,
+  Business,
+  Support as SupportIcon,
+  Schedule,
+  Favorite,
+  Settings,
+  Logout
 } from '@mui/icons-material';
 import Logo from '../components/Logo';
 import Footer from '../components/Footer';
 
 const ContactUs = () => {
+  const navigate = useNavigate();
   const { language, changeLanguage } = useLanguage();
+  const { isAuthenticated, user, logout } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -147,9 +185,18 @@ const ContactUs = () => {
         borderBottom: '1px solid #e5e7eb'
       }}>
         <Toolbar sx={{ px: { xs: 2, md: 4 } }}>
-          <Box sx={{ flexGrow: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton
+              edge="start"
+              onClick={() => setDrawerOpen(true)}
+              sx={{ mr: 1, color: 'white', display: { xs: 'flex', md: 'none' } }}
+            >
+              <MenuIcon />
+            </IconButton>
             <Logo size="small" variant="white" />
           </Box>
+
+          <Box sx={{ flexGrow: 1 }} />
 
           <FormControl size="small" sx={{ minWidth: 100 }}>
             <Select
@@ -531,6 +578,154 @@ const ContactUs = () => {
           </Card>
         </Container>
       </Box>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        PaperProps={{
+          sx: { width: { xs: 260, sm: 280 } }
+        }}
+      >
+        <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#2d3748', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+              Aponti
+            </Typography>
+            <IconButton onClick={() => setDrawerOpen(false)}>
+              <Close />
+            </IconButton>
+          </Box>
+
+          {isAuthenticated && (
+            <Box sx={{ mb: 2, p: 2, bgcolor: '#f3f4f6', borderRadius: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Avatar
+                  src={user?.avatar_url || user?.avatar}
+                  sx={{ width: 40, height: 40 }}
+                />
+                <Box>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    {user?.name || 'User'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {user?.email || ''}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          )}
+
+          <Divider sx={{ mb: 2 }} />
+          <List>
+            <ListItemButton onClick={() => { navigate('/'); setDrawerOpen(false); }}>
+              <ListItemIcon><HomeIcon /></ListItemIcon>
+              <ListItemText primary={language === 'en' ? 'Home' : language === 'tr' ? 'Ana Sayfa' : 'Главная'} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/services'); setDrawerOpen(false); }}>
+              <ListItemIcon><ContentCut /></ListItemIcon>
+              <ListItemText primary={language === 'en' ? 'Services' : language === 'tr' ? 'Hizmetler' : 'Услуги'} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/about'); setDrawerOpen(false); }}>
+              <ListItemIcon><Person /></ListItemIcon>
+              <ListItemText primary={language === 'en' ? 'About' : language === 'tr' ? 'Hakkımızda' : 'О нас'} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/company'); setDrawerOpen(false); }}>
+              <ListItemIcon><Business /></ListItemIcon>
+              <ListItemText primary={language === 'en' ? 'Company' : language === 'tr' ? 'Şirket' : 'Компания'} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/support'); setDrawerOpen(false); }}>
+              <ListItemIcon><SupportIcon /></ListItemIcon>
+              <ListItemText primary={language === 'en' ? 'Support' : language === 'tr' ? 'Destek' : 'Поддержка'} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/contact'); setDrawerOpen(false); }}>
+              <ListItemIcon><Schedule /></ListItemIcon>
+              <ListItemText primary={language === 'en' ? 'Appoint' : language === 'tr' ? 'Randevu Al' : 'Записаться'} />
+            </ListItemButton>
+            <Divider sx={{ my: 1 }} />
+            <ListItemButton
+              onClick={() => { navigate('/business-signup'); setDrawerOpen(false); }}
+              sx={{
+                bgcolor: 'rgba(255, 107, 53, 0.08)',
+                '&:hover': { bgcolor: 'rgba(255, 107, 53, 0.15)' },
+                mb: 1,
+                borderRadius: 1,
+                mx: 1
+              }}
+            >
+              <ListItemIcon><Business sx={{ color: '#ff6b35' }} /></ListItemIcon>
+              <ListItemText
+                primary={language === 'en' ? 'Try Business' : language === 'tr' ? 'İşletme Kayıt' : 'Бизнес регистрация'}
+                sx={{ '& .MuiTypography-root': { color: '#ff6b35', fontWeight: 600 } }}
+              />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/dashboard'); setDrawerOpen(false); }}>
+              <ListItemIcon><Schedule /></ListItemIcon>
+              <ListItemText primary={language === 'en' ? 'Appointments' : language === 'tr' ? 'Randevularım' : 'Записи'} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/favorites'); setDrawerOpen(false); }}>
+              <ListItemIcon><Favorite /></ListItemIcon>
+              <ListItemText primary={language === 'en' ? 'Favorites' : language === 'tr' ? 'Favoriler' : 'Избранное'} />
+            </ListItemButton>
+            <Divider sx={{ my: 2 }} />
+            {isAuthenticated ? (
+              <>
+                <ListItemButton onClick={() => { navigate('/profile'); setDrawerOpen(false); }}>
+                  <ListItemIcon><Person /></ListItemIcon>
+                  <ListItemText primary={language === 'en' ? 'Profile' : language === 'tr' ? 'Profil' : 'Профиль'} />
+                </ListItemButton>
+                <ListItemButton onClick={() => { navigate('/dashboard'); setDrawerOpen(false); }}>
+                  <ListItemIcon><Schedule /></ListItemIcon>
+                  <ListItemText primary={language === 'en' ? 'Appointments' : language === 'tr' ? 'Randevularım' : 'Записи'} />
+                </ListItemButton>
+                <ListItemButton onClick={() => { navigate('/settings'); setDrawerOpen(false); }}>
+                  <ListItemIcon><Settings /></ListItemIcon>
+                  <ListItemText primary={language === 'en' ? 'Settings' : language === 'tr' ? 'Ayarlar' : 'Настройки'} />
+                </ListItemButton>
+                <ListItemButton onClick={() => { handleLogout(); setDrawerOpen(false); }}>
+                  <ListItemIcon><Logout /></ListItemIcon>
+                  <ListItemText primary={language === 'en' ? 'Sign Out' : language === 'tr' ? 'Çıkış Yap' : 'Выйти'} />
+                </ListItemButton>
+              </>
+            ) : (
+              <>
+                <ListItem>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      bgcolor: '#2d3748',
+                      color: 'white',
+                      fontWeight: 600,
+                      mr: 1,
+                      '&:hover': { bgcolor: '#1a202c' }
+                    }}
+                    onClick={() => { navigate('/signin'); setDrawerOpen(false); }}
+                  >
+                    {language === 'en' ? 'Login' : language === 'tr' ? 'Giriş' : 'Войти'}
+                  </Button>
+                </ListItem>
+                <ListItem>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      bgcolor: '#2d3748',
+                      color: 'white',
+                      fontWeight: 600,
+                      '&:hover': { bgcolor: '#1a202c' }
+                    }}
+                    onClick={() => { navigate('/signup'); setDrawerOpen(false); }}
+                  >
+                    {language === 'en' ? 'Sign Up' : language === 'tr' ? 'Kayıt Ol' : 'Регистрация'}
+                  </Button>
+                </ListItem>
+              </>
+            )}
+          </List>
+        </Box>
+      </Drawer>
 
       <Footer />
     </Box>

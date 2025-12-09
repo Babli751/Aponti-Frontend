@@ -3,116 +3,129 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import Logo from './Logo';
 import {
-  Box, Container, Grid, Typography, Stack, Link, IconButton, Divider
+  Box,
+  Container,
+  Grid,
+  Typography,
+  Link,
+  Stack,
+  Divider
 } from '@mui/material';
-import { Email, Phone, Facebook, Instagram, Twitter } from '@mui/icons-material';
 
 const Footer = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
 
   return (
-    <Box sx={{
-      bgcolor: '#1a1a1a',
-      color: 'white',
-      py: 6,
-      mt: 'auto'
-    }}>
-      <Container maxWidth="lg">
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={4}>
+    <Box sx={{ bgcolor: '#1f2937', color: 'white', py: { xs: 3, sm: 4, md: 6 }, mt: { xs: 2, md: 4 } }}>
+      <Container maxWidth="xl">
+        <Grid container spacing={{ xs: 3, md: 4 }}>
+          {/* Brand Section */}
+          <Grid item xs={12} md={6}>
             <Box sx={{ mb: 2 }}>
-              <Logo size="small" variant="white" />
+              <Logo size="medium" variant="white" />
             </Box>
-            <Typography variant="body2" sx={{ mb: 2, color: '#b0b0b0' }}>
+            <Typography variant="body2" sx={{ mb: 3, opacity: 0.8, lineHeight: 1.6, fontSize: { xs: '0.85rem', md: '0.875rem' } }}>
               {language === 'en'
-                ? 'Your trusted platform for booking appointments with top-rated businesses across Europe.'
+                ? 'The leading platform for booking professional barber services across Europe. Find and book the best barbers in your city.'
                 : language === 'tr'
-                ? 'Avrupa genelinde en iyi işletmelerle randevu almak için güvenilir platformunuz.'
-                : 'Ваша надежная платформа для записи на прием в лучшие компании Европы.'}
+                ? 'Avrupa\'da profesyonel berber hizmetleri rezervasyonu için önde gelen platform. Şehrinizdeki en iyi berberleri bulun ve rezervasyon yapın.'
+                : 'Ведущая платформа для бронирования профессиональных парикмахерских услуг по всей Европе. Найдите и забронируйте лучших парикмахеров в своем городе.'
+              }
             </Typography>
           </Grid>
 
-          <Grid item xs={12} md={4}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-              {language === 'en' ? 'Quick Links' : language === 'tr' ? 'Hızlı Bağlantılar' : 'Быстрые ссылки'}
+          {/* Company */}
+          <Grid item xs={6} md={3}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, fontSize: { xs: '1rem', md: '1.25rem' } }}>
+              {language === 'en' ? 'Company' : language === 'tr' ? 'Şirket' : 'Компания'}
             </Typography>
             <Stack spacing={1}>
               <Link
-                onClick={() => navigate('/')}
+                href="#"
                 color="inherit"
-                underline="hover"
-                sx={{ color: '#b0b0b0', cursor: 'pointer' }}
-              >
-                {language === 'en' ? 'Home' : language === 'tr' ? 'Ana Sayfa' : 'Главная'}
-              </Link>
-              <Link
-                onClick={() => navigate('/appointment')}
-                color="inherit"
-                underline="hover"
-                sx={{ color: '#b0b0b0', cursor: 'pointer' }}
-              >
-                {language === 'en' ? 'Book Appointment' : language === 'tr' ? 'Randevu Al' : 'Записаться'}
-              </Link>
-              <Link
-                onClick={() => navigate('/about')}
-                color="inherit"
-                underline="hover"
-                sx={{ color: '#b0b0b0', cursor: 'pointer' }}
+                sx={{ opacity: 0.8, textDecoration: 'none', '&:hover': { opacity: 1 }, fontSize: { xs: '0.85rem', md: '0.875rem' }, cursor: 'pointer' }}
+                onClick={(e) => { e.preventDefault(); navigate('/about'); }}
               >
                 {language === 'en' ? 'About' : language === 'tr' ? 'Hakkımızda' : 'О нас'}
+              </Link>
+              <Link
+                href="#"
+                color="inherit"
+                sx={{ opacity: 0.8, textDecoration: 'none', '&:hover': { opacity: 1 }, fontSize: { xs: '0.85rem', md: '0.875rem' }, cursor: 'pointer' }}
+                onClick={(e) => { e.preventDefault(); navigate('/company'); }}
+              >
+                {language === 'en' ? 'Careers' : language === 'tr' ? 'Kariyer' : 'Карьера'}
+              </Link>
+              <Link
+                href="#"
+                color="inherit"
+                sx={{ opacity: 0.8, textDecoration: 'none', '&:hover': { opacity: 1 }, fontSize: { xs: '0.85rem', md: '0.875rem' }, cursor: 'pointer' }}
+                onClick={(e) => { e.preventDefault(); navigate('/company'); }}
+              >
+                {language === 'en' ? 'Partners' : language === 'tr' ? 'Ortaklar' : 'Партнеры'}
               </Link>
             </Stack>
           </Grid>
 
-          <Grid item xs={12} md={4}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-              {language === 'en' ? 'Contact' : language === 'tr' ? 'İletişim' : 'Контакты'}
+          {/* Support */}
+          <Grid item xs={6} md={3}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, fontSize: { xs: '1rem', md: '1.25rem' } }}>
+              {language === 'en' ? 'Support' : language === 'tr' ? 'Destek' : 'Поддержка'}
             </Typography>
             <Stack spacing={1}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#b0b0b0' }}>
-                <Email sx={{ fontSize: 20 }} />
-                <Typography variant="body2">info@aponti.com</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#b0b0b0' }}>
-                <Phone sx={{ fontSize: 20 }} />
-                <Typography variant="body2">+90 555 123 4567</Typography>
-              </Box>
-              <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-                <IconButton
-                  sx={{ color: '#2d3748', bgcolor: 'rgba(0,166,147,0.1)' }}
-                  component="a"
-                  href="https://facebook.com"
-                  target="_blank"
-                >
-                  <Facebook />
-                </IconButton>
-                <IconButton
-                  sx={{ color: '#2d3748', bgcolor: 'rgba(0,166,147,0.1)' }}
-                  component="a"
-                  href="https://instagram.com"
-                  target="_blank"
-                >
-                  <Instagram />
-                </IconButton>
-                <IconButton
-                  sx={{ color: '#2d3748', bgcolor: 'rgba(0,166,147,0.1)' }}
-                  component="a"
-                  href="https://twitter.com"
-                  target="_blank"
-                >
-                  <Twitter />
-                </IconButton>
-              </Stack>
+              <Link
+                href="#"
+                color="inherit"
+                sx={{ opacity: 0.8, textDecoration: 'none', '&:hover': { opacity: 1 }, fontSize: { xs: '0.85rem', md: '0.875rem' }, cursor: 'pointer' }}
+                onClick={(e) => { e.preventDefault(); navigate('/support'); }}
+              >
+                {language === 'en' ? 'Help Center' : language === 'tr' ? 'Yardım Merkezi' : 'Центр помощи'}
+              </Link>
+              <Link
+                href="#"
+                color="inherit"
+                sx={{ opacity: 0.8, textDecoration: 'none', '&:hover': { opacity: 1 }, fontSize: { xs: '0.85rem', md: '0.875rem' }, cursor: 'pointer' }}
+                onClick={(e) => { e.preventDefault(); navigate('/contact'); }}
+              >
+                {language === 'en' ? 'Contact Us' : language === 'tr' ? 'İletişim' : 'Связаться с нами'}
+              </Link>
+              <Link
+                href="#"
+                color="inherit"
+                sx={{ opacity: 0.8, textDecoration: 'none', '&:hover': { opacity: 1 }, fontSize: { xs: '0.85rem', md: '0.875rem' }, cursor: 'pointer' }}
+                onClick={(e) => { e.preventDefault(); navigate('/support'); }}
+              >
+                {language === 'en' ? 'FAQ' : language === 'tr' ? 'SSS' : 'FAQ'}
+              </Link>
+              <Link
+                href="#"
+                color="inherit"
+                sx={{ opacity: 0.8, textDecoration: 'none', '&:hover': { opacity: 1 }, fontSize: { xs: '0.85rem', md: '0.875rem' }, cursor: 'pointer' }}
+                onClick={(e) => { e.preventDefault(); navigate('/support'); }}
+              >
+                {language === 'en' ? 'Safety' : language === 'tr' ? 'Güvenlik' : 'Безопасность'}
+              </Link>
             </Stack>
           </Grid>
         </Grid>
 
-        <Divider sx={{ my: 4, borderColor: 'rgba(255,255,255,0.1)' }} />
+        <Divider sx={{ my: { xs: 3, md: 4 }, borderColor: 'rgba(255,255,255,0.1)' }} />
 
-        <Typography variant="body2" sx={{ textAlign: 'center', color: '#b0b0b0' }}>
-          © 2025 Aponti. {language === 'en' ? 'All rights reserved.' : language === 'tr' ? 'Tüm hakları saklıdır.' : 'Все права защищены.'}
-        </Typography>
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 2
+        }}>
+          <Typography variant="body2" sx={{ opacity: 0.8, fontSize: { xs: '0.8rem', md: '0.875rem' } }}>
+            © 2024 Aponti. {language === 'en' ? 'All rights reserved.' : language === 'tr' ? 'Tüm hakları saklıdır.' : 'Все права защищены.'}
+          </Typography>
+          <Typography variant="body2" sx={{ opacity: 0.6, fontSize: { xs: '0.8rem', md: '0.875rem' } }}>
+            {language === 'en' ? 'Made for World' : language === 'tr' ? 'Dünya için yapıldı' : 'Сделано для мира'} 🌍
+          </Typography>
+        </Box>
       </Container>
     </Box>
   );

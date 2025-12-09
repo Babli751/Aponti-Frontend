@@ -131,6 +131,53 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Refresh user data from backend on mount if authenticated
+  useEffect(() => {
+    const refreshUserData = async () => {
+      if (isAuthenticated && localStorage.getItem(`${sitePrefix}access_token`)) {
+        try {
+          console.log('🔄 Refreshing user data from backend...');
+          const userProfile = await authAPI.getProfile();
+          console.log('✅ Fresh user data received:', userProfile);
+          console.log('🖼️ Avatar URL from backend:', userProfile.avatar_url);
+
+          const userData = {
+            id: userProfile.id,
+            email: userProfile.email,
+            name: `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() || userProfile.email,
+            first_name: userProfile.first_name || '',
+            last_name: userProfile.last_name || '',
+            firstName: userProfile.first_name || '',
+            lastName: userProfile.last_name || '',
+            phone_number: userProfile.phone_number || '',
+            avatar: userProfile.avatar || null,
+            avatar_url: userProfile.avatar_url || null,
+            isActive: userProfile.is_active,
+            memberSince: userProfile.created_at ? new Date(userProfile.created_at).getFullYear().toString() : '2024',
+            totalAppointments: userProfile.total_appointments || 0,
+            favoriteBarbers: userProfile.favorite_barbers_count || 0,
+            phone: userProfile.phone || '',
+            birthDate: userProfile.birth_date || '',
+            address: userProfile.address || ''
+          };
+
+          console.log('💾 Updating user state with avatar_url:', userData.avatar_url);
+          setUser(userData);
+          localStorage.setItem(`${sitePrefix}user`, JSON.stringify(userData));
+        } catch (error) {
+          console.error('❌ Failed to refresh user data:', error);
+          // If refresh fails with 401, user should re-login
+          if (error.response?.status === 401) {
+            logout();
+          }
+        }
+      }
+    };
+
+    refreshUserData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount
+
   useEffect(() => {
     // Sync authentication state with localStorage
     localStorage.setItem(`${sitePrefix}isAuthenticated`, isAuthenticated.toString());

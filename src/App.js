@@ -6,6 +6,7 @@ import { Container, Typography, Card, CardContent, Box, Button, Stack } from '@m
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
+import BottomNav from './components/BottomNav';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Services from './pages/Services';
@@ -270,6 +271,7 @@ function AuthAwareRoutes() {
   const { isAuthenticated } = useAuth();
 
   return (
+    <>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
@@ -301,7 +303,11 @@ function AuthAwareRoutes() {
         path="/settings"
         element={isAuthenticated ? <Settings /> : <Navigate to="/signin" />}
       />
-      
+      <Route
+        path="/profile"
+        element={isAuthenticated ? <Dashboard /> : <Navigate to="/signin" />}
+      />
+
       {/* Business Routes */}
       <Route path="/business-dashboard" element={<BusinessDashboard />} />
       <Route path="/BusinessDashboard" element={<Navigate to="/business-dashboard" replace />} />
@@ -337,6 +343,8 @@ function AuthAwareRoutes() {
       {/* Fallback route */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <BottomNav />
+    </>
   );
 }
 

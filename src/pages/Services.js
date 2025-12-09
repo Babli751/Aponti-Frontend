@@ -1,21 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import Logo from '../components/Logo';
 import Footer from '../components/Footer';
 import api from '../services/api';
 import {
   Box, Container, Grid, Card, CardContent, Typography, Button, CircularProgress, Tabs, Tab,
-  AppBar, Toolbar, FormControl, Select, MenuItem
+  AppBar, Toolbar, FormControl, Select, MenuItem, IconButton, Drawer, List, ListItem,
+  ListItemButton, ListItemIcon, ListItemText, Divider, Avatar, useTheme, useMediaQuery
 } from '@mui/material';
-import { ContentCut, Spa, FitnessCenter, LocalHospital, Restaurant, Pets, ArrowForward } from '@mui/icons-material';
+import {
+  ContentCut, Spa, FitnessCenter, LocalHospital, Restaurant, Pets, ArrowForward,
+  Menu as MenuIcon, Close, Home as HomeIcon, Person, Schedule, Favorite, Settings,
+  Business, Support as SupportIcon, Logout
+} from '@mui/icons-material';
 
 const Services = () => {
   const navigate = useNavigate();
   const { language, changeLanguage } = useLanguage();
+  const { isAuthenticated, user, logout } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -47,7 +66,19 @@ const Services = () => {
       fitness: 'Fitness',
       health: 'Healthcare',
       food: 'Food & Dining',
-      pets: 'Pet Care'
+      pets: 'Pet Care',
+      brand: 'Aponti',
+      home: 'Home',
+      services: 'Services',
+      about: 'About',
+      company: 'Company',
+      support: 'Support',
+      appointments: 'Appointments',
+      favorites: 'Favorites',
+      profile: 'Profile',
+      login: 'Login',
+      signup: 'Sign Up',
+      tryBusiness: 'Try Business'
     },
     tr: {
       title: 'Hizmetlerimiz',
@@ -60,7 +91,19 @@ const Services = () => {
       fitness: 'Fitness',
       health: 'Sağlık',
       food: 'Yemek',
-      pets: 'Evcil Hayvan'
+      pets: 'Evcil Hayvan',
+      brand: 'Aponti',
+      home: 'Ana Sayfa',
+      services: 'Hizmetler',
+      about: 'Hakkımızda',
+      company: 'Şirket',
+      support: 'Destek',
+      appointments: 'Randevularım',
+      favorites: 'Favoriler',
+      profile: 'Profil',
+      login: 'Giriş',
+      signup: 'Kayıt Ol',
+      tryBusiness: 'İşletme Kayıt'
     },
     ru: {
       title: 'Наши услуги',
@@ -73,7 +116,19 @@ const Services = () => {
       fitness: 'Фитнес',
       health: 'Здоровье',
       food: 'Еда',
-      pets: 'Питомцы'
+      pets: 'Питомцы',
+      brand: 'Aponti',
+      home: 'Главная',
+      services: 'Услуги',
+      about: 'О нас',
+      company: 'Компания',
+      support: 'Поддержка',
+      appointments: 'Записи',
+      favorites: 'Избранное',
+      profile: 'Профиль',
+      login: 'Войти',
+      signup: 'Регистрация',
+      tryBusiness: 'Бизнес регистрация'
     }
   };
 
@@ -194,9 +249,18 @@ const Services = () => {
         borderBottom: '1px solid #1a202c'
       }}>
         <Toolbar sx={{ px: { xs: 2, md: 4 } }}>
-          <Box sx={{ flexGrow: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton
+              edge="start"
+              onClick={() => setDrawerOpen(true)}
+              sx={{ mr: 1, color: 'white', display: { xs: 'flex', md: 'none' } }}
+            >
+              <MenuIcon />
+            </IconButton>
             <Logo size="small" variant="white" />
           </Box>
+
+          <Box sx={{ flexGrow: 1 }} />
 
           <FormControl size="small" sx={{ minWidth: 100 }}>
             <Select
@@ -318,6 +382,155 @@ const Services = () => {
           </Grid>
         )}
       </Container>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        PaperProps={{
+          sx: { width: { xs: 260, sm: 280 } }
+        }}
+      >
+        <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#2d3748', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+              {t.brand}
+            </Typography>
+            <IconButton onClick={() => setDrawerOpen(false)}>
+              <Close />
+            </IconButton>
+          </Box>
+
+          {/* User Profile Section in Drawer */}
+          {isAuthenticated && (
+            <Box sx={{ mb: 2, p: 2, bgcolor: '#f3f4f6', borderRadius: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Avatar
+                  src={user?.avatar_url || user?.avatar}
+                  sx={{ width: 40, height: 40 }}
+                />
+                <Box>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    {user?.name || 'User'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {user?.email || ''}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          )}
+
+          <Divider sx={{ mb: 2 }} />
+          <List>
+            <ListItemButton onClick={() => { navigate('/'); setDrawerOpen(false); }}>
+              <ListItemIcon><HomeIcon /></ListItemIcon>
+              <ListItemText primary={t.home} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/services'); setDrawerOpen(false); }}>
+              <ListItemIcon><ContentCut /></ListItemIcon>
+              <ListItemText primary={t.services} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/about'); setDrawerOpen(false); }}>
+              <ListItemIcon><Person /></ListItemIcon>
+              <ListItemText primary={t.about} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/company'); setDrawerOpen(false); }}>
+              <ListItemIcon><Business /></ListItemIcon>
+              <ListItemText primary={t.company} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/support'); setDrawerOpen(false); }}>
+              <ListItemIcon><SupportIcon /></ListItemIcon>
+              <ListItemText primary={t.support} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/contact'); setDrawerOpen(false); }}>
+              <ListItemIcon><Schedule /></ListItemIcon>
+              <ListItemText primary={language === 'en' ? 'Appoint' : language === 'tr' ? 'Randevu Al' : 'Записаться'} />
+            </ListItemButton>
+            <Divider sx={{ my: 1 }} />
+            <ListItemButton
+              onClick={() => { navigate('/business-signup'); setDrawerOpen(false); }}
+              sx={{
+                bgcolor: 'rgba(255, 107, 53, 0.08)',
+                '&:hover': { bgcolor: 'rgba(255, 107, 53, 0.15)' },
+                mb: 1,
+                borderRadius: 1,
+                mx: 1
+              }}
+            >
+              <ListItemIcon><Business sx={{ color: '#ff6b35' }} /></ListItemIcon>
+              <ListItemText
+                primary={t.tryBusiness}
+                sx={{ '& .MuiTypography-root': { color: '#ff6b35', fontWeight: 600 } }}
+              />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/dashboard'); setDrawerOpen(false); }}>
+              <ListItemIcon><Schedule /></ListItemIcon>
+              <ListItemText primary={t.appointments} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/favorites'); setDrawerOpen(false); }}>
+              <ListItemIcon><Favorite /></ListItemIcon>
+              <ListItemText primary={t.favorites} />
+            </ListItemButton>
+            <Divider sx={{ my: 2 }} />
+            {isAuthenticated ? (
+              <>
+                <ListItemButton onClick={() => { navigate('/profile'); setDrawerOpen(false); }}>
+                  <ListItemIcon><Person /></ListItemIcon>
+                  <ListItemText primary={t.profile} />
+                </ListItemButton>
+                <ListItemButton onClick={() => { navigate('/dashboard'); setDrawerOpen(false); }}>
+                  <ListItemIcon><Schedule /></ListItemIcon>
+                  <ListItemText primary={t.appointments} />
+                </ListItemButton>
+                <ListItemButton onClick={() => { navigate('/settings'); setDrawerOpen(false); }}>
+                  <ListItemIcon><Settings /></ListItemIcon>
+                  <ListItemText primary={language === 'en' ? 'Settings' : language === 'tr' ? 'Ayarlar' : 'Настройки'} />
+                </ListItemButton>
+                <ListItemButton onClick={() => { handleLogout(); setDrawerOpen(false); }}>
+                  <ListItemIcon><Logout /></ListItemIcon>
+                  <ListItemText primary={language === 'en' ? 'Sign Out' : language === 'tr' ? 'Çıkış Yap' : 'Выйти'} />
+                </ListItemButton>
+              </>
+            ) : (
+              <>
+                <ListItem>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      bgcolor: '#2d3748',
+                      color: 'white',
+                      fontWeight: 600,
+                      mr: 1,
+                      '&:hover': { bgcolor: '#1a202c' }
+                    }}
+                    onClick={() => { navigate('/signin'); setDrawerOpen(false); }}
+                  >
+                    {t.login}
+                  </Button>
+                </ListItem>
+                <ListItem>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      bgcolor: '#2d3748',
+                      color: 'white',
+                      fontWeight: 600,
+                      '&:hover': { bgcolor: '#1a202c' }
+                    }}
+                    onClick={() => { navigate('/signup'); setDrawerOpen(false); }}
+                  >
+                    {t.signup}
+                  </Button>
+                </ListItem>
+              </>
+            )}
+          </List>
+        </Box>
+      </Drawer>
 
       <Footer />
     </Box>
