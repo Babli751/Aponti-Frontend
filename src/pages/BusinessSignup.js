@@ -1,4 +1,5 @@
 import { businessAPI, authAPI } from '../services/api';
+import Navbar from '../components/Navbar';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -244,22 +245,7 @@ const BusinessSignup = () => {
   return (
     <Box sx={{ bgcolor: '#ffffff', minHeight: '100vh' }}>
       {/* Header */}
-      <AppBar position="sticky" elevation={0} sx={{ bgcolor: '#2d3748', borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
-        <Container maxWidth="xl">
-          <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Logo size="small" variant="white" onClick={() => navigate('/')} />
-            </Box>
-            <FormControl size="small">
-              <Select value={language} onChange={(e) => changeLanguage(e.target.value)} sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { border: 'none' }, '& .MuiSvgIcon-root': { color: 'white' } }}>
-                <MenuItem value="en">🇬🇧 EN</MenuItem>
-                <MenuItem value="tr">🇹🇷 TR</MenuItem>
-                <MenuItem value="ru">🇷🇺 RU</MenuItem>
-              </Select>
-            </FormControl>
-          </Toolbar>
-        </Container>
-      </AppBar>
+      <Navbar />
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Card sx={{ maxWidth: 800, mx: 'auto', borderRadius: 3, mb: 4 }}>

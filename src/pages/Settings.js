@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Logo from '../components/Logo';
@@ -253,39 +255,7 @@ const Settings = () => {
   return (
     <Box sx={{ bgcolor: '#f8f9fa', minHeight: '100vh' }}>
       {/* Header */}
-      <AppBar position="static" sx={{
-        background: 'linear-gradient(135deg, #2d3748 0%, #4fd5c7 100%)'
-      }}>
-        <Toolbar>
-          <IconButton
-            edge="start"
-            onClick={() => setDrawerOpen(true)}
-            sx={{ mr: 1, color: 'white', display: { xs: 'flex', md: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <IconButton
-            edge="start"
-            color="inherit"
-            onClick={() => navigate('/')}
-            sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
-          >
-            <ArrowBack />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
-            {t.title}
-          </Typography>
-          {updateAvailable && (
-            <Chip
-              icon={<Update />}
-              label={t.updateAvailable}
-              color="warning"
-              size="small"
-              sx={{ mr: 2 }}
-            />
-          )}
-        </Toolbar>
-      </AppBar>
+      <Navbar onMenuClick={() => setDrawerOpen(true)} />
 
       <Container sx={{ py: { xs: 2, md: 3 } }}>
         <Stack spacing={3}>

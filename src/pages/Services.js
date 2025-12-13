@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -244,41 +245,7 @@ const Services = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: '#ffffff' }}>
-      <AppBar position="sticky" elevation={0} sx={{
-        background: 'linear-gradient(135deg, #2d3748 0%, #4a5568 100%)',
-        borderBottom: '1px solid #1a202c'
-      }}>
-        <Toolbar sx={{ px: { xs: 2, md: 4 } }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton
-              edge="start"
-              onClick={() => setDrawerOpen(true)}
-              sx={{ mr: 1, color: 'white', display: { xs: 'flex', md: 'none' } }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Logo size="small" variant="white" />
-          </Box>
-
-          <Box sx={{ flexGrow: 1 }} />
-
-          <FormControl size="small" sx={{ minWidth: 100 }}>
-            <Select
-              value={language}
-              onChange={(e) => changeLanguage(e.target.value)}
-              sx={{
-                color: 'white',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' },
-                '& .MuiSvgIcon-root': { color: 'white' }
-              }}
-            >
-              <MenuItem value="en">🇬🇧 English</MenuItem>
-              <MenuItem value="tr">🇹🇷 Türkçe</MenuItem>
-              <MenuItem value="ru">🇷🇺 Русский</MenuItem>
-            </Select>
-          </FormControl>
-        </Toolbar>
-      </AppBar>
+      <Navbar onMenuClick={() => setDrawerOpen(true)} />
 
       {/* Hero Section */}
       <Box sx={{

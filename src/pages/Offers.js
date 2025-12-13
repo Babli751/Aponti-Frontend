@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import Logo from '../components/Logo';
@@ -174,42 +176,7 @@ const Offers = () => {
   return (
     <Box sx={{ bgcolor: '#ffffff', minHeight: '100vh' }}>
       {/* Header */}
-      <AppBar position="static" elevation={0} sx={{ bgcolor: 'white', color: '#1f2937' }}>
-        <Toolbar>
-          <IconButton 
-            edge="start" 
-            onClick={() => navigate('/')}
-            sx={{ mr: 2 }}
-          >
-            <ArrowBack />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ 
-            flexGrow: 1, 
-            fontWeight: 'bold',
-            background: 'linear-gradient(135deg, #2d3748 0%, #4fd5c7 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            color: 'transparent'
-          }}>
-            {t.brand}
-          </Typography>
-          
-          {/* Language Selector */}
-          <FormControl size="small" sx={{ minWidth: 100 }}>
-            <Select
-              value={language}
-              onChange={(e) => changeLanguage(e.target.value)}
-              sx={{ 
-                '& .MuiOutlinedInput-notchedOutline': { border: 'none' }
-              }}
-            >
-              <MenuItem value="en">🇬🇧 EN</MenuItem>
-              <MenuItem value="tr">🇹🇷 TR</MenuItem>
-              <MenuItem value="ru">🇷🇺 RU</MenuItem>
-            </Select>
-          </FormControl>
-        </Toolbar>
-      </AppBar>
+      <Navbar onMenuClick={() => setDrawerOpen(true)} />
 
       {/* Hero Section */}
       <Box sx={{ 

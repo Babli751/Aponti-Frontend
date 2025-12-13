@@ -174,7 +174,7 @@ const Home = () => {
       try {
         setLoadingBusinesses(true);
 
-        // Fetch businesses from /businesses/ endpoint - NO FALLBACK, only real data
+        // Fetch businesses from /businesses/ endpoint with full data (latitude, workers, services)
         console.log('🔍 Fetching businesses from /businesses/...');
         const businessesResponse = await api.get('/businesses/');
         console.log('📦 Raw response:', businessesResponse);

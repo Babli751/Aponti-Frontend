@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Navbar from '../components/Navbar';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { authAPI } from '../services/api';
@@ -172,40 +173,7 @@ const SignUp = () => {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#ffffff' }}>
-      {/* Header */}
-      <Box sx={{ 
-        bgcolor: 'white', 
-        borderBottom: '1px solid #e5e7eb',
-        py: { xs: 1, md: 2 }
-      }}>
-        <Container maxWidth="lg">
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            px: { xs: 1, md: 0 }
-          }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Logo size="small" variant="color" onClick={() => navigate('/')} />
-            </Box>
-            
-            {/* Language Selector */}
-            <FormControl size="small" sx={{ minWidth: { xs: 60, md: 100 } }}>
-              <Select
-                value={language}
-                onChange={(e) => changeLanguage(e.target.value)}
-                sx={{ 
-                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' }
-                }}
-              >
-                <MenuItem value="en">🇬🇧 {isMobile ? 'EN' : 'English'}</MenuItem>
-                <MenuItem value="tr">🇹🇷 {isMobile ? 'TR' : 'Türkçe'}</MenuItem>
-                <MenuItem value="ru">🇷🇺 {isMobile ? 'RU' : 'Русский'}</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </Container>
-      </Box>
+      <Navbar />
 
       {/* Main Content */}
       <Container maxWidth="sm" sx={{ py: { xs: 4, md: 6 } }}>
